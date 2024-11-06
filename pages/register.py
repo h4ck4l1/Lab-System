@@ -9,17 +9,19 @@ from dash import dcc,html,register_page,dash_table,callback,Input,Output,ctx,Sta
 
 df = pd.DataFrame(
     columns=[
+        "Index",
         "S.No.",
         "Patient Name",
         "Reference By",
         "Patient Age",
         "Gender",
-        "Amount Paid"
+        "Amount Paid",
+        "Phone No"
     ]
 )
 
 
-serial_number = 0
+index_number = 0
 
 register_layout = html.Div(
     [
@@ -41,8 +43,8 @@ register_layout = html.Div(
         *[html.Br()]*5,
         html.Div(
             [
-                html.Div("Serial Number: ",style=dict(color="cyan",fontSize=30)),
-                html.Div(id="serial_number",style=dict(color="cyan",fontSize=30,position="absolute",left="350px",display="inline-block"))
+                html.Div("S. No. : ",style=dict(color="cyan",fontSize=30)),
+                dcc.Input(id="serial_number",type="number",placeholder="Enter Serial Number... ",style=dict(display="inline-block",position="absolute",left="350px",fontSize=30))
             ],
             style=dict(display="flex",alignItems="center")
         ),
@@ -87,6 +89,14 @@ register_layout = html.Div(
             style=dict(display="flex",alignItems="center")
         ),
         *[html.Br()]*5,
+        html.Div(
+            [
+                html.Div("Phone No: ",style=dict(color="cyan",fontSize=30)),
+                dcc.Input(id="phone_number",type="number",placeholder="Enter Phone Paid ...",style=dict(display="inline-block",position="absolute",left="350px",fontSize=30))
+            ],
+            style=dict(display="flex",alignItems="center")
+        ),
+        *[html.Br()]*5,
         html.Button("Submit",id="button",style=dict(fontSize=30,borderRadius="5px",height="100px",width="250px")),
         *[html.Br()]*5,
         dash_table.DataTable(
@@ -101,7 +111,7 @@ register_layout = html.Div(
                 html.Button("Save to Files",id="save-button",style=dict(fontSize=30,borderRadius="5px",height="100px",width="250px")),
                 html.Div(id="out-message",style=dict(fontSize=30,color="cyan",position="absolute",left="350px"))
             ]
-        )      
+        )
     ],
     className="subpage-content"
 )
@@ -109,7 +119,6 @@ register_layout = html.Div(
 
 @callback(
     [
-        Output("serial_number","children",allow_duplicate=True),
         Output("data_table","data",allow_duplicate=True)
     ],
     Input("date-pick-single","date"),
@@ -117,60 +126,63 @@ register_layout = html.Div(
 )
 def initialize_df(date_value):
     global df
-    global serial_number
+    global index_number
     date_obj = date.fromisoformat(date_value)
     date_string = date_obj.strftime("%Y_%m_%d")
     file = glob("all_files/"+date_string+".xlsx")
     if file:
         df = pd.read_excel(file[0])
-        serial_number = df.iloc[-1,0]
-        return serial_number,df.to_dict('records')
+        index_number = df.iloc[-1,0]
+        return index_number,df.to_dict('records')
     else:
         df = pd.DataFrame(
             columns=[
+                "Index"
                 "S.No.",
                 "Patient Name",
                 "Reference By",
                 "Patient Age",
                 "Gender",
-                "Amount Paid"
+                "Amount Paid",
+                "Phone No"
             ]
         )
-        serial_number = 0
-        return serial_number,df.to_dict('records')
+        index_number = 0
+        return df.to_dict('records')
 
 
 
 
 
 @callback(
-    [
-        Output("serial_number","children"),
-        Output("data_table","data")
-    ],
+    Output("data_table","data"),
     [
         Input("button","n_clicks")
     ],
     [
+        State("serial_number","value"),
         State("patient_name","value"),
         State("reference_by","value"),
         State("patient_age","value"),
         State("gender","value"),
-        State("amount_paid","value")
+        State("amount_paid","value"),
+        State("phone_number","value")
     ]
 )
 def append_name_to_dataframe(*vals):
-    global serial_number
+    global index_number
     global df
     if "button" == ctx.triggered_id:
-        serial_number += 1
-        df.loc[serial_number-1,"S.No."] = serial_number
-        df.loc[serial_number-1,"Patient Name"] = vals[1]
-        df.loc[serial_number-1,"Reference By"] = vals[2]
-        df.loc[serial_number-1,"Patient Age",] = vals[3]
-        df.loc[serial_number-1,"Gender"] = vals[4]
-        df.loc[serial_number-1,"Amount Paid"] = vals[5]
-    return serial_number+1,df.to_dict('records')
+        index_number += 1
+        df.loc[index_number-1,"Index"] = index_number
+        df.loc[index_number-1,"S.No."] = vals[1]
+        df.loc[index_number-1,"Patient Name"] = vals[2]
+        df.loc[index_number-1,"Reference By"] = vals[3]
+        df.loc[index_number-1,"Patient Age",] = vals[4]
+        df.loc[index_number-1,"Gender"] = vals[5]
+        df.loc[index_number-1,"Amount Paid"] = vals[6]
+        df.loc[index_number-1,"Phone No"] = vals[7]
+    return df.to_dict('records')
 
 
 @callback(
