@@ -545,6 +545,11 @@
       top: -20vh;
       z-index: 1;
     }
+
+    .age-drop ul li {
+      position: absolute;
+      left: 400px;
+    }
     
     /* <--------------------------------------- SUBPAGE DROPDOWN BUTTON -------------------------------> */
     

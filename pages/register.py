@@ -72,13 +72,20 @@ register_layout = html.Div(
             ],
             style=dict(display="flex",alignItems="center")
         ),
+        html.Div(
+            dcc.Dropdown(["Y","M","D"],"Y",id="age-group-dropdown"),
+            style=dict(display="inline-block",alignItems="center",position="relative",left="800px",bottom="30px")
+        ),
         *[html.Br()]*5,
         html.Div(
             [
-                html.Div("Gender : ",style=dict(color="cyan",fontSize=30)),
-                dcc.Input(id="gender",type="text",placeholder="Enter Patient's Gender...",style=dict(display="inline-block",position="absolute",left="350px",fontSize=30))
+                html.Div("Gender : ",style=dict(color="cyan",fontSize=30))
             ],
             style=dict(display="flex",alignItems="center")
+        ),
+        html.Div(
+            dcc.Dropdown(["Male","Female"],"Male",id="gender-dropdown"),
+            style=dict(display="inline-block",alignItems="center",position="relative")
         ),
         *[html.Br()]*5,
         html.Div(
@@ -157,7 +164,8 @@ def initialize_df(date_value):
 @callback(
     Output("data_table","data"),
     [
-        Input("button","n_clicks")
+        Input("button","n_clicks"),
+        Input("age-group-dropdown","value")
     ],
     [
         State("serial_number","value"),
