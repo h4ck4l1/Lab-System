@@ -4,9 +4,10 @@ import numpy as np
 import pandas as pd
 from dash import Dash,html,dcc,Input,Output,callback,ctx,register_page
 
+copy_df = df.copy()
 
 patients_dropdown = dcc.Dropdown(
-    df["S.No."].to_list(),
+    copy_df["S.No."].to_list(),
     placeholder="Select Serial No",
     id="reports-dropdown"
 )

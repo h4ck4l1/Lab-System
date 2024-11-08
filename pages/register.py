@@ -14,12 +14,21 @@ df = pd.DataFrame(
         "Patient Name",
         "Reference By",
         "Patient Age",
+        "Age Group",
         "Gender",
         "Amount Paid",
         "Phone No"
     ]
 )
 
+doctor_options = [
+    "self".capitalize(),
+    "NEELIMA AGARWAL GARU, MD(Homeo).,",
+    "m rama krishna garu, mbbs, dch.,".upper(),
+    "Smt. M.N. SRI DEVI GARU, MBBS, DGO.,",
+    "S. Prasad",
+    "Babu garu"
+]
 
 index_number = 0
 
@@ -59,22 +68,33 @@ register_layout = html.Div(
         *[html.Br()]*5,
         html.Div(
             [
-                html.Div("Reference Doctor: ",style=dict(color="cyan",fontSize=30)),
-                dcc.Input(id="reference_by",type="text",placeholder="Enter Doctors Name...",style=dict(display="inline-block",position="absolute",left="350px",fontSize=30))
+                html.Div("Reference Doctor: ",style=dict(color="cyan",fontSize=30))
             ],
             style=dict(display="flex",alignItems="center")
+        ),
+        html.Div(
+            [
+                html.Div(
+                    [
+                        dcc.Dropdown(doctor_options,"SELF",id="doctor-dropdown")
+                    ],
+                    style=dict(width="400px",position="relative",left="50px",bottom="25px")
+                ),
+                dcc.Input(id="reference-doctor",type="text",placeholder="Enter Doctors Name...",style=dict(position="relative",left="100px",width="500px",bottom="25px",fontSize=30))
+            ],
+            style=dict(display="flex",alignItems="center",position="relative",left="300px")
         ),
         *[html.Br()]*5,
         html.Div(
             [
                 html.Div("Patient Age: ",style=dict(color="cyan",fontSize=30)),
-                dcc.Input(id="patient_age",type="number",placeholder="Enter Patient's Age...",style=dict(display="inline-block",position="absolute",left="350px",fontSize=30))
+                dcc.Input(id="patient_age",type="number",placeholder="Age...",style=dict(display="inline-block",width="150px",position="absolute",left="350px",fontSize=30))
             ],
             style=dict(display="flex",alignItems="center")
         ),
         html.Div(
             dcc.Dropdown(["Y","M","D"],"Y",id="age-group-dropdown"),
-            style=dict(display="inline-block",alignItems="center",position="relative",left="800px",bottom="30px")
+            style=dict(display="inline-block",alignItems="center",position="relative",left="530px",bottom="35px")
         ),
         *[html.Br()]*5,
         html.Div(
@@ -85,7 +105,7 @@ register_layout = html.Div(
         ),
         html.Div(
             dcc.Dropdown(["Male","Female"],"Male",id="gender-dropdown"),
-            style=dict(display="inline-block",alignItems="center",position="relative")
+            style=dict(display="inline-block",alignItems="center",position="relative",width="150px",left="350px",bottom="30px")
         ),
         *[html.Br()]*5,
         html.Div(
@@ -164,17 +184,18 @@ def initialize_df(date_value):
 @callback(
     Output("data_table","data"),
     [
-        Input("button","n_clicks"),
-        Input("age-group-dropdown","value")
+        Input("button","n_clicks"),                 # 0
+        Input("age-group-dropdown","value"),        # 1
+        Input("gender-dropdown","value"),           # 2
+        Input("doctor-dropdown","value")            # 3
     ],
     [
-        State("serial_number","value"),
-        State("patient_name","value"),
-        State("reference_by","value"),
-        State("patient_age","value"),
-        State("gender","value"),
-        State("amount_paid","value"),
-        State("phone_number","value")
+        State("serial_number","value"),             # 4
+        State("patient_name","value"),              # 5
+        State("reference-doctor","value"),          # 6
+        State("patient_age","value"),               # 7
+        State("amount_paid","value"),               # 8
+        State("phone_number","value")               # 9
     ]
 )
 def append_name_to_dataframe(*vals):
@@ -183,13 +204,17 @@ def append_name_to_dataframe(*vals):
     if "button" == ctx.triggered_id:
         index_number += 1
         df.loc[index_number-1,"Index"] = index_number
-        df.loc[index_number-1,"S.No."] = vals[1]
-        df.loc[index_number-1,"Patient Name"] = vals[2]
-        df.loc[index_number-1,"Reference By"] = vals[3]
-        df.loc[index_number-1,"Patient Age",] = vals[4]
-        df.loc[index_number-1,"Gender"] = vals[5]
-        df.loc[index_number-1,"Amount Paid"] = vals[6]
-        df.loc[index_number-1,"Phone No"] = vals[7]
+        df.loc[index_number-1,"S.No."] = vals[4]
+        df.loc[index_number-1,"Patient Name"] = vals[5]
+        if vals[6] == None:
+            df.loc[index_number-1,"Reference By"] = vals[3]
+        else:
+            df.loc[index_number-1,"Reference By"] = vals[6]
+        df.loc[index_number-1,"Age Group"] = vals[1]
+        df.loc[index_number-1,"Patient Age",] = vals[7]
+        df.loc[index_number-1,"Gender"] = vals[2]
+        df.loc[index_number-1,"Amount Paid"] = vals[8]
+        df.loc[index_number-1,"Phone No"] = vals[9]
     return df.to_dict('records')
 
 
