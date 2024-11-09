@@ -17,8 +17,10 @@ df = pd.DataFrame(
         "Patient Age",
         "Age Group",
         "Gender",
-        "Amount Paid",
-        "Phone No"
+        "Amount",
+        "Paid",
+        "Print"
+        "Phone No",
     ]
 )
 
@@ -112,8 +114,8 @@ register_layout = html.Div(
         *[html.Br()]*5,
         html.Div(
             [
-                html.Div("Amount Paid: ",style=dict(color="cyan",fontSize=30)),
-                dcc.Input(id="amount_paid",type="number",placeholder="Enter Amount Paid...",style=dict(display="inline-block",position="absolute",left="350px",fontSize=30))
+                html.Div("Amount : ",style=dict(color="cyan",fontSize=30)),
+                dcc.Input(id="amount",type="number",placeholder="Enter Amount To be Paid...",style=dict(display="inline-block",position="absolute",left="350px",fontSize=30))
             ],
             style=dict(display="flex",alignItems="center")
         ),
@@ -172,7 +174,9 @@ def initialize_df(date_value):
                 "Reference By",
                 "Patient Age",
                 "Gender",
-                "Amount Paid",
+                "Amount",
+                "Paid",
+                "Print",
                 "Phone No"
             ]
         )
@@ -199,7 +203,7 @@ def initialize_df(date_value):
         State("patient_name","value"),              # 5
         State("reference-doctor","value"),          # 6
         State("patient_age","value"),               # 7
-        State("amount_paid","value"),               # 8
+        State("amount","value"),               # 8
         State("phone_number","value")               # 9
     ]
 )
@@ -218,8 +222,10 @@ def append_name_to_dataframe(*vals):
         df.loc[index_number-1,"Age Group"] = vals[1]
         df.loc[index_number-1,"Patient Age",] = vals[7]
         df.loc[index_number-1,"Gender"] = vals[2]
-        df.loc[index_number-1,"Amount Paid"] = vals[8]
+        df.loc[index_number-1,"Amount"] = vals[8]
         df.loc[index_number-1,"Phone No"] = vals[9]
+        df.loc[index_number-1,"Paid"] = False
+        df.loc[index_number-1,"Print"] = False
     return df.to_dict('records'),df.to_json(date_format="iso",orient="split")
 
 
