@@ -42,6 +42,8 @@ dropdown_options = [
 
 app.layout = dcc.Loading(
     [
+        dcc.Store(id="data-store"),
+        dcc.Location("url",refresh=False),
         html.Div(
             [
                 html.Ul(

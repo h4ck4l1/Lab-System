@@ -3,6 +3,7 @@ from datetime import datetime,date
 from glob import glob
 import numpy as np
 import pandas as pd
+import json
 from dash import dcc,html,register_page,dash_table,callback,Input,Output,ctx,State
 
 
@@ -20,6 +21,7 @@ df = pd.DataFrame(
         "Phone No"
     ]
 )
+
 
 doctor_options = [
     "self".capitalize(),
@@ -182,7 +184,10 @@ def initialize_df(date_value):
 
 
 @callback(
-    Output("data_table","data"),
+    [
+        Output("data_table","data"),
+        Output("data-store","data")
+    ],
     [
         Input("button","n_clicks"),                 # 0
         Input("age-group-dropdown","value"),        # 1
@@ -215,7 +220,7 @@ def append_name_to_dataframe(*vals):
         df.loc[index_number-1,"Gender"] = vals[2]
         df.loc[index_number-1,"Amount Paid"] = vals[8]
         df.loc[index_number-1,"Phone No"] = vals[9]
-    return df.to_dict('records')
+    return df.to_dict('records'),df.to_json(date_format="iso",orient="split")
 
 
 @callback(
