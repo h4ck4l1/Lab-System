@@ -368,7 +368,7 @@
       animation: box 1s ease forwards;
       animation-iteration-count: 1;
     }
-    
+
     .total-dropdown:hover .dropdown-button img {
       animation: hoverripple 0.3s linear infinite
     }

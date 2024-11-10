@@ -18,9 +18,9 @@ df = pd.DataFrame(
         "Age Group",
         "Gender",
         "Amount",
+        "Phone No",
         "Paid",
         "Print"
-        "Phone No",
     ]
 )
 
@@ -175,9 +175,9 @@ def initialize_df(date_value):
                 "Patient Age",
                 "Gender",
                 "Amount",
+                "Phone No",
                 "Paid",
                 "Print",
-                "Phone No"
             ]
         )
         index_number = 0
@@ -203,7 +203,7 @@ def initialize_df(date_value):
         State("patient_name","value"),              # 5
         State("reference-doctor","value"),          # 6
         State("patient_age","value"),               # 7
-        State("amount","value"),               # 8
+        State("amount","value"),                    # 8
         State("phone_number","value")               # 9
     ]
 )
