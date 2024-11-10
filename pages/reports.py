@@ -66,6 +66,9 @@ def patients_drpodown_update(data):
     return []
 
 
+limits_style = dict(position="relative",left="550px",bottom="45px",fontSize=18)
+input_style = dict(width="150px",height="25px",position="relative",left="360px",bottom="20px",fontSize=20)
+text_style = dict(position="relative",left="80px",fontSize=20)
 
 @callback(
     [
@@ -80,6 +83,8 @@ def patients_drpodown_update(data):
 def save_and_print_report(patients_sno, reports_value):
     global all_reports_dict
     if patients_sno:
+        all_reports_dict[patients_sno] = {"patient_details":[],"report_details":[]}
+        all_reports_done_dict[patients_sno] = {}
         patients_details = f'''
                             Pt. Name : {copy_df.loc[copy_df.loc[:,"S.No."] == patients_sno,"Patient Name"].item()}
                             
@@ -118,12 +123,16 @@ def save_and_print_report(patients_sno, reports_value):
                             ***
                             
                             '''
-        all_reports_dict[patients_sno] = [patients_details]
+        all_reports_dict[patients_sno]["patient_details"] = patients_details      # {"1": [[dcc.Markdown],[]]}
         if reports_value:
-            if "Hb" in reports_value:
-                all_reports_dict[patients_sno] += [[html.Div("Heamoglobin :",style=dict(position="relative",left="80px",fontSize=20)),dcc.Input(id="hb",type="number",placeholder="Type Hb Value..",style=dict(width="150px",height="25px",position="relative",left="360px",bottom="20px",fontSize=20)),html.Div("( 11.0 - 16.8 Grams%)",style=dict(position="relative",left="580px",bottom="45px",fontSize=18))]]
-                return all_reports_dict[patients_sno]
-        return[all_reports_dict[patients_sno],"Select a Test to Display...."]
+            if ("Hb" in reports_value) and ("Hb" not in all_reports_done_dict[patients_sno]):
+                all_reports_dict[patients_sno]["report_details"] += [html.Div("Heamoglobin :",style=text_style),dcc.Input(id="hb",type="number",placeholder="Type Hb Value..",style=input_style),html.Div("( 11.0 - 16.8 Grams%)",style=limits_style)]
+                all_reports_done_dict[patients_sno]["Hb"] = True                
+            if ("Total Count (TC)" in reports_value) and ("Total Count (TC)" not in all_reports_done_dict[patients_sno]):
+                all_reports_dict[patients_sno]["report_details"] += [html.Div("Total WBC Count :",style=text_style),dcc.Input(id="tc_count",type="number",placeholder="Type Tc value..",style=input_style),html.Div("( 5,000 - 10,000 Cells/cumm )",style=limits_style)]
+                all_reports_done_dict[patients_sno]["TC"] = True
+            return all_reports_dict[patients_sno]["patient_details"],all_reports_dict[patients_sno]["report_details"]
+        return[all_reports_dict[patients_sno]["patient_details"],"Select a Test to Display...."]
     return ["Select a Serial Number to Display....","Select a Test to Display...."]
 
 
