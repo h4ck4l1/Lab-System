@@ -110,11 +110,18 @@ dc_list = [
     html.Div("( 01 - 04 %)",style=dict(position="relative",left="670px",bottom="40px",fontSize=18))
 ]
 
+crp_list = [
+    html.Div("CRP         :   ",style=text_style),
+    dcc.Input(id="crp",type="number",placeholder="Type CRP value..",style=input_style),
+    html.Div(" ( < 6 ) ",style=limits_style)
+]
+
 reports_original_dict = {
     "Hb":hb_list,
     "Total Count (TC)":tc_list,
     "Platelet Count":plt_list,
     "Differential Count (DC)":dc_list,
+    "CRP":crp_list,
 }
 
 
