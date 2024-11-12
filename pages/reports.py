@@ -137,6 +137,11 @@ blood_group_list = [
     *[html.Br()]*10
 ]
 
+total_bilirubin_list = [
+    html.Div("Total Bilirubin : ",style=text_style),
+    dcc.Input(id="t_bili",style=input_style),
+    html.Div(" ( 0.2 - 1.0 mg/dl)",style=limits_style)
+]
 
 reports_original_dict = {
     "Hb":hb_list,
@@ -145,7 +150,7 @@ reports_original_dict = {
     "Differential Count (DC)":dc_list,
     "CRP":crp_list,
     "Blood Group":blood_group_list,
-    "Total Bilirubin":[],
+    "Total Bilirubin":total_bilirubin_list,
     "Direct & Indirect Bilirubin":[],
     "Heamogram":[],
     "HBA1C":[],
@@ -216,17 +221,6 @@ def save_and_print_report(patients_sno, reports_value):
         if reports_value:
             for x in reports_value:
                 all_reports_dict[patients_sno]['report_details'] += reports_original_dict[x]
-            # if ("Hb" in reports_value):# and ("Hb" not in all_reports_done_dict[patients_sno]):
-            #     all_reports_dict[patients_sno]["report_details"] += hb_list
-            #     # all_reports_done_dict[patients_sno]["Hb"] = True                
-            # if ("Total Count (TC)" in reports_value): #and ("Total Count (TC)" not in all_reports_done_dict[patients_sno]):
-            #     all_reports_dict[patients_sno]["report_details"] += tc_list
-            #     # all_reports_done_dict[patients_sno]["TC"] = True
-            # if ("Differential Count (DC)" in reports_value): #and ("Differential Count (DC)" not in all_reports_done_dict[patients_sno]):
-            #     all_reports_dict[patients_sno]["report_details"] += dc_list
-            #     # all_reports_done_dict[patients_sno]["DC"] = True
-            # if ("Platelet Count" in reports_value):
-            #     all_reports_dict[patients_sno]["report_details"] += plt_list
             return all_reports_dict[patients_sno]["patient_details"],all_reports_dict[patients_sno]["report_details"]
         return[all_reports_dict[patients_sno]["patient_details"],"Select a Test to Display...."]
     return ["Select a Serial Number to Display....","Select a Test to Display...."]
