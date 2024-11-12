@@ -111,10 +111,32 @@ dc_list = [
 ]
 
 crp_list = [
-    html.Div("CRP         :   ",style=text_style),
+    html.Div("CRP :   ",style=text_style),
     dcc.Input(id="crp",type="number",placeholder="Type CRP value..",style=input_style),
     html.Div(" ( < 6 ) ",style=limits_style)
 ]
+
+blood_group_list = [
+    html.Div("Blood Group: ",style=text_style),
+    html.Div(
+        dcc.Dropdown(
+            options = [
+                "O POSITIVE",
+                "A POSITIVE",
+                "B POSITIVE",
+                "AB POSITIVE",
+                "O NEGATIVE",
+                "A NEGATIVE",
+                "B NEGATIVE",
+                "AB NEGATIVE"
+            ],
+            id="blood_group"    
+        ),
+        style={**input_style,"width":"200px"}    
+    ),
+    *[html.Br()]*10
+]
+
 
 reports_original_dict = {
     "Hb":hb_list,
@@ -122,6 +144,18 @@ reports_original_dict = {
     "Platelet Count":plt_list,
     "Differential Count (DC)":dc_list,
     "CRP":crp_list,
+    "Blood Group":blood_group_list,
+    "Total Bilirubin":[],
+    "Direct & Indirect Bilirubin":[],
+    "Heamogram":[],
+    "HBA1C":[],
+    "Blood Urea":[],
+    "Serum Creatinine":[],
+    "Uric Acid":[],
+    "Urine Analysis":[],
+    "Mantaoux":[],
+    "Random Sugar":[],
+    "Fasting Sugar":[]
 }
 
 
