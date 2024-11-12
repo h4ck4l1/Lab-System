@@ -25,6 +25,10 @@ df = pd.DataFrame(
 )
 
 
+df.loc[1,:] = [1,1,"first_name","some_doc","1","Y","M","10","20",False,False]
+df.loc[2,:] = [2,2,"second_name","some_doc","2","M","F","20","30",False,False]
+
+
 doctor_options = [
     "self".capitalize(),
     "NEELIMA AGARWAL GARU, MD(Homeo).,",

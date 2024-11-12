@@ -73,6 +73,51 @@ limits_style = dict(position="relative",left="550px",bottom="45px",fontSize=18)
 input_style = dict(width="150px",height="25px",position="relative",left="360px",bottom="20px",fontSize=20)
 text_style = dict(position="relative",left="80px",fontSize=20)
 
+
+hb_list = [
+    html.Div("Heamoglobin :",style=text_style),
+    dcc.Input(id="hb",type="number",placeholder="Type Hb Value..",style=input_style),
+    html.Div("( 11.0 - 16.8 Grams%)",style=limits_style)
+]
+
+tc_list = [
+    html.Div("Total WBC Count :",style=text_style),
+    dcc.Input(id="tc_count",type="number",placeholder="Type Tc value..",style=input_style),
+    html.Div("( 5,000 - 10,000 Cells/cumm )",style=limits_style)
+]
+
+plt_list = [
+    html.Div("Platelet Count :",style=text_style),
+    dcc.Input(id="plt_count",type="number",placeholder="Type Plt Value..",style=input_style),
+    html.Div("( 1.5 - 4.0 Lakhs/cumm )",style=limits_style)
+]
+
+dc_list = [
+    html.Div("Differential Count :",style=text_style),
+    html.Br(),
+    html.Br(),
+    html.Div("Polymorphs :",style=dict(position="relative",left="200px",fontSize=18)),
+    dcc.Input(id="polymo",type="number",placeholder="Type polymorphs..",style=dict(position="relative",left="400px",bottom="20px",fontSize=20)),
+    html.Div("( 40 - 70 %) ",style=dict(position="relative",left="670px",bottom="40px",fontSize=18)),
+    html.Div("Lymphocytes :",style=dict(position="relative",left="200px",fontSize=18)),
+    dcc.Input(id="lympho",type="number",placeholder="Type Lymphocytes..",style=dict(position="relative",left="400px",bottom="20px",fontSize=20)),
+    html.Div("( 20 - 40 %)",style=dict(position="relative",left="670px",bottom="40px",fontSize=18)),
+    html.Div("Esinophils :",style=dict(position="relative",left="200px",fontSize=18)),
+    dcc.Input(id="esino",type="number",placeholder="Type Lymphocytes..",style=dict(position="relative",left="400px",bottom="20px",fontSize=20)),
+    html.Div("( 02 - 06 %)",style=dict(position="relative",left="670px",bottom="40px",fontSize=18)),
+    html.Div("Monocytes :",style=dict(position="relative",left="200px",fontSize=18)),
+    dcc.Input(id="mono",type="number",placeholder="Type Lymphocytes..",style=dict(position="relative",left="400px",bottom="20px",fontSize=20)),
+    html.Div("( 01 - 04 %)",style=dict(position="relative",left="670px",bottom="40px",fontSize=18))
+]
+
+reports_original_dict = {
+    "Hb":hb_list,
+    "Total Count (TC)":tc_list,
+    "Platelet Count":plt_list,
+    "Differential Count (DC)":dc_list,
+}
+
+
 @callback(
     [
         Output("output-report","children"),
@@ -128,17 +173,22 @@ def save_and_print_report(patients_sno, reports_value):
                             '''
         all_reports_dict[patients_sno]["patient_details"] = patients_details      # {"1": [[dcc.Markdown],[]]}
         if reports_value:
-            if ("Hb" in reports_value) and ("Hb" not in all_reports_done_dict[patients_sno]):
-                all_reports_dict[patients_sno]["report_details"] += [html.Div("Heamoglobin :",style=text_style),dcc.Input(id="hb",type="number",placeholder="Type Hb Value..",style=input_style),html.Div("( 11.0 - 16.8 Grams%)",style=limits_style)]
-                all_reports_done_dict[patients_sno]["Hb"] = True                
-            if ("Total Count (TC)" in reports_value) and ("Total Count (TC)" not in all_reports_done_dict[patients_sno]):
-                all_reports_dict[patients_sno]["report_details"] += [html.Div("Total WBC Count :",style=text_style),dcc.Input(id="tc_count",type="number",placeholder="Type Tc value..",style=input_style),html.Div("( 5,000 - 10,000 Cells/cumm )",style=limits_style)]
-                all_reports_done_dict[patients_sno]["TC"] = True
+            for x in reports_value:
+                all_reports_dict[patients_sno]['report_details'] += reports_original_dict[x]
+            # if ("Hb" in reports_value):# and ("Hb" not in all_reports_done_dict[patients_sno]):
+            #     all_reports_dict[patients_sno]["report_details"] += hb_list
+            #     # all_reports_done_dict[patients_sno]["Hb"] = True                
+            # if ("Total Count (TC)" in reports_value): #and ("Total Count (TC)" not in all_reports_done_dict[patients_sno]):
+            #     all_reports_dict[patients_sno]["report_details"] += tc_list
+            #     # all_reports_done_dict[patients_sno]["TC"] = True
+            # if ("Differential Count (DC)" in reports_value): #and ("Differential Count (DC)" not in all_reports_done_dict[patients_sno]):
+            #     all_reports_dict[patients_sno]["report_details"] += dc_list
+            #     # all_reports_done_dict[patients_sno]["DC"] = True
+            # if ("Platelet Count" in reports_value):
+            #     all_reports_dict[patients_sno]["report_details"] += plt_list
             return all_reports_dict[patients_sno]["patient_details"],all_reports_dict[patients_sno]["report_details"]
         return[all_reports_dict[patients_sno]["patient_details"],"Select a Test to Display...."]
     return ["Select a Serial Number to Display....","Select a Test to Display...."]
-
-
 
 
 register_page(
