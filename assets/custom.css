@@ -89,6 +89,41 @@
       border-bottom-color: var(--text-color);
     }
     
+
+/* File: assets/styles.css */
+.Select-menu-outer {
+  background-color: #633fff !important; /* Dropdown menu background */
+
+}
+
+.Select__option--is-selected {
+  background-color: cyan !important;
+}
+
+.Select-option {
+  background-color: #633fff !important;
+  color: cyan;
+}
+
+.Select-option:hover {
+  background-color: #723636 !important; /* Hover color */
+}
+
+.Select-control {
+  background-color: #4b70f5 !important;
+  color: cyan !important;
+}
+
+input::placeholder {
+  color: cyan;
+  opacity: 1;
+}
+
+input {
+  background-color: #4b70f5;
+}
+
+
     #_pages_content {
       padding-bottom: 100px;
     }
