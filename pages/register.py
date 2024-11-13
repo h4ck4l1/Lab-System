@@ -8,22 +8,40 @@ from dash import dcc,html,register_page,dash_table,callback,Input,Output,ctx,Sta
 
 
 
+# df = pd.DataFrame(
+#     columns=[
+#         "Index",
+#         "S.No.",
+#         "Date",
+#         "Patient Name",
+#         "Reference By",
+#         "Patient Age",
+#         "Age Group",
+#         "Gender",
+#         "Amount",
+#         "Phone No",
+#         "Paid",
+#         "Print"
+#     ]
+# )
+
 df = pd.DataFrame(
-    columns=[
-        "Index",
-        "S.No.",
-        "Date",
-        "Patient Name",
-        "Reference By",
-        "Patient Age",
-        "Age Group",
-        "Gender",
-        "Amount",
-        "Phone No",
-        "Paid",
-        "Print"
-    ]
+    {
+        "Index":pd.Series(dtype="int32"),
+        "S.No.":pd.Series(dtype="int32"),
+        "Date":pd.Series(dtype="datetime64[ns]"),
+        "Patient Name":pd.Series(dtype="str"),
+        "Reference By":pd.Series(dtype="str"),
+        "Patient Age":pd.Series(dtype="str"),
+        "Age Group":pd.Series(dtype="str"),
+        "Gender":pd.Series(dtype="str"),
+        "Amount":pd.Series(dtype="int64"),
+        "Phone No":pd.Series(dtype="int64"),
+        "Paid":pd.Series(dtype="bool"),
+        "Print":pd.Series(dtype="bool")
+    }
 )
+
 
 
 # df.loc[1,:] = [1,1,"13-11-24","first_name","some_doc","1","Y","M","10","20",False,False]
