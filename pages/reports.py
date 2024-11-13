@@ -48,7 +48,7 @@ layout = html.Div(
         *[html.Br()]*5,
         html.Div(reports_dropdown,style=dict(width="400px",alignItems="center")),
         *[html.Br()]*10,
-        dcc.Markdown(id="output-report",style=dict(border="2px solid rgba(0,255,255,0.7)",borderBottom=None,padding="20px",position="relative",left="100px",width="900px",fontSize=18)),
+        html.Div(id="output-report",style=dict(border="2px solid rgba(0,255,255,0.7)",borderBottom=None,padding="20px",position="relative",left="100px",width="900px",fontSize=18)),
         html.Div(style=dict(border="2px solid rgba(0,255,255,0.7)",borderTop=None,borderBottom=None,width="900px",height="50px",position="relative",left="100px")),
         html.Div(id="output-report-boxes",style=dict(border="2px solid rgba(0,255,255,0.7)",borderTop=None,padding="2px",position="relative",alignItems="center",left="100px",width="900px",fontSize=18))
     ],
@@ -164,6 +164,27 @@ reports_original_dict = {
 }
 
 
+def get_df_item(p_sn:int,item_name:str):
+    copy_df["Date"] = copy_df["Date"].astype(datetime).dt.strftime("%d-%m-%y").astype(str)
+    return copy_df.loc[copy_df.loc[:,"S.No."] == p_sn,item_name].item()
+
+
+
+# "Index",
+# "S.No.",
+# "Patient Name",
+# "Reference By",
+# "Patient Age",
+# "Age Group",
+# "Gender",
+# "Amount",
+# "Phone No",
+# "Paid",
+# "Print"
+
+
+
+
 @callback(
     [
         Output("output-report","children"),
@@ -179,45 +200,13 @@ def save_and_print_report(patients_sno, reports_value):
     if patients_sno:
         all_reports_dict[patients_sno] = {"patient_details":[],"report_details":[]}
         all_reports_done_dict[patients_sno] = {}
-        patients_details = f'''
-                            Pt. Name : {copy_df.loc[copy_df.loc[:,"S.No."] == patients_sno,"Patient Name"].item()}
-                            
-                            &nbsp;&nbsp;&nbsp;&nbsp
-
-                            Pt. Age  : {copy_df.loc[copy_df.loc[:,"S.No."] == patients_sno,"Patient Age"].item()} {copy_df.loc[copy_df.loc[:,"S.No."] == patients_sno,"Age Group"].item()}
-                            
-                            &nbsp;&nbsp;&nbsp;&nbsp
-                            
-                            Ref Dr. By : {copy_df.loc[copy_df.loc[:,"S.No."] == patients_sno,"Reference By"].item()}   
-                            
-                            &nbsp;&nbsp;&nbsp;&nbsp
-
-                            Gender: {copy_df.loc[copy_df.loc[:,"S.No."] == patients_sno,"Gender"].item()}
-
-                            &nbsp;&nbsp;&nbsp;&nbsp
-
-                            Specimen: Blood
-
-                            &nbsp;&nbsp;&nbsp;&nbsp
-
-                            Date: {datetime.date.today().strftime("%d-%m-%y")}
-
-                            &nbsp;&nbsp;&nbsp;&nbsp
-                            
-                            ***
-
-                            &emsp;
-                            &emsp;
-                            
-                            &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Test  &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;  Value  &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;  Reference Range           
-                            
-                            &emsp;
-                            &emsp;
-                               
-                            ***
-                            
-                            '''
-        all_reports_dict[patients_sno]["patient_details"] = patients_details      # {"1": [[dcc.Markdown],[]]}
+        patients_details = [
+                html.Div(f"Patient Name: {get_df_item(patients_sno,item_name='Patient Name')}"),
+                html.Div(f"Age: {get_df_item(patients_sno,item_name='Patient Age')}"),
+                html.Div(f"Reference By: {get_df_item(patients_sno,item_name='Reference By')}"),
+                html.Div(f"Date: {get_df_item(patients_sno,item_name="Date")}")
+            ]
+        all_reports_dict[patients_sno]["patient_details"] = patients_details
         if reports_value:
             for x in reports_value:
                 all_reports_dict[patients_sno]['report_details'] += reports_original_dict[x]
