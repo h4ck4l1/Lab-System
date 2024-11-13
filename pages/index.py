@@ -12,7 +12,7 @@ index_layout = html.Div(
                 position="relative",
                 top="45vh",
                 left="20vw",
-                fontSize=30
+                fontSize=20
             )
         ),
     ],

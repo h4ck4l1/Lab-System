@@ -8,23 +8,6 @@ from dash import dcc,html,register_page,dash_table,callback,Input,Output,ctx,Sta
 
 
 
-# df = pd.DataFrame(
-#     columns=[
-#         "Index",
-#         "S.No.",
-#         "Date",
-#         "Patient Name",
-#         "Reference By",
-#         "Patient Age",
-#         "Age Group",
-#         "Gender",
-#         "Amount",
-#         "Phone No",
-#         "Paid",
-#         "Print"
-#     ]
-# )
-
 df = pd.DataFrame(
     {
         "Index":pd.Series(dtype="int32"),
@@ -44,8 +27,8 @@ df = pd.DataFrame(
 
 
 
-# df.loc[1,:] = [1,1,"13-11-24","first_name","some_doc","1","Y","M","10","20",False,False]
-# df.loc[2,:] = [2,2,"13-11-24","second_name","some_doc","2","M","F","20","30",False,False]
+df.loc[1,:] = [1,1,datetime.today(),"first_name","some_doc","1","Y","M",10,20,False,False]
+df.loc[2,:] = [2,2,datetime.today(),"second_name","some_doc","2","M","F",20,30,False,False]
 
 
 doctor_options = [
@@ -157,7 +140,8 @@ register_layout = html.Div(
             id="data_table",
             data=df.to_dict('records'),
             columns=[{"name":i,"id":i} for i in df.columns],
-            style_table=dict(fontSize=25)
+            style_table=dict(fontSize=25,backgroundColor="#633fff"),
+            style_cell=dict(backgroundColor="#633fff")
         ),
         *[html.Br()]*5,
         html.Div(
