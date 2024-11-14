@@ -10,7 +10,6 @@ from dash import dcc,html,register_page,dash_table,callback,Input,Output,ctx,Sta
 
 df = pd.DataFrame(
     {
-        "Index":pd.Series(dtype="int32"),
         "S.No.":pd.Series(dtype="int32"),
         "Date":pd.Series(dtype="str"),
         "Patient Name":pd.Series(dtype="str"),
@@ -24,10 +23,6 @@ df = pd.DataFrame(
         "Print":pd.Series(dtype="bool")
     }
 )
-
-
-
-
 
 
 doctor_options = [
@@ -134,7 +129,7 @@ register_layout = html.Div(
             style=dict(display="flex",alignItems="center")
         ),
         *[html.Br()]*5,
-        html.Button("Submit",id="button",style=dict(fontSize=30,borderRadius="5px",height="100px",width="250px")),
+        html.Button("Submit",id="submit-button",style=dict(fontSize=30,borderRadius="5px",height="100px",width="250px")),
         *[html.Br()]*5,
         dash_table.DataTable(
             id="data_table",
@@ -156,7 +151,10 @@ register_layout = html.Div(
 
 
 @callback(
-    Output("data_table","data",allow_duplicate=True),
+    [
+        Output("data_table","data",allow_duplicate=True),
+        Output("data-store","data",allow_duplicate=True)
+    ],
     [
         Input("date-pick-single","date"),
         Input("refresh-button","n_clicks")
@@ -164,19 +162,15 @@ register_layout = html.Div(
     prevent_initial_call=True
 )
 def initialize_df(date_value,clicks):
-    global df,index_number
+    global df
     date_obj = date.fromisoformat(date_value)
     date_string = date_obj.strftime("%Y_%m_%d")
     file = glob("all_files/"+date_string+".xlsx")
     if file:
         df = pd.read_excel(file[0])
-        index_number = df.iloc[-1,0].item()
-    elif df.shape[0] > 0:
-        index_number = df.iloc[-1,0].item()
     else:
         df = pd.DataFrame(
             {
-                "Index":pd.Series(dtype="int32"),
                 "S.No.":pd.Series(dtype="int32"),
                 "Date":pd.Series(dtype="str"),
                 "Patient Name":pd.Series(dtype="str"),
@@ -190,10 +184,9 @@ def initialize_df(date_value,clicks):
                 "Print":pd.Series(dtype="bool")
             }
         )
-        df.loc[1,:] = [1,1,datetime.today().strftime("%d-%m-%y"),"first_name","some_doc","1","Y","M",10,20,False,False]
-        df.loc[2,:] = [2,2,datetime.today().strftime("%d-%m-%y"),"second_name","some_doc","2","M","F",20,30,False,False]
-        index_number = df.iloc[-1,0].item()
-    return df.to_dict('records')
+        df.loc[1,:] = [1,datetime.today().strftime("%d-%m-%y"),"first_name","some_doc","1","Y","Male",10,20,False,False]
+        df.loc[2,:] = [2,datetime.today().strftime("%d-%m-%y"),"second_name","some_doc","2","M","Female",20,30,False,False]
+    return df.to_dict('records'),df.to_json(date_format="iso",orient="split")
 
 
 @callback(
@@ -202,41 +195,42 @@ def initialize_df(date_value,clicks):
         Output("data-store","data")
     ],
     [
-        Input("button","n_clicks"),                 # 0
-        Input("age-group-dropdown","value"),        # 1
-        Input("gender-dropdown","value"),           # 2
-        Input("doctor-dropdown","value"),           # 3
-        Input("date-pick-single","date")            # 4 
+        Input("submit-button","n_clicks"),
+        Input("refresh-button","n_clicks")           
     ],
     [
-        State("serial_number","value"),             # 5
-        State("patient_name","value"),              # 6
-        State("reference-doctor","value"),          # 7
-        State("patient_age","value"),               # 8
-        State("amount","value"),                    # 9
-        State("phone_number","value")               # 10
+        State("age-group-dropdown","value"),        # 0
+        State("gender-dropdown","value"),           # 1
+        State("doctor-dropdown","value"),           # 2
+        State("date-pick-single","date"),           # 3
+        State("serial_number","value"),             # 4
+        State("patient_name","value"),              # 5
+        State("reference-doctor","value"),          # 6
+        State("patient_age","value"),               # 7
+        State("amount","value"),                    # 8
+        State("phone_number","value")               # 9
     ]
 )
-def append_name_to_dataframe(*vals):
-    global index_number,df
-    if "button" == ctx.triggered_id:
+def append_name_to_dataframe(n_clicks_submit,n_clicks_refresh,*vals):
+    global df
+    if n_clicks_refresh or n_clicks_submit:
+        index_number = df.shape[0]
         index_number += 1
-        df.loc[index_number-1,"Index"] = index_number
-        df.loc[index_number-1,"S.No."] = vals[5]
-        date_obj = date.fromisoformat(vals[4])
-        df.loc[index_number-1,"Date"] = date_obj.strftime("%d-%m-%y")
-        df.loc[index_number-1,"Patient Name"] = vals[6]
-        if vals[7] == None:
-            df.loc[index_number-1,"Reference By"] = vals[3]
+        df.loc[index_number,"S.No."] = vals[4]
+        date_obj = date.fromisoformat(vals[3])
+        df.loc[index_number,"Date"] = date_obj.strftime("%d-%m-%y")
+        df.loc[index_number,"Patient Name"] = vals[5]
+        if vals[6] == None:
+            df.loc[index_number,"Reference By"] = vals[2]
         else:
-            df.loc[index_number-1,"Reference By"] = vals[7]
-        df.loc[index_number-1,"Age Group"] = vals[1]
-        df.loc[index_number-1,"Patient Age",] = vals[8]
-        df.loc[index_number-1,"Gender"] = vals[2]
-        df.loc[index_number-1,"Amount"] = vals[9]
-        df.loc[index_number-1,"Phone No"] = vals[10]
-        df.loc[index_number-1,"Paid"] = False
-        df.loc[index_number-1,"Print"] = False
+            df.loc[index_number,"Reference By"] = vals[6]
+        df.loc[index_number,"Age Group"] = vals[0]
+        df.loc[index_number,"Patient Age",] = vals[7]
+        df.loc[index_number,"Gender"] = vals[1]
+        df.loc[index_number,"Amount"] = vals[8]
+        df.loc[index_number,"Phone No"] = vals[9]
+        df.loc[index_number,"Paid"] = False
+        df.loc[index_number,"Print"] = False
     return df.to_dict('records'),df.to_json(date_format="iso",orient="split")
 
 
