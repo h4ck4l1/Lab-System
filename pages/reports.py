@@ -165,7 +165,6 @@ reports_original_dict = {
 
 
 def get_df_item(p_sn:int,item_name:str):
-    copy_df["Date"] = copy_df["Date"].astype(datetime).dt.strftime("%d-%m-%y").astype(str)
     return copy_df.loc[copy_df.loc[:,"S.No."] == p_sn,item_name].item()
 
 

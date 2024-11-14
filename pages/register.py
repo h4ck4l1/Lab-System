@@ -12,7 +12,7 @@ df = pd.DataFrame(
     {
         "Index":pd.Series(dtype="int32"),
         "S.No.":pd.Series(dtype="int32"),
-        "Date":pd.Series(dtype="datetime64[ns]"),
+        "Date":pd.Series(dtype="str"),
         "Patient Name":pd.Series(dtype="str"),
         "Reference By":pd.Series(dtype="str"),
         "Patient Age":pd.Series(dtype="str"),
@@ -27,8 +27,8 @@ df = pd.DataFrame(
 
 
 
-df.loc[1,:] = [1,1,datetime.today(),"first_name","some_doc","1","Y","M",10,20,False,False]
-df.loc[2,:] = [2,2,datetime.today(),"second_name","some_doc","2","M","F",20,30,False,False]
+df.loc[1,:] = [1,1,datetime.today().strftime("%d-%m-%y"),"first_name","some_doc","1","Y","M",10,20,False,False]
+df.loc[2,:] = [2,2,datetime.today().strftime("%d-%m-%y"),"second_name","some_doc","2","M","F",20,30,False,False]
 
 
 doctor_options = [
@@ -156,9 +156,7 @@ register_layout = html.Div(
 
 
 @callback(
-    [
-        Output("data_table","data",allow_duplicate=True)
-    ],
+    Output("data_table","data",allow_duplicate=True),
     Input("date-pick-single","date"),
     prevent_initial_call=True
 )
@@ -171,7 +169,9 @@ def initialize_df(date_value):
     if file:
         df = pd.read_excel(file[0])
         index_number = df.iloc[-1,0]
-        return index_number,df.to_dict('records')
+    elif df.shape[0] > 0:
+        print(f"passed elif df shape with {df.shape[0]} is . 0")
+        index_number = df.iloc[-1,0]
     else:
         df = pd.DataFrame(
             columns=[
@@ -188,8 +188,7 @@ def initialize_df(date_value):
                 "Print",
             ]
         )
-        index_number = 0
-        return df.to_dict('records')
+    return df.to_dict('records')
 
 
 
