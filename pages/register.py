@@ -27,8 +27,9 @@ df = pd.DataFrame(
 
 
 
-df.loc[1,:] = [1,1,datetime.today().strftime("%d-%m-%y"),"first_name","some_doc","1","Y","M",10,20,False,False]
-df.loc[2,:] = [2,2,datetime.today().strftime("%d-%m-%y"),"second_name","some_doc","2","M","F",20,30,False,False]
+df.loc[1,:] = [0,1,datetime.today().strftime("%d-%m-%y"),"first_name","some_doc","1","Y","M",10,20,False,False]
+df.loc[2,:] = [1,2,datetime.today().strftime("%d-%m-%y"),"second_name","some_doc","2","M","F",20,30,False,False]
+
 
 
 doctor_options = [
@@ -55,7 +56,8 @@ register_layout = html.Div(
                     max_date_allowed=date.today(),
                     date=date.today(),
                     style=dict(color="cyan",position="absolute",left="350px")
-                )
+                ),
+                html.Button("REFRESH",id="refresh-button",style=dict(position="absolute",height="100px",width="100px",left="600px",color="cyan"))
             ],
             style=dict(display="flex",alignItems="center")
         ),
@@ -157,10 +159,13 @@ register_layout = html.Div(
 
 @callback(
     Output("data_table","data",allow_duplicate=True),
-    Input("date-pick-single","date"),
+    [
+        Input("date-pick-single","date"),
+        Input("refresh-button","n_clicks")
+    ],
     prevent_initial_call=True
 )
-def initialize_df(date_value):
+def initialize_df(date_value,clicks):
     global df
     global index_number
     date_obj = date.fromisoformat(date_value)
