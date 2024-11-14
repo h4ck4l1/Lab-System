@@ -27,8 +27,6 @@ df = pd.DataFrame(
 
 
 
-df.loc[1,:] = [0,1,datetime.today().strftime("%d-%m-%y"),"first_name","some_doc","1","Y","M",10,20,False,False]
-df.loc[2,:] = [1,2,datetime.today().strftime("%d-%m-%y"),"second_name","some_doc","2","M","F",20,30,False,False]
 
 
 
@@ -166,38 +164,36 @@ register_layout = html.Div(
     prevent_initial_call=True
 )
 def initialize_df(date_value,clicks):
-    global df
-    global index_number
+    global df,index_number
     date_obj = date.fromisoformat(date_value)
     date_string = date_obj.strftime("%Y_%m_%d")
     file = glob("all_files/"+date_string+".xlsx")
-    print(f"shape {df.shape}")
     if file:
         df = pd.read_excel(file[0])
-        index_number = df.iloc[-1,0]
+        index_number = df.iloc[-1,0].item()
     elif df.shape[0] > 0:
-        print(f"passed elif df shape with {df.shape[0]} is . 0")
-        index_number = df.iloc[-1,0]
+        index_number = df.iloc[-1,0].item()
     else:
         df = pd.DataFrame(
-            columns=[
-                "Index"
-                "S.No.",
-                "Date",
-                "Patient Name",
-                "Reference By",
-                "Patient Age",
-                "Gender",
-                "Amount",
-                "Phone No",
-                "Paid",
-                "Print",
-            ]
+            {
+                "Index":pd.Series(dtype="int32"),
+                "S.No.":pd.Series(dtype="int32"),
+                "Date":pd.Series(dtype="str"),
+                "Patient Name":pd.Series(dtype="str"),
+                "Reference By":pd.Series(dtype="str"),
+                "Patient Age":pd.Series(dtype="str"),
+                "Age Group":pd.Series(dtype="str"),
+                "Gender":pd.Series(dtype="str"),
+                "Amount":pd.Series(dtype="int64"),
+                "Phone No":pd.Series(dtype="int64"),
+                "Paid":pd.Series(dtype="bool"),
+                "Print":pd.Series(dtype="bool")
+            }
         )
+        df.loc[1,:] = [1,1,datetime.today().strftime("%d-%m-%y"),"first_name","some_doc","1","Y","M",10,20,False,False]
+        df.loc[2,:] = [2,2,datetime.today().strftime("%d-%m-%y"),"second_name","some_doc","2","M","F",20,30,False,False]
+        index_number = df.iloc[-1,0].item()
     return df.to_dict('records')
-
-
-
 
 
 @callback(
@@ -222,14 +218,13 @@ def initialize_df(date_value,clicks):
     ]
 )
 def append_name_to_dataframe(*vals):
-    global index_number
-    global df
+    global index_number,df
     if "button" == ctx.triggered_id:
         index_number += 1
         df.loc[index_number-1,"Index"] = index_number
         df.loc[index_number-1,"S.No."] = vals[5]
         date_obj = date.fromisoformat(vals[4])
-        df.loc[index_number-1,"Date"] = date_obj
+        df.loc[index_number-1,"Date"] = date_obj.strftime("%d-%m-%y")
         df.loc[index_number-1,"Patient Name"] = vals[6]
         if vals[7] == None:
             df.loc[index_number-1,"Reference By"] = vals[3]
