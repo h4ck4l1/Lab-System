@@ -166,6 +166,7 @@ def initialize_df(date_value):
     date_obj = date.fromisoformat(date_value)
     date_string = date_obj.strftime("%Y_%m_%d")
     file = glob("all_files/"+date_string+".xlsx")
+    print(f"shape {df.shape}")
     if file:
         df = pd.read_excel(file[0])
         index_number = df.iloc[-1,0]
