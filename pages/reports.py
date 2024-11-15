@@ -123,16 +123,16 @@ dc_list = [
     html.Br(),
     html.Br(),
     html.Div("Polymorphs :",style=dict(position="relative",left="200px",fontSize=18)),
-    dcc.Input(id="polymo",type="number",placeholder="Type polymorphs..",style=dict(position="relative",left="400px",bottom="20px",fontSize=20)),
+    dcc.Input(id="polymo",type="number",placeholder="Type polymorphs..",style=dict(position="relative",width="170px",left="400px",bottom="20px",fontSize=20)),
     html.Div("( 40 - 70 %) ",style=dict(position="relative",left="670px",bottom="40px",fontSize=18)),
     html.Div("Lymphocytes :",style=dict(position="relative",left="200px",fontSize=18)),
-    dcc.Input(id="lympho",type="number",placeholder="Type Lymphocytes..",style=dict(position="relative",left="400px",bottom="20px",fontSize=20)),
+    dcc.Input(id="lympho",type="number",placeholder="Type Lymphocytes..",style=dict(position="relative",width="170px",left="400px",bottom="20px",fontSize=20)),
     html.Div("( 20 - 40 %)",style=dict(position="relative",left="670px",bottom="40px",fontSize=18)),
     html.Div("Esinophils :",style=dict(position="relative",left="200px",fontSize=18)),
-    dcc.Input(id="esino",type="number",placeholder="Type Lymphocytes..",style=dict(position="relative",left="400px",bottom="20px",fontSize=20)),
+    dcc.Input(id="esino",type="number",placeholder="Type Lymphocytes..",style=dict(position="relative",width="170px",left="400px",bottom="20px",fontSize=20)),
     html.Div("( 02 - 06 %)",style=dict(position="relative",left="670px",bottom="40px",fontSize=18)),
     html.Div("Monocytes :",style=dict(position="relative",left="200px",fontSize=18)),
-    dcc.Input(id="mono",type="number",placeholder="Type Lymphocytes..",style=dict(position="relative",left="400px",bottom="20px",fontSize=20)),
+    dcc.Input(id="mono",type="number",placeholder="Type Lymphocytes..",style=dict(position="relative",width="170px",left="400px",bottom="20px",fontSize=20)),
     html.Div("( 01 - 04 %)",style=dict(position="relative",left="670px",bottom="40px",fontSize=18))
 ]
 
