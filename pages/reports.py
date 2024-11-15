@@ -40,6 +40,25 @@ reports_dropdown = dcc.Dropdown(
     multi=True
 )
 
+page_size_dropdown = dcc.Dropdown(
+    [
+        "SMALL/A5",
+        "BIG/A4"
+    ],
+    "SMALL/A5",
+    id="page-size-dropdown"
+)
+
+templates_dropdown = dcc.Dropdown(
+    [
+        "HB, TC, PLATELET, DC",
+        ""
+
+    ]
+)
+
+
+
 layout = html.Div(
     [
         html.Div(html.H1("Patients report",className="page-heading"),className="heading-divs"),
@@ -47,6 +66,8 @@ layout = html.Div(
         html.Div(patients_dropdown,style=dict(width="400px",alignItems="center")),
         *[html.Br()]*5,
         html.Div(reports_dropdown,style=dict(width="400px",alignItems="center")),
+        *[html.Br()]*5,
+        html.Div(),
         *[html.Br()]*10,
         html.Div(id="output-report",style=dict(border="2px solid rgba(0,255,255,0.7)",borderBottom=None,padding="20px",position="relative",left="100px",width="900px",fontSize=18)),
         html.Div(style=dict(border="2px solid rgba(0,255,255,0.7)",borderTop=None,borderBottom=None,width="900px",height="50px",position="relative",left="100px")),
@@ -166,20 +187,6 @@ reports_original_dict = {
 
 def get_df_item(p_sn:int,item_name:str):
     return copy_df.loc[copy_df.loc[:,"S.No."] == p_sn,item_name].item()
-
-
-
-# "Index",
-# "S.No.",
-# "Patient Name",
-# "Reference By",
-# "Patient Age",
-# "Age Group",
-# "Gender",
-# "Amount",
-# "Phone No",
-# "Paid",
-# "Print"
 
 
 
