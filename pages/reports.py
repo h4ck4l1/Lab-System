@@ -180,9 +180,17 @@ heamogram_list = []
 
 hba1c_list = []
 
-blood_urea_list = []
+blood_urea_list = [
+    html.Div("Blood Urea : ",style=text_style),
+    dcc.Input(id="blood-urea",type="number",placeholder="Enter Urea",style=input_style),
+    html.Div(" ( 10 - 40 mg/dl )",style=limits_style)
+]
 
-serum_creatinine_list = []
+serum_creatinine_list = [
+    html.Div("Serum creatinine : ",style=text_style),
+    dcc.Input(id="serum_creat",type="number",placeholder="Enter creatinine",style=input_style),
+    html.Div()
+]
 
 uric_acid_list = []
 
