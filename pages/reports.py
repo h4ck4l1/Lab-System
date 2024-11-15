@@ -52,9 +52,12 @@ page_size_dropdown = dcc.Dropdown(
 templates_dropdown = dcc.Dropdown(
     [
         "HB, TC, PLATELET, DC",
-        ""
-
-    ]
+        "HB, TC, PLATELET",
+        "HB, TC, PLATELET, URINE",
+        "HB, TC, PLATELET, RBS",
+        "HB, TC, PLATELET,DC, WIDAL"
+    ],
+    id="template-dropdown"
 )
 
 
@@ -66,8 +69,8 @@ layout = html.Div(
         html.Div(patients_dropdown,style=dict(width="400px",alignItems="center")),
         *[html.Br()]*5,
         html.Div(reports_dropdown,style=dict(width="400px",alignItems="center")),
-        *[html.Br()]*5,
-        html.Div(),
+        html.Div(page_size_dropdown,style=dict(width="400px",alignItems="center",position="relative",left="420px",bottom="36px")),
+        html.Div(templates_dropdown,style=dict(width="400px",alignItems="center",position="relative",left="840px",bottom="73px")),
         *[html.Br()]*10,
         html.Div(id="output-report",style=dict(border="2px solid rgba(0,255,255,0.7)",borderBottom=None,padding="20px",position="relative",left="100px",width="900px",fontSize=18)),
         html.Div(style=dict(border="2px solid rgba(0,255,255,0.7)",borderTop=None,borderBottom=None,width="900px",height="50px",position="relative",left="100px")),
@@ -164,6 +167,34 @@ total_bilirubin_list = [
     html.Div(" ( 0.2 - 1.0 mg/dl)",style=limits_style)
 ]
 
+direct_indirect_bilirubin_list = [
+    html.Div("Direct Bilirubin: ",style=text_style),
+    dcc.Input(id="direct_bili",type="number",placeholder="Enter Direct Bilirubin",style=input_style),
+    html.Div(" ( 0.2 - 0.4 mg/dl ) ",style=limits_style),
+    html.Div("Indirect Bilirubin: ",style=text_style),
+    dcc.Input(id="indirect_bili",type="number",placeholder="Enter Direct Bilirubin",style=input_style),
+    html.Div(" ( 0.2 - 0.6 mg/dl )",style=limits_style)
+]
+
+heamogram_list = []
+
+hba1c_list = []
+
+blood_urea_list = []
+
+serum_creatinine_list = []
+
+uric_acid_list = []
+
+urine_analysis_list = []
+
+mantaoux_list = []
+
+sugar_random_list = []
+
+sugar_fasting_list = []
+
+
 reports_original_dict = {
     "Hb":hb_list,
     "Total Count (TC)":tc_list,
@@ -172,16 +203,16 @@ reports_original_dict = {
     "CRP":crp_list,
     "Blood Group":blood_group_list,
     "Total Bilirubin":total_bilirubin_list,
-    "Direct & Indirect Bilirubin":[],
-    "Heamogram":[],
-    "HBA1C":[],
-    "Blood Urea":[],
-    "Serum Creatinine":[],
-    "Uric Acid":[],
-    "Urine Analysis":[],
-    "Mantaoux":[],
-    "Random Sugar":[],
-    "Fasting Sugar":[]
+    "Direct & Indirect Bilirubin":direct_indirect_bilirubin_list,
+    "Heamogram":heamogram_list,
+    "HBA1C":hba1c_list,
+    "Blood Urea":blood_urea_list,
+    "Serum Creatinine":serum_creatinine_list,
+    "Uric Acid":uric_acid_list,
+    "Urine Analysis":urine_analysis_list,
+    "Mantaoux":mantaoux_list,
+    "Random Sugar":sugar_random_list,
+    "Fasting Sugar":sugar_fasting_list
 }
 
 
