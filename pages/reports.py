@@ -163,7 +163,7 @@ blood_group_list = [
 
 total_bilirubin_list = [
     html.Div("Total Bilirubin : ",style=text_style),
-    dcc.Input(id="t_bili",style=input_style),
+    dcc.Input(id="t_bili",type="number",placeholder="Enter Total Bilirubin",style=input_style),
     html.Div(" ( 0.2 - 1.0 mg/dl)",style=limits_style)
 ]
 
@@ -192,7 +192,11 @@ serum_creatinine_list = [
     html.Div()
 ]
 
-uric_acid_list = []
+uric_acid_list = [
+    html.Div("Uric Acid : ",style=text_style),
+    dcc.Input(id="uric-acid",type="number",placeholder="Enter Uric Acid",style=input_style),
+    html.Div(" ( 2.5 - 7.5 IU/L ) ",style=limits_style)
+]
 
 urine_analysis_list = []
 
