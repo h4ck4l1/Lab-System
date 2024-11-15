@@ -178,6 +178,22 @@ direct_indirect_bilirubin_list = [
     html.Div(" ( 0.2 - 0.6 mg/dl )",style=limits_style)
 ]
 
+full_cbp_list = [
+    *hb_list,
+    html.Div("Total RBC Count : ",style=text_style),
+    dcc.Input(id="rbc-count",type="number",placeholder="Rbc Count..",style=input_style),
+    html.Div(" ( 4.0 - 5.0 milli/cumm ) ",style=limits_style),
+    html.Div("PCV (Haematocrit) : ",style=text_style),
+    dcc.Input(id="hct",type="number",placeholder="HCT..",style=input_style),
+    html.Div(" (40% - 45%) ",style=limits_style),
+    *tc_list,
+    *plt_list,
+    html.Div("E.S.R : ",style=text_style),
+    dcc.Input(id="esr",type="number",placeholder="E.S.R..,",style=input_style),
+    html.Div(" (02 - 10 mm/1 hour) ",style=limits_style),
+    *dc_list
+]
+
 heamogram_list = []
 
 hba1c_list = []
@@ -215,6 +231,7 @@ reports_original_dict = {
     "Platelet Count":plt_list,
     "Differential Count (DC)":dc_list,
     "CRP":crp_list,
+    "Full CBP":full_cbp_list,
     "Blood Group":blood_group_list,
     "Total Bilirubin":total_bilirubin_list,
     "Direct & Indirect Bilirubin":direct_indirect_bilirubin_list,
