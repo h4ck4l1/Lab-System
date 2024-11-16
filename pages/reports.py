@@ -300,6 +300,8 @@ def save_and_print_report(patients_sno, reports_value,template_value):
     return ["Select a Serial Number to Display....","Select a Test to Display...."]
 
 
+
+
 register_page(
     "Reports",
     layout=layout,
