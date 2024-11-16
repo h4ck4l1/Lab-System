@@ -2,7 +2,7 @@ import os,sys,time,datetime,json
 import numpy as np
 import pandas as pd
 from io import StringIO
-from dash import Dash,html,dcc,Input,Output,callback,ctx,register_page
+from dash import Dash,html,dcc,Input,Output,callback,ctx,register_page,State
 
 
 all_reports_dict = {}
@@ -298,6 +298,17 @@ def save_and_print_report(patients_sno, reports_value,template_value):
         return all_reports_dict[patients_sno]["patient_details"],all_reports_dict[patients_sno]["report_details"]
     return ["Select a Serial Number to Display....","Select a Test to Display...."]
 
+
+
+@callback(
+    Output(),
+    [
+        State("hb","value"),
+        State("tc_count","value")
+    ]
+)
+def some_function():
+    return []
 
 
 
