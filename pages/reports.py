@@ -8,6 +8,7 @@ from dash import Dash,html,dcc,Input,Output,callback,ctx,register_page,State
 all_reports_dict = {}
 all_reports_done_dict = {}
 copy_df = None
+all_patients_values = {}
 
 patients_dropdown = dcc.Dropdown(
     placeholder="Select Serial Number..,",
@@ -268,17 +269,24 @@ def get_df_item(p_sn:int,item_name:str):
 @callback(
     [
         Output("output-report","children"),
-        Output("output-report-boxes","children")
+        Output("output-report-boxes","children"),
+        Output("patient-data-store","data")
     ],
     [
         Input("patients-dropdown","value"),
         Input("reports-dropdown","value"),
         Input("template-dropdown","value")
+    ],
+    [
+        State("hb","value"),
+        State("tc_count","value"),
+        State("plt_count","value")
     ]
 )
-def save_and_print_report(patients_sno, reports_value,template_value):
-    global all_reports_dict
+def save_and_print_report(patients_sno, reports_value,template_value,*vals):
+    global all_reports_dict,all_patients_values
     if patients_sno:
+        all_patients_values[patients_sno] = {}
         all_reports_dict[patients_sno] = {"patient_details":[],"report_details":[]}
         all_reports_done_dict[patients_sno] = {}
         patients_details = [
@@ -295,20 +303,37 @@ def save_and_print_report(patients_sno, reports_value,template_value):
             template_value = json.loads(template_value)
             for x in template_value:
                 all_reports_dict[patients_sno]['report_details'] += reports_original_dict[x]
-        return all_reports_dict[patients_sno]["patient_details"],all_reports_dict[patients_sno]["report_details"]
-    return ["Select a Serial Number to Display....","Select a Test to Display...."]
+        if vals[0]:         # hb
+            all_patients_values[patients_sno]["Hb"] = vals[0]
+        if vals[1]:
+            all_patients_values[patients_sno]["TC Count"] = vals[1]
+        if vals[2]:
+            all_patients_values[patients_sno]["PLT Count"] = vals[2]
+        return all_reports_dict[patients_sno]["patient_details"],all_reports_dict[patients_sno]["report_details"],all_patients_values
+    return ["Select a Serial Number to Display....","Select a Test to Display...."],all_patients_values
 
 
 
-@callback(
-    Output(),
-    [
-        State("hb","value"),
-        State("tc_count","value")
-    ]
-)
-def some_function():
-    return []
+# @callback(
+#     Output("patient-data-store","data"),
+#     Input("patients-dropdown","value"),
+#     [
+#         State("hb","value"),
+#         State("tc_count","value"),
+#         State("plt_count","value")
+#     ]
+# )
+# def store_patient_data(patients_sno,*vals):
+#     global all_patients_values    
+#     if patients_sno:
+#         all_patients_values[patients_sno] = {}
+#     if vals[0]:         # hb
+#         all_patients_values[patients_sno]["Hb"] = vals[0]
+#     if vals[1]:
+#         all_patients_values[patients_sno]["TC Count"] = vals[1]
+#     if vals[2]:
+#         all_patients_values[patients_sno]["PLT Count"] = vals[2]
+#     return all_patients_values
 
 
 
