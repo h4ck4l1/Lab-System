@@ -144,7 +144,6 @@ crp_list = [
     html.Div(" ( < 6 ) ",style=limits_style)
 ]
 
-
 widal_list = [
     html.Div("Blood for Widal : ",style=text_style),
     html.Div(dcc.Dropdown(["NON-REACTIVE","REACTIVE"],"NON-REACTIVE"),id="widal",style=input_style),
