@@ -1,4 +1,4 @@
-import os,sys,time,datetime
+import os,sys,time,datetime,json
 import numpy as np
 import pandas as pd
 from io import StringIO
@@ -19,6 +19,7 @@ all_options = [
     "Total Count (TC)",
     "Platelet Count",
     "Differential Count (DC)",
+    "Widal",
     "CRP",
     "Full CBP",
     "Blood Group",
@@ -51,12 +52,12 @@ page_size_dropdown = dcc.Dropdown(
 )
 
 templates_dropdown = dcc.Dropdown(
-    [
-        "HB, TC, PLATELET, DC",
-        "HB, TC, PLATELET",
-        "HB, TC, PLATELET, URINE",
-        "HB, TC, PLATELET, RBS",
-        "HB, TC, PLATELET,DC, WIDAL"
+    options = [
+        {"label":"HB, TC, PLATELET, DC","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)"])},
+        {"label":"HB, TC, DC","value":json.dumps(["Hb","Total Count (TC)","Differential Count (DC)"])},
+        {"label":"HB, TC, PLATELET, DC, URINE","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","Urine Analysis"])},
+        {"label":"HB, TC, PLATELET, DC, RBS","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","Random Sugar"])},
+        {"label":"HB, TC, PLATELET, DC, WIDAL","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","Widal"])}
     ],
     id="template-dropdown"
 )
@@ -141,6 +142,16 @@ crp_list = [
     html.Div("CRP :   ",style=text_style),
     dcc.Input(id="crp",type="number",placeholder="Type CRP value..",style=input_style),
     html.Div(" ( < 6 ) ",style=limits_style)
+]
+
+
+widal_list = [
+    html.Div("Blood for Widal : ",style=text_style),
+    html.Div(dcc.Dropdown(["NON-REACTIVE","REACTIVE"],"NON-REACTIVE"),id="widal",style=input_style),
+    html.Div(["OT-1 :",html.Div(dcc.Dropdown([160,80,40],80,id="widal-ot-react")),"dilutions"]),
+    html.Div(["HT-1 :",html.Div(dcc.Dropdown([160,80,40],80,id="widal-ht-react")),"dilutions"]),
+    html.Div("AH-1 : 40 dilutions"),
+    html.Div("BH-1 : 40 dilutions")
 ]
 
 blood_group_list = [
@@ -232,6 +243,7 @@ reports_original_dict = {
     "Platelet Count":plt_list,
     "Differential Count (DC)":dc_list,
     "CRP":crp_list,
+    "Widal":widal_list,
     "Full CBP":full_cbp_list,
     "Blood Group":blood_group_list,
     "Total Bilirubin":total_bilirubin_list,
@@ -261,10 +273,11 @@ def get_df_item(p_sn:int,item_name:str):
     ],
     [
         Input("patients-dropdown","value"),
-        Input("reports-dropdown","value")
+        Input("reports-dropdown","value"),
+        Input("template-dropdown","value")
     ]
 )
-def save_and_print_report(patients_sno, reports_value):
+def save_and_print_report(patients_sno, reports_value,template_value):
     global all_reports_dict
     if patients_sno:
         all_reports_dict[patients_sno] = {"patient_details":[],"report_details":[]}
@@ -279,8 +292,11 @@ def save_and_print_report(patients_sno, reports_value):
         if reports_value:
             for x in reports_value:
                 all_reports_dict[patients_sno]['report_details'] += reports_original_dict[x]
-            return all_reports_dict[patients_sno]["patient_details"],all_reports_dict[patients_sno]["report_details"]
-        return[all_reports_dict[patients_sno]["patient_details"],"Select a Test to Display...."]
+        if template_value:
+            template_value = json.loads(template_value)
+            for x in template_value:
+                all_reports_dict[patients_sno]['report_details'] += reports_original_dict[x]
+        return all_reports_dict[patients_sno]["patient_details"],all_reports_dict[patients_sno]["report_details"]
     return ["Select a Serial Number to Display....","Select a Test to Display...."]
 
 
