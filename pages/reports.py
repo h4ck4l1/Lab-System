@@ -1,8 +1,11 @@
-import os,sys,time,datetime,json
-import numpy as np
+import json
 import pandas as pd
 from io import StringIO
-from dash import Dash,html,dcc,Input,Output,callback,ctx,register_page,State,MATCH,ALL,ALLSMALLER
+from reportlab.pdfgen import canvas            # type: ignore
+from reportlab.lib.pagesizes import A5,A4      # type: ignore
+from reportlab.lib.units import inch           # type: ignore
+from reportlab.lib import colors               # type: ignore
+from dash import html,dcc,Input,Output,callback,register_page,State,ALL
 from dash.exceptions import PreventUpdate
 
 
@@ -82,7 +85,9 @@ layout = html.Div(
         html.Hr(style=dict(position="relative",left="100px",width="900px",border="1px solid cyan")),
         html.Div(id="output-report-boxes",style=dict(border="2px solid rgba(0,255,255,0.7)",borderTop=None,padding="2px",position="relative",paddingTop="50px",alignItems="center",left="100px",width="900px",fontSize=18)),
         html.Div(id="last-output"),
-        html.Button("Submit".upper(),id="submit-report-button",style=dict(width="100px",height="100px",position="relative",backgroundColor="cyan",left="1200px",fontSize=25,borderRadius="20px")),
+        html.Button("Submit".upper(),id="submit-report-button",style=dict(width="200px",height="100px",position="relative",backgroundColor="cyan",left="800px",fontSize=25,borderRadius="20px")),
+        html.Div(html.H1("report preview".upper(),className="page-heading"),className="heading-divs"),
+        html.Div("type report to preview".upper(),id="report-preview",style=dict(color="cyan",border="10px solid #4b70f5",padding="50px",position="relative",top="100px"))
     ],
     className="subpage-content"
 )
@@ -309,6 +314,19 @@ def submit_report(patients_sno, reports_value,template_value):
 
 
 
+
+def create_pdf(filename,page_size,details_dict):
+
+    c = canvas.Canvas(filename=filename,pagesize=page_size)
+    page_width, page_height = A5
+    margin = inch
+    content_width = page_width - 2 * margin
+    y_position = page_height - margin
+    c.setFont("Times-Italic",12)
+
+
+
+
 @callback(
     Output("patient-data-store","data"),
     Input("submit-report-button","n_clicks"),
@@ -327,7 +345,6 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
     if n_clicks:
         all_patients_values[patients_sno] = {id['name']: value for id,value in zip(input_ids,input_values)}
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],'page_size':page_size_value}
-        print(all_patients_values[patients_sno])
         return all_patients_values
 
 
