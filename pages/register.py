@@ -34,7 +34,6 @@ doctor_options = [
     "Babu garu"
 ]
 
-index_number = 0
 
 register_layout = html.Div(
     [
@@ -132,7 +131,7 @@ register_layout = html.Div(
         html.Button("Submit",id="submit-button",style=dict(fontSize=30,borderRadius="5px",height="100px",width="250px")),
         *[html.Br()]*5,
         dash_table.DataTable(
-            id="data_table",
+            id="data-table",
             data=df.to_dict('records'),
             columns=[{"name":i,"id":i} for i in df.columns],
             style_table=dict(fontSize=25,backgroundColor="#633fff"),
@@ -152,7 +151,7 @@ register_layout = html.Div(
 
 @callback(
     [
-        Output("data_table","data",allow_duplicate=True),
+        Output("data-table","data",allow_duplicate=True),
         Output("data-store","data",allow_duplicate=True)
     ],
     [
@@ -161,7 +160,7 @@ register_layout = html.Div(
     ],
     prevent_initial_call=True
 )
-def initialize_df(date_value,clicks):
+def initialize_df(date_value,n_clicks):
     global df
     date_obj = date.fromisoformat(date_value)
     date_string = date_obj.strftime("%Y_%m_%d")
@@ -191,12 +190,11 @@ def initialize_df(date_value,clicks):
 
 @callback(
     [
-        Output("data_table","data"),
+        Output("data-table","data"),
         Output("data-store","data")
     ],
     [
-        Input("submit-button","n_clicks"),
-        Input("refresh-button","n_clicks")           
+        Input("submit-button","n_clicks")         
     ],
     [
         State("age-group-dropdown","value"),        # 0
@@ -211,9 +209,9 @@ def initialize_df(date_value,clicks):
         State("phone_number","value")               # 9
     ]
 )
-def append_name_to_dataframe(n_clicks_submit,n_clicks_refresh,*vals):
+def append_name_to_dataframe(n_clicks,*vals):
     global df
-    if n_clicks_refresh or n_clicks_submit:
+    if n_clicks:
         index_number = df.shape[0]
         index_number += 1
         df.loc[index_number,"S.No."] = vals[4]
@@ -242,7 +240,7 @@ def append_name_to_dataframe(n_clicks_submit,n_clicks_refresh,*vals):
     ]
 )
 def save_to_files(n_clicks,date_value):
-    if "save-button" == ctx.triggered_id:
+    if n_clicks:
         date_obj = date.fromisoformat(date_value)
         date_string = date_obj.strftime("%Y_%m_%d")
         df.to_excel("all_files/"+date_string+".xlsx",index=False)

@@ -2,7 +2,8 @@ import os,sys,time,datetime,json
 import numpy as np
 import pandas as pd
 from io import StringIO
-from dash import Dash,html,dcc,Input,Output,callback,ctx,register_page,State
+from dash import Dash,html,dcc,Input,Output,callback,ctx,register_page,State,MATCH,ALL,ALLSMALLER
+from dash.exceptions import PreventUpdate
 
 
 all_reports_dict = {}
@@ -79,7 +80,9 @@ layout = html.Div(
         html.Hr(style=dict(position="relative",left="100px",width="900px",border="1px solid cyan")),
         html.Div("Test Value Reference",style=dict(wordSpacing="300px",paddingTop="20px",paddingLeft="50px",border="2px solid rgba(0,255,255,0.7)",borderTop=None,borderBottom=None,width="900px",height="50px",position="relative",left="100px")),
         html.Hr(style=dict(position="relative",left="100px",width="900px",border="1px solid cyan")),
-        html.Div(id="output-report-boxes",style=dict(border="2px solid rgba(0,255,255,0.7)",borderTop=None,padding="2px",position="relative",paddingTop="50px",alignItems="center",left="100px",width="900px",fontSize=18))
+        html.Div(id="output-report-boxes",style=dict(border="2px solid rgba(0,255,255,0.7)",borderTop=None,padding="2px",position="relative",paddingTop="50px",alignItems="center",left="100px",width="900px",fontSize=18)),
+        html.Div(id="last-output"),
+        html.Button("Submit".upper(),id="submit-report-button",style=dict(width="100px",height="100px",position="relative",backgroundColor="cyan",left="1200px",fontSize=25,borderRadius="20px")),
     ],
     className="subpage-content"
 )
@@ -105,19 +108,19 @@ text_style = dict(position="relative",left="80px",fontSize=20)
 
 hb_list = [
     html.Div("Heamoglobin :",style=text_style),
-    dcc.Input(id="hb",type="number",placeholder="Type Hb Value..",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'hb'},type="number",placeholder="Type Hb Value..",style=input_style),
     html.Div("( 11.0 - 16.8 Grams%)",style=limits_style)
 ]
 
 tc_list = [
     html.Div("Total WBC Count :",style=text_style),
-    dcc.Input(id="tc_count",type="number",placeholder="Type Tc value..",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'tc_count'},type="number",placeholder="Type Tc value..",style=input_style),
     html.Div("( 5,000 - 10,000 Cells/cumm )",style=limits_style)
 ]
 
 plt_list = [
     html.Div("Platelet Count :",style=text_style),
-    dcc.Input(id="plt_count",type="number",placeholder="Type Plt Value..",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'plt_count'},type="number",placeholder="Type Plt Value..",style=input_style),
     html.Div("( 1.5 - 4.0 Lakhs/cumm )",style=limits_style)
 ]
 
@@ -126,32 +129,36 @@ dc_list = [
     html.Br(),
     html.Br(),
     html.Div("Polymorphs :",style=dict(position="relative",left="200px",fontSize=18)),
-    dcc.Input(id="polymo",type="number",placeholder="Type polymorphs..",style=dict(position="relative",width="170px",left="400px",bottom="20px",fontSize=20)),
+    dcc.Input(id={'type':'dynamic-input','name':'polymo'},type="number",placeholder="Type polymorphs..",style=dict(position="relative",width="170px",left="400px",bottom="20px",fontSize=20)),
     html.Div("( 40 - 70 %) ",style=dict(position="relative",left="670px",bottom="40px",fontSize=18)),
     html.Div("Lymphocytes :",style=dict(position="relative",left="200px",fontSize=18)),
-    dcc.Input(id="lympho",type="number",placeholder="Type Lymphocytes..",style=dict(position="relative",width="170px",left="400px",bottom="20px",fontSize=20)),
+    dcc.Input(id={'type':'dynamic-input','name':'lympho'},type="number",placeholder="Type Lymphocytes..",style=dict(position="relative",width="170px",left="400px",bottom="20px",fontSize=20)),
     html.Div("( 20 - 40 %)",style=dict(position="relative",left="670px",bottom="40px",fontSize=18)),
     html.Div("Esinophils :",style=dict(position="relative",left="200px",fontSize=18)),
-    dcc.Input(id="esino",type="number",placeholder="Type Esinophils..",style=dict(position="relative",width="170px",left="400px",bottom="20px",fontSize=20)),
+    dcc.Input(id={'type':'dynamic-input','name':'esino'},type="number",placeholder="Type Esinophils..",style=dict(position="relative",width="170px",left="400px",bottom="20px",fontSize=20)),
     html.Div("( 02 - 06 %)",style=dict(position="relative",left="670px",bottom="40px",fontSize=18)),
     html.Div("Monocytes :",style=dict(position="relative",left="200px",fontSize=18)),
-    dcc.Input(id="mono",type="number",placeholder="Type Monocytes..",style=dict(position="relative",width="170px",left="400px",bottom="20px",fontSize=20)),
+    dcc.Input(id={'type':'dynamic-input','name':'mono'},type="number",placeholder="Type Monocytes..",style=dict(position="relative",width="170px",left="400px",bottom="20px",fontSize=20)),
     html.Div("( 01 - 04 %)",style=dict(position="relative",left="670px",bottom="40px",fontSize=18))
 ]
 
 crp_list = [
     html.Div("CRP :   ",style=text_style),
-    dcc.Input(id="crp",type="number",placeholder="Type CRP value..",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'crp'},type="number",placeholder="Type CRP value..",style=input_style),
     html.Div(" ( < 6 ) ",style=limits_style)
 ]
 
 widal_list = [
     html.Div("Blood for Widal : ",style=text_style),
-    html.Div(dcc.Dropdown(["NON-REACTIVE","REACTIVE"],"NON-REACTIVE"),id="widal",style=input_style),
-    html.Div(["OT-1 :",html.Div(dcc.Dropdown([160,80,40],80,id="widal-ot-react")),"dilutions"]),
-    html.Div(["HT-1 :",html.Div(dcc.Dropdown([160,80,40],80,id="widal-ht-react")),"dilutions"]),
-    html.Div("AH-1 : 40 dilutions"),
-    html.Div("BH-1 : 40 dilutions")
+    html.Div(dcc.Dropdown(["NON-REACTIVE","REACTIVE"],"REACTIVE"),id={'type':'dynamic-input','name':'widal'},style={**input_style,"width":"200px"}),
+    html.Br(),
+    html.Div(["OT-1 :",html.Div(dcc.Dropdown([160,80,40],80,id={'type':'dynamic-input','name':'widal-ot-react'}),style=dict(width="100px")),"dilutions"],style=dict(display="flex",gap="40px",position="relative",left="450px")),
+    html.Br(),
+    html.Div(["HT-1 :",html.Div(dcc.Dropdown([160,80,40],80,id={'type':'dynamic-input','name':'widal-ht-react'}),style=dict(width="100px")),"dilutions"],style=dict(display="flex",gap="40px",position="relative",left="450px")),
+    html.Br(),
+    html.Div("AH-1 : 40 dilutions",style=dict(position="relative",left="450px")),
+    html.Br(),
+    html.Div("BH-1 : 40 dilutions",style=dict(position="relative",left="450px"))
 ]
 
 blood_group_list = [
@@ -168,7 +175,7 @@ blood_group_list = [
                 "B NEGATIVE",
                 "AB NEGATIVE"
             ],
-            id="blood_group"    
+            id={'type':'dynamic-input','name':'blood-group'}    
         ),
         style={**input_style,"width":"200px"}    
     ),
@@ -177,31 +184,31 @@ blood_group_list = [
 
 total_bilirubin_list = [
     html.Div("Total Bilirubin : ",style=text_style),
-    dcc.Input(id="t_bili",type="number",placeholder="Enter Total Bilirubin",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'total-bili'},type="number",placeholder="Enter Total Bilirubin",style=input_style),
     html.Div(" ( 0.2 - 1.0 mg/dl)",style=limits_style)
 ]
 
 direct_indirect_bilirubin_list = [
     html.Div("Direct Bilirubin: ",style=text_style),
-    dcc.Input(id="direct_bili",type="number",placeholder="Enter Direct Bilirubin",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'direct-bili'},type="number",placeholder="Enter Direct Bilirubin",style=input_style),
     html.Div(" ( 0.2 - 0.4 mg/dl ) ",style=limits_style),
     html.Div("Indirect Bilirubin: ",style=text_style),
-    dcc.Input(id="indirect_bili",type="number",placeholder="Enter Direct Bilirubin",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'indirect-bili'},type="number",placeholder="Enter Direct Bilirubin",style=input_style),
     html.Div(" ( 0.2 - 0.6 mg/dl )",style=limits_style)
 ]
 
 full_cbp_list = [
     *hb_list,
     html.Div("Total RBC Count : ",style=text_style),
-    dcc.Input(id="rbc-count",type="number",placeholder="Rbc Count..",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'rbc-count'},type="number",placeholder="Rbc Count..",style=input_style),
     html.Div(" ( 4.0 - 5.0 milli/cumm ) ",style=limits_style),
     html.Div("PCV (Haematocrit) : ",style=text_style),
-    dcc.Input(id="hct",type="number",placeholder="HCT..",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'hct'},type="number",placeholder="HCT..",style=input_style),
     html.Div(" (40% - 45%) ",style=limits_style),
     *tc_list,
     *plt_list,
     html.Div("E.S.R : ",style=text_style),
-    dcc.Input(id="esr",type="number",placeholder="E.S.R..,",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'esr'},type="number",placeholder="E.S.R..,",style=input_style),
     html.Div(" (02 - 10 mm/1 hour) ",style=limits_style),
     *dc_list
 ]
@@ -212,19 +219,19 @@ hba1c_list = []
 
 blood_urea_list = [
     html.Div("Blood Urea : ",style=text_style),
-    dcc.Input(id="blood-urea",type="number",placeholder="Enter Urea",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'blood-urea'},type="number",placeholder="Enter Urea",style=input_style),
     html.Div(" ( 10 - 40 mg/dl )",style=limits_style)
 ]
 
 serum_creatinine_list = [
     html.Div("Serum creatinine : ",style=text_style),
-    dcc.Input(id="serum_creat",type="number",placeholder="Enter creatinine",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'serum-creat'},type="number",placeholder="Enter creatinine",style=input_style),
     html.Div()
 ]
 
 uric_acid_list = [
     html.Div("Uric Acid : ",style=text_style),
-    dcc.Input(id="uric-acid",type="number",placeholder="Enter Uric Acid",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'uric-acid'},type="number",placeholder="Enter Uric Acid",style=input_style),
     html.Div(" ( 2.5 - 7.5 IU/L ) ",style=limits_style)
 ]
 
@@ -269,21 +276,15 @@ def get_df_item(p_sn:int,item_name:str):
 @callback(
     [
         Output("output-report","children"),
-        Output("output-report-boxes","children"),
-        Output("patient-data-store","data")
+        Output("output-report-boxes","children")
     ],
     [
         Input("patients-dropdown","value"),
         Input("reports-dropdown","value"),
         Input("template-dropdown","value")
-    ],
-    [
-        State("hb","value"),
-        State("tc_count","value"),
-        State("plt_count","value")
     ]
 )
-def save_and_print_report(patients_sno, reports_value,template_value,*vals):
+def submit_report(patients_sno, reports_value,template_value):
     global all_reports_dict,all_patients_values
     if patients_sno:
         all_patients_values[patients_sno] = {}
@@ -303,37 +304,31 @@ def save_and_print_report(patients_sno, reports_value,template_value,*vals):
             template_value = json.loads(template_value)
             for x in template_value:
                 all_reports_dict[patients_sno]['report_details'] += reports_original_dict[x]
-        if vals[0]:         # hb
-            all_patients_values[patients_sno]["Hb"] = vals[0]
-        if vals[1]:
-            all_patients_values[patients_sno]["TC Count"] = vals[1]
-        if vals[2]:
-            all_patients_values[patients_sno]["PLT Count"] = vals[2]
-        return all_reports_dict[patients_sno]["patient_details"],all_reports_dict[patients_sno]["report_details"],all_patients_values
-    return ["Select a Serial Number to Display....","Select a Test to Display...."],all_patients_values
+        return all_reports_dict[patients_sno]["patient_details"],all_reports_dict[patients_sno]["report_details"]
+    return ["Select a Serial Number to Display....","Select a Test to Display...."]
 
 
 
-# @callback(
-#     Output("patient-data-store","data"),
-#     Input("patients-dropdown","value"),
-#     [
-#         State("hb","value"),
-#         State("tc_count","value"),
-#         State("plt_count","value")
-#     ]
-# )
-# def store_patient_data(patients_sno,*vals):
-#     global all_patients_values    
-#     if patients_sno:
-#         all_patients_values[patients_sno] = {}
-#     if vals[0]:         # hb
-#         all_patients_values[patients_sno]["Hb"] = vals[0]
-#     if vals[1]:
-#         all_patients_values[patients_sno]["TC Count"] = vals[1]
-#     if vals[2]:
-#         all_patients_values[patients_sno]["PLT Count"] = vals[2]
-#     return all_patients_values
+@callback(
+    Output("patient-data-store","data"),
+    Input("submit-report-button","n_clicks"),
+    [
+        State("patients-dropdown","value"),
+        State("page-size-dropdown","value"), 
+        State({'type':'dynamic-input','name':ALL},'value'),
+        State({'type':'dynamic-input','name':ALL},'id')
+    ],
+    prevent_initial_call=True
+)
+def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,input_ids):
+    global all_patients_values
+    if not input_values:
+        raise PreventUpdate
+    if n_clicks:
+        all_patients_values[patients_sno] = {id['name']: value for id,value in zip(input_ids,input_values)}
+        all_patients_values[patients_sno] = {**all_patients_values[patients_sno],'page_size':page_size_value}
+        print(all_patients_values[patients_sno])
+        return all_patients_values
 
 
 
