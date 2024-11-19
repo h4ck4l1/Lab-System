@@ -300,8 +300,10 @@ blood_for_aec_list = [
 
 ra_factor_list = [
     html.Div("ra factor :".upper(),style=text_style),
-    html.Div(dcc.Dropdown(["positive".upper(),"negative".upper()],"negative".upper(),id={'type':'dynamic-input','name':'ra-factor'})),
-    
+    html.Div(dcc.Dropdown(["positive".upper(),"negative".upper()],"negative".upper(),id={'type':'dynamic-input','name':'ra-factor'}),style=dict(position="relative",width="200px",left="300px",bottom="20px")),
+    html.Div(" ( 1 : ",style={**limits_style,"bottom":"50px"}),
+    dcc.Input(id={'type':'dynamic-input','name':'ra-dilutions'},type="number",placeholder="None",style={**limits_style,"bottom":"75px","left":"590px","width":"100px"}),
+    html.Div(" ) ",style={**limits_style,"left":"600px","bottom":"75px"})
 ]
 
 aso_titre_list = []
