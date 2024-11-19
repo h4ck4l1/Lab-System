@@ -1,13 +1,15 @@
-import json
+import json,os
 import pandas as pd
 from io import StringIO
-from reportlab.pdfgen import canvas            # type: ignore
-from reportlab.lib.pagesizes import A5,A4      # type: ignore
-from reportlab.lib.units import inch           # type: ignore
-from reportlab.lib import colors               # type: ignore
+from reportlab.pdfgen import canvas            
+from reportlab.lib.pagesizes import A5,A4,portrait      
+from reportlab.lib.units import inch           
+from reportlab.lib import colors               
+from reportlab.pdfbase.pdfmetrics import registerFont
+from reportlab.pdfbase.ttfonts import TTFont
 from dash import html,dcc,Input,Output,callback,register_page,State,ALL
 from dash.exceptions import PreventUpdate
-
+registerFont(TTFont("CenturySchoolBook-BoldItalic","assets/schlbkbi.ttf"))
 
 all_reports_dict = {}
 all_reports_done_dict = {}
@@ -300,10 +302,10 @@ blood_for_aec_list = [
 
 ra_factor_list = [
     html.Div("ra factor :".upper(),style=text_style),
-    html.Div(dcc.Dropdown(["positive".upper(),"negative".upper()],"negative".upper(),id={'type':'dynamic-input','name':'ra-factor'}),style=dict(position="relative",width="200px",left="300px",bottom="20px")),
+    html.Div(dcc.Dropdown(["positive".upper(),"negative".upper()],"negative".upper(),id={'type':'dynamic-input','name':'ra-factor'}),style=dict(position="relative",width="200px",left="300px",bottom="25px")),
     html.Div(" ( 1 : ",style={**limits_style,"bottom":"50px"}),
-    dcc.Input(id={'type':'dynamic-input','name':'ra-dilutions'},type="number",placeholder="None",style={**limits_style,"bottom":"75px","left":"590px","width":"100px"}),
-    html.Div(" ) ",style={**limits_style,"left":"600px","bottom":"75px"})
+    dcc.Input(id={'type':'dynamic-input','name':'ra-dilutions'},type="number",placeholder="None",style={**limits_style,"bottom":"75px","left":"620px","width":"100px"}),
+    html.Div(" dilutions ) ",style={**limits_style,"left":"730px","bottom":"95px"})
 ]
 
 aso_titre_list = []
@@ -376,14 +378,28 @@ def submit_report(patients_sno, reports_value,template_value):
 
 
 
-def create_pdf(filename,page_size,details_dict):
+def create_pdf(serial_no,page_size,details_dict):
 
-    c = canvas.Canvas(filename=filename,pagesize=page_size)
-    page_width, page_height = A5
-    margin = inch
-    content_width = page_width - 2 * margin
-    y_position = page_height - margin
-    c.setFont("Times-Italic",12)
+    global copy_df
+    date_of_patient_visit = get_df_item(serial_no,"Date")
+    patient_name = get_df_item(serial_no,"Patient Name")
+    patient_name = patient_name.replace(".")
+    first_part = date_of_patient_visit.split(" ")[0]
+    year_extract,month_extract,date_extract = first_part.split("-")
+    base_dir = "all_files"
+    year_dir = os.path.join(base_dir,year_extract)
+    month_dir = os.path.join(year_dir,month_extract)
+    os.makedirs(month_dir,exist_ok=True)
+    filename = os.path.join(month_dir,f"{patient_name}.pdf")
+    if page_size == "SMALL/A5":
+        c = canvas.Canvas(filename,pagesize=portrait(A5))
+        page_width,page_height = A5
+        c.rect(45,40,page_width- 2 * 45,page_height - 2 * 50)
+        c.setFont("Times-BoldItalic",12)
+        c.drawString()
+    else:
+        pass
+
 
 
 
