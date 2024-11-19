@@ -242,7 +242,12 @@ heamogram_list = [
     html.Div("E.S.R : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'esr'},type="number",placeholder="E.S.R..,",style=input_style),
     html.Div(" (02 - 10 mm/1 hour) ",style=limits_style),
-    *dc_list
+    *dc_list,
+    html.Div("peripheral smear examination :".upper(),style={**text_style,"text-decoraton":"underline"}),
+    html.Br(),
+    html.Div("RBC: Normocytic Normochromic",style=text_style),
+    html.Div("WBC: ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'wbc-opinion'})
 ]
 
 hba1c_list = []
