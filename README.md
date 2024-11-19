@@ -1,1 +1,11 @@
 LAB SYSTEMS SOFTWARE
+
+
+SMALL RECTANGLE:
+  R   T   TOTAL H   TOTAL V
+( 45, 40, -2 * 45, -2 * 50 )
+
+
+BIG RECTANGLE:
+
+( 43, 92, -2 * 43, -2 * 92 )
