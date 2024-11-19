@@ -238,7 +238,11 @@ heamogram_list = [
     html.Div(" ( 27 - 32 pg ) ",style=limits_style),
     html.Div("MCHC : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'mchc'},type="number",placeholder="MCHC..",style=input_style),
-    html.Div(" ( 32 - 32 g/dl ) ",style=limits_style)
+    html.Div(" ( 32 - 32 g/dl ) ",style=limits_style),
+    html.Div("E.S.R : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'esr'},type="number",placeholder="E.S.R..,",style=input_style),
+    html.Div(" (02 - 10 mm/1 hour) ",style=limits_style),
+    *dc_list
 ]
 
 hba1c_list = []
