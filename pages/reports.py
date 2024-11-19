@@ -40,7 +40,10 @@ all_options = [
     "Urine Analysis",
     "Lipid Profile",
     "Mantaoux",
-    "Heamogram"
+    "Heamogram",
+    "Blood for AEC Count",
+    "RA Factor",
+    "ASO Titre"
 ]
 
 reports_dropdown = dcc.Dropdown(
@@ -64,7 +67,10 @@ templates_dropdown = dcc.Dropdown(
         {"label":"HB, TC, DC","value":json.dumps(["Hb","Total Count (TC)","Differential Count (DC)"])},
         {"label":"HB, TC, PLATELET, DC, URINE","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","Urine Analysis"])},
         {"label":"HB, TC, PLATELET, DC, RBS","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","Random Sugar"])},
-        {"label":"HB, TC, PLATELET, DC, WIDAL","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","Widal"])}
+        {"label":"HB, TC, PLATELET, DC, WIDAL","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","Widal"])},
+        {"label":"PACK 1","value":json.dumps(["HBA1C","Random Sugar","Fasting Sugar"])},
+        {"label":"PACK 2","value":json.dumps(["Blood Urea","Serum Creatinine","Lipid Profile"])},
+        {"label":"RFT","value":json.dumps(["Blood Urea","Serum Creatinine","Uric Acid"])}
     ],
     id="template-dropdown"
 )
@@ -88,7 +94,7 @@ layout = html.Div(
         html.Div(id="output-report-boxes",style=dict(border="2px solid rgba(0,255,255,0.7)",borderTop=None,padding="2px",position="relative",paddingTop="50px",alignItems="center",left="100px",width="900px",fontSize=18)),
         html.Div(id="last-output"),
         html.Button("Submit".upper(),id="submit-report-button",style=dict(width="200px",height="100px",position="relative",backgroundColor="cyan",left="800px",fontSize=25,borderRadius="20px")),
-        html.Div(html.H1("report preview".upper(),className="page-heading"),className="heading-divs"),
+        html.Div(html.H1("report preview".upper(),className="page-heading"),className="heading-divs",style=dict(position="relative",top="50px")),
         html.Div("type report to preview".upper(),id="report-preview",style=dict(color="cyan",border="10px solid #4b70f5",padding="50px",position="relative",top="100px"))
     ],
     className="subpage-content"
@@ -246,11 +252,19 @@ heamogram_list = [
     html.Div("peripheral smear examination :".upper(),style={**text_style,"text-decoraton":"underline"}),
     html.Br(),
     html.Div("RBC: Normocytic Normochromic",style=text_style),
-    html.Div("WBC: ",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'wbc-opinion'})
+    html.Div("WBC: will be same as Total opinion",style=text_style),
+    html.Div("No Blast cells are seen",style=text_style),
+    html.Div("Platelets : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'platelet-opinion'},type="text",placeholder="Adequate",style=input_style),
+    html.Div("Hemoparasites : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'hemoparasites-opinion'},type="text",placeholder="Not Seen",style=input_style),
+    html.Div("Impression : ",style={**text_style,"text-decoration":"underline"}),
+    dcc.Input(id={'type':'dynamic-input','name':'total-opinion'},type="text",placeholder="Microcytic Hypochromic Anemia",style={**input_style,"width":"500px"})
 ]
 
-hba1c_list = []
+hba1c_list = [
+    
+]
 
 blood_urea_list = [
     html.Div("Blood Urea : ",style=text_style),
@@ -278,6 +292,19 @@ sugar_random_list = []
 
 sugar_fasting_list = []
 
+blood_for_aec_list = [
+    html.Div("Blood for AEC Count : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'aec-count'},type="number",placeholder="460",style=input_style),
+    html.Div(" (50 - 450 cells/cumm ) ",style=limits_style)
+]
+
+ra_factor_list = [
+    html.Div("ra factor :".upper(),style=text_style),
+    html.Div(dcc.Dropdown(["positive".upper(),"negative".upper()],"negative".upper(),id={'type':'dynamic-input','name':'ra-factor'}))
+]
+
+aso_titre_list = []
+
 
 reports_original_dict = {
     "Hb":hb_list,
@@ -298,7 +325,10 @@ reports_original_dict = {
     "Urine Analysis":urine_analysis_list,
     "Mantaoux":mantaoux_list,
     "Random Sugar":sugar_random_list,
-    "Fasting Sugar":sugar_fasting_list
+    "Fasting Sugar":sugar_fasting_list,
+    "Blood for AEC count":blood_for_aec_list,
+    "RA Factor":ra_factor_list,
+    "ASO Titre":aso_titre_list
 }
 
 
@@ -306,12 +336,10 @@ def get_df_item(p_sn:int,item_name:str):
     return copy_df.loc[copy_df.loc[:,"S.No."] == p_sn,item_name].item()
 
 
-
-
 @callback(
     [
-        Output("output-report","children"),
-        Output("output-report-boxes","children")
+        Output("output-report","children"),              # patient detials
+        Output("output-report-boxes","children")         # report details
     ],
     [
         Input("patients-dropdown","value"),
