@@ -31,14 +31,16 @@ all_options = [
     "Total Bilirubin",
     "Direct & Indirect Bilirubin",
     "Heamogram",
-    "HBA1C",
-    "Blood Urea",
+    "HBA1C",      # -------------------------- pack 1
+    "Fasting Sugar",                      
+    "Random Sugar",
+    "Blood Urea", # ----------------------- pack 2
     "Serum Creatinine",
     "Uric Acid",
     "Urine Analysis",
+    "Lipid Profile",
     "Mantaoux",
-    "Random Sugar",
-    "Fasting Sugar",
+    "Heamogram"
 ]
 
 reports_dropdown = dcc.Dropdown(
@@ -218,7 +220,26 @@ full_cbp_list = [
     *dc_list
 ]
 
-heamogram_list = []
+heamogram_list = [
+    *hb_list,
+    html.Div("Total RBC Count : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'rbc-count'},type="number",placeholder="Rbc Count..",style=input_style),
+    html.Div(" ( 4.0 - 5.0 milli/cumm ) ",style=limits_style),
+    html.Div("PCV (Haematocrit) : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'hct'},type="number",placeholder="HCT..",style=input_style),
+    html.Div(" (40% - 45%) ",style=limits_style),
+    *tc_list,
+    *plt_list,
+    html.Div("MCV : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'mcv'},type="number",placeholder="MCV..",style=input_style),
+    html.Div(" ( 78 - 94 fl) ",style=limits_style),
+    html.Div("MCH : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'mch'},type="number",placeholder="MCH..",style=input_style),
+    html.Div(" ( 27 - 32 pg ) ",style=limits_style),
+    html.Div("MCHC : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'mchc'},type="number",placeholder="MCHC..",style=input_style),
+    html.Div(" ( 32 - 32 g/dl ) ",style=limits_style)
+]
 
 hba1c_list = []
 
