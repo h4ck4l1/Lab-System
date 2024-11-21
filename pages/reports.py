@@ -305,11 +305,68 @@ uric_acid_list = [
     html.Div(" ( 2.5 - 7.5 IU/L ) ",style=limits_style)
 ]
 
-urine_analysis_list = []
+urine_analysis_list = [
+    html.Div("Urine analysis :",style=text_style),
+    html.Br(),
+    html.Br(),
+    html.Div("Sugar : ",style=text_style),
+    html.Div([dcc.Dropdown(["NIL","+","++","+++"],"NIL",id={'type':'dynamic-input','name':'urine_sugar'})],style=input_style),
+    html.Div("Albumin : ",style=text_style),
+    html.Div([dcc.Dropdown(["NIL","TRACES","+","++","+++"],"TRACES",id={'type':'dynamic-input','name':'urine_albumin'})],style=input_style),
+    html.Div("Bile Salts: ",style=text_style),
+    html.Div([dcc.Dropdown(["negative".upper(),"positive".upper()],"negative".upper(),id={'type':'dynamic-input','name':'urine_bs'})],style=input_style),
+    html.Div("Bile Pigments: ",style=text_style),
+    html.Div([dcc.Dropdown(["negative".upper(),"positive".upper()],"negative".upper(),id={'type':'dynamic-input','name':'urine_bp'})],style=input_style),
+    html.Div("Micro : ",style=text_style),
+    html.Div([
+        dcc.Input(id={'type':'dynamic-input','name':'urine_first_pus'},type="number",style=dict(width="100px")),
+        "-",
+        dcc.Input(id={'type':'dynamic-input','name':'urine_second_pus'},type="number",style=dict(width="100px",marginRight="20px")),
+        "Pus Cells"
+    ],style=dict(position="relative",left="300px",margin="10px",wordSpacing="10px")),
+    html.Div([
+        dcc.Input(id={'type':'dyanmic-input','name':'urine_first_rbc'},type="number",placeholder="No..",style=dict(width="100px")),
+        "-",
+        dcc.Input(id={'type':'dynamic-input','name':'urine_second_rbc'},type="number",placeholder="No..",style=dict(width="100px",marginRight="20px")),
+        "RBC  *(leaving blank means No RBC)"
+    ],style=dict(position="relative",left="300px",margin="10px",wordSpacing="10px")),
+    html.Div([
+        dcc.Input(id={'type':'dyanmic-input','name':'urine_first_casts'},type="number",placeholder="No..",style=dict(width="100px")),
+        "-",
+        dcc.Input(id={'type':'dynamic-input','name':'urine_second_casts'},type="number",placeholder="No..",style=dict(width="100px",marginRight="20px")),
+        "Casts  *(leaving blank means No Casts)"
+    ],style=dict(position="relative",left="300px",margin="10px",wordSpacing="10px")),
+    html.Div([
+        dcc.Input(id={'type':'dyanmic-input','name':'urine_first_crystals'},type="number",placeholder="No..",style=dict(width="100px")),
+        "-",
+        dcc.Input(id={'type':'dynamic-input','name':'urine_second_crystals'},type="number",placeholder="No..",style=dict(width="100px",marginRight="20px")),
+        "Crystals  *(leaving blank means No Crystals)"
+    ],style=dict(position="relative",left="300px",margin="10px",wordSpacing="10px")),
+    html.Div([
+        dcc.Input(id={'type':'dynamic-input','name':'urine_first_ep'},type="number",style=dict(width="100px")),
+        "-",
+        dcc.Input(id={'type':'dynamic-input','name':'urine_second_ep'},type="number",style=dict(width="100px",marginRight="20px")),
+        "Epithelial Cells Present"
+    ],style=dict(position="relative",left="300px",margin="10px",wordSpacing="10px"))
+]
 
-urine_pregnency_list = []
+urine_pregnency_list = [
+    html.Div("Urine Test Report : ",style=text_style),
+    html.Div("Urine Pregnancy Test : ",style=text_style),
+    html.Div([dcc.Dropdown(["negative".upper(),"positive".upper()],"negative".upper(),id={'type':'dynamic-input','name':'preg_test'})],style=input_style)
+]
 
-mantaoux_list = []
+pt_aptt_list = [
+    html.Div("Prothrombin Time Test",style={**text_style,"left":"500px"}),
+    html.Div("P.T Test: 14.9 seconds",text_style),
+    html.Div("P.T. Control : 13.4 seconds",text_style),
+    html.Div("INR : 1.2",style=text_style)
+]
+
+mantaoux_list = [
+    html.Div("mantoux test :".upper(),style=text_style),
+    html.Div([dcc.Dropdown(["positive".upper(),"negative".upper()],"negative".upper(),id={'type':'dynamic-input','name':'mantoux_test'})],style=input_style)
+]
 
 sugar_random_list = [
     html.Div("Blood Sugar ( Random ) : ",style=text_style),
