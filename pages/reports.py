@@ -27,6 +27,7 @@ all_options = [
     "Differential Count (DC)",
     "Widal",
     "CRP",
+    "ESR",
     "Full CBP",
     "Blood Group",
     "Total Bilirubin",
@@ -44,7 +45,17 @@ all_options = [
     "Heamogram",
     "Blood for AEC Count",
     "RA Factor",
-    "ASO Titre"
+    "ASO Titre",
+    "Serum Amylase",
+    "Serum Lipase",
+    "Serum Protein",
+    "Serum Albumin",
+    "Serum Globulin",
+    "Serum A/G Ratio",
+    "Serum Sodium",
+    "Serum Pottasium",
+    "Serum Chloride",
+    "Serum Calcium"
 ]
 
 reports_dropdown = dcc.Dropdown(
@@ -71,7 +82,8 @@ templates_dropdown = dcc.Dropdown(
         {"label":"HB, TC, PLATELET, DC, WIDAL","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","Widal"])},
         {"label":"PACK 1","value":json.dumps(["HBA1C","Random Sugar","Fasting Sugar"])},
         {"label":"PACK 2","value":json.dumps(["Blood Urea","Serum Creatinine","Lipid Profile"])},
-        {"label":"RFT","value":json.dumps(["Blood Urea","Serum Creatinine","Uric Acid"])}
+        {"label":"RFT","value":json.dumps(["Blood Urea","Serum Creatinine","Uric Acid"])},
+        {"label":"Lipid Profile","value":json.dumps(["Lipid Profile"])}
     ],
     id="template-dropdown"
 )
@@ -151,7 +163,7 @@ dc_list = [
     dcc.Input(id={'type':'dynamic-input','name':'esino'},type="number",placeholder="Type Esinophils..",style=dict(position="relative",width="170px",left="400px",bottom="20px",fontSize=20)),
     html.Div("( 02 - 06 %)",style=dict(position="relative",left="670px",bottom="40px",fontSize=18)),
     html.Div("Monocytes :",style=dict(position="relative",left="200px",fontSize=18)),
-    dcc.Input(id={'type':'dynamic-input','name':'mono'},type="number",placeholder="Type Monocytes..",style=dict(position="relative",width="170px",left="400px",bottom="20px",fontSize=20)),
+    html.Div("----------------",style=dict(position="relative",left="400px",bottom="20px")),
     html.Div("( 01 - 04 %)",style=dict(position="relative",left="670px",bottom="40px",fontSize=18))
 ]
 
@@ -206,8 +218,14 @@ direct_indirect_bilirubin_list = [
     dcc.Input(id={'type':'dynamic-input','name':'direct-bili'},type="number",placeholder="Enter Direct Bilirubin",style=input_style),
     html.Div(" ( 0.2 - 0.4 mg/dl ) ",style=limits_style),
     html.Div("Indirect Bilirubin: ",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'indirect-bili'},type="number",placeholder="Enter Direct Bilirubin",style=input_style),
+    html.Div("-----------",style=limits_style),
     html.Div(" ( 0.2 - 0.6 mg/dl )",style=limits_style)
+]
+
+esr_list = [
+    html.Div("E.S.R : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'esr'},type="number",placeholder="E.S.R..,",style=input_style),
+    html.Div(" (02 - 10 mm/1 hour) ",style=limits_style)
 ]
 
 full_cbp_list = [
@@ -220,9 +238,7 @@ full_cbp_list = [
     html.Div(" (40% - 45%) ",style=limits_style),
     *tc_list,
     *plt_list,
-    html.Div("E.S.R : ",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'esr'},type="number",placeholder="E.S.R..,",style=input_style),
-    html.Div(" (02 - 10 mm/1 hour) ",style=limits_style),
+    *esr_list,
     *dc_list
 ]
 
@@ -263,7 +279,12 @@ heamogram_list = [
 ]
 
 hba1c_list = [
-    
+    html.Div("Glycosylated Hb (HbA1c) Test: ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'hba1c_first'},type="number",placeholder="Type Hba1c %..",style=input_style),
+    html.Div("%",style=limits_style),
+    html.Div("Esitmiated Average Glucose (eAG): ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'hba1c_second'},type="number",placeholder="Type Hba1c mg/dl..",style=input_style),
+    html.Div("mg/dl",style=limits_style)
 ]
 
 blood_urea_list = [
@@ -286,11 +307,34 @@ uric_acid_list = [
 
 urine_analysis_list = []
 
+urine_pregnency_list = []
+
 mantaoux_list = []
 
-sugar_random_list = []
+sugar_random_list = [
+    html.Div("Blood Sugar ( Random ) : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'random_sugar'},type="number",placeholder="Type RBS..",style=input_style),
+    html.Div(" ( 70 - 140 mg/dl ) ",style=limits_style)
+]
 
-sugar_fasting_list = []
+sugar_fasting_list = [
+    html.Div("Blood Sugar ( Fasting ) : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'fasting_sugar'},type="number",placeholder="Type FBS..",style=input_style),
+    html.Div(" ( 70 - 110 mg/dl ) ",style=limits_style)
+]
+
+lipid_profile_list = [
+    html.Div("Total Cholesterol : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'lipid_tc'},type="number",placeholder="Type Tc..",style=input_style),
+    html.Div("High Density Lipoprotein ( HDL ) : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'lipid_hdl'},type="number",placeholder="Type HDL...",style=input_style),
+    html.Div("Low Density Lipoprotein : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'lipid_ldl'},type="number",placeholder="Type LDL...",style=input_style),
+    html.Div("Very Low Density Lipoprotein : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'lipid_vldl'},type="number",placeholder="Type VLDL",style=input_style),
+    html.Div("Triglyceride (F): ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'lipid_tri'},type="number",placeholder="Type Triglyceride...",style=input_style)
+]
 
 blood_for_aec_list = [
     html.Div("Blood for AEC Count : ",style=text_style),
@@ -308,12 +352,33 @@ ra_factor_list = [
 
 aso_titre_list = []
 
+serum_amylase_list = []
+
+serum_lipase_list = []
+
+serum_protein_list = []
+
+serum_albumin_list = []
+
+serum_globulin_list = []
+
+serum_ag_ratio_list = []
+
+serum_sodium_list = []
+
+serum_pottasium_list = []
+
+serum_chloride_list = []
+
+serum_calcium_list = []
+
 
 reports_original_dict = {
     "Hb":hb_list,
     "Total Count (TC)":tc_list,
     "Platelet Count":plt_list,
     "Differential Count (DC)":dc_list,
+    "ESR":esr_list,
     "CRP":crp_list,
     "Widal":widal_list,
     "Full CBP":full_cbp_list,
@@ -333,6 +398,7 @@ reports_original_dict = {
     "RA Factor":ra_factor_list,
     "ASO Titre":aso_titre_list
 }
+
 
 
 def get_df_item(p_sn:int,item_name:str):
@@ -375,18 +441,248 @@ def submit_report(patients_sno, reports_value,template_value):
     return ["Select a Serial Number to Display....","Select a Test to Display...."]
 
 
+def cal_string_width(c:canvas.Canvas,total_string,font_name,font_size):
+    return c.stringWidth(total_string,font_name,font_size)
 
-def hb_canvas(c:canvas.Canvas,hb_value:str,r_space):
-    c.drawString(62,)
+def patient_details_canvas(
+        c:canvas.Canvas,
+        font_name:str,
+        font_size:int,
+        page_height:float,
+        patient_name:str,
+        patient_details_space:int,
+        patient_age:float,
+        patient_age_group:str,
+        patient_gender:str,
+        doctor_name:str,
+        patient_serial_no:int,
+        collection_time:str,
+        patient_specimen:str,
+        frmt_time:str
+    ):
+    c.setFont(font_name,font_size)
+    c.drawString(42,page_height-75,f"Pt. Name : {patient_name.upper()}")
+    c.drawString(42,page_height-(75 + patient_details_space),f"Gender : {patient_gender}")                  
+    age_string = f"Age: {patient_age} {patient_age_group}"
+    c.drawString(375-cal_string_width(c,age_string,font_name,font_size),page_height-(75 + patient_details_space),age_string)     # s
+    c.drawString(42,page_height-(75 + 2*patient_details_space),f"Ref.Dr.By. : {doctor_name}")                                                # 99 + 24
+    c.drawString(42,page_height-(75 + 3*patient_details_space),f"Serial No: 000{patient_serial_no}")
+    time_string = f"Collection Time: {collection_time}"
+    c.drawString(375-cal_string_width(c,time_string,font_name,font_size),page_height-(75 + 3*patient_details_space),time_string)        # s
+    c.drawString(42,page_height-(75 + 4*patient_details_space),f"Specimen: {patient_specimen}")
+    date_string = f"Date: {frmt_time}"
+    c.drawString(375-cal_string_width(c,date_string,font_name,font_size),page_height-(75 + 4*patient_details_space),date_string)                         # s
+    c.setDash()
+    c.line(40,page_height-(75 + 4 * patient_details_space) - 5,379,page_height-(75 + 4 * patient_details_space) - 5)
+    c.line(40,page_height-(75 + 4 * patient_details_space) - 18,379,page_height-(75 + 4 * patient_details_space) - 20)
+    c.setFont(font_name,8)
+    c.drawString(42,page_height-(75 + 4 * patient_details_space) - 15,"test".upper())
+    c.drawString(190,page_height-(75 + 4 * patient_details_space) - 15,"value".upper())
+    reference_string = "reference range".upper()
+    c.drawString(375-cal_string_width(c,reference_string,font_name,8),page_height-(75 + 4 * patient_details_space) - 15,reference_string)
+    return c
+
+def if_draw_bold(c:canvas.Canvas,value,value_string,limit_a,limit_b,x,y):
+    if (value < limit_a) | (value > limit_b):
+        for offset in [0,0.25,-0.25,0.35,-0.35]:
+            c.drawString(x+offset,y,f":  {value_string}")
+    else:
+        c.drawString(x,y,f":  {value_string}")
     return c
 
 
+def hb_canvas(c:canvas.Canvas,hb_value:float,page_size:str,h:int):
+    if page_size == "SMALL/A5":
+        entity_height = 25
+        c.setFont("Times-BoldItalic",12)
+        c.drawString(62,h,"Heamoglobin")
+        c = if_draw_bold(c,hb_value,hb_value,11.0,16.8,182,h)
+        hb_string = "( 11.0 - 16.8 Grams% )"
+        c.drawString(375-cal_string_width(c,hb_string,"Times-BoldItalic",12),h,hb_string)
+    else:
+        pass
+    return c,h - entity_height
+
+
+def tc_canvas(c:canvas.Canvas,tc_value:int,page_size:str,h:int):
+    if page_size == "SMALL/A5":
+        entity_height = 25
+        c.setFont("Times-BoldItalic",12)
+        c.drawString(62,h,"Total WBC Count")
+        c = if_draw_bold(c,tc_value,f"{tc_value//1000},000",5000,10000,182,h)
+        tc_string = "( 5,000 - 10,000 Cells/cumm )"
+        c.drawString(375-cal_string_width(c,tc_string,"Times-BoldItalic",12),h,tc_string)
+    else:
+        pass
+    return c,h-entity_height
+
+
+def plt_canvas(c:canvas.Canvas,plt_value:float,page_size:str,h:int):
+    if page_size == "SMALL/A5":
+        entity_height = 25
+        c.setFont("Times-BoldItalic",12)
+        c.drawString(62,h,"Platelet Count : ")
+        if plt_value < 1:
+            plt_string = f"{int(plt_value * 100)},000"
+        else:
+            plt_string = str(plt_value)
+        c = if_draw_bold(c,plt_value,plt_string,1.5,4.0,182,h)
+        plt_string = "( 1.5 - 4.0 Lakhs/cumm )"
+        c.drawString(375-cal_string_width(c,plt_string,"Times-BoldItalic",12),h,plt_string)
+    else:
+        pass
+    return c,h-entity_height
+
+def dc_canvas(
+        c:canvas.Canvas,
+        dc_count:list,
+        page_size:str,
+        h:int
+    ):
+    
+    def p(v):
+        if v < 10:
+            s = f"0{v}"
+        else:
+            s = f"{v}"
+        return s
+
+    polymo_value,lympho_value,esnio_value = dc_count
+    if polymo_value + lympho_value + esnio_value == 100:
+        esnio_value -= 1
+    mono_value = 100 - (polymo_value + lympho_value + esnio_value)
+    if page_size == "SMALL/A5":
+        entity_height = 130            # 25 * 5 + 5
+        c.setFont("Times-BoldItalic",12)
+        c.drawString(62,h,"Differential Count:")
+        c.line(62,h-5,62+cal_string_width(c,"Differential Count","Times-BoldItalic",12),h-5)
+        c.drawString(142,h-30,"Polymorphs")
+        c.drawString(142,h-55,"Lymphocytes")
+        c.drawString(142,h-80,"Eosinophils")
+        c.drawString(142,h-105,"Monocytes")
+        c = if_draw_bold(c,polymo_value,p(polymo_value),40,70,260,h-30)
+        c = if_draw_bold(c,lympho_value,p(lympho_value),20,40,260,h-55)
+        c = if_draw_bold(c,esnio_value,p(esnio_value),2,6,260,h-80)
+        c = if_draw_bold(c,mono_value,p(mono_value),1,4,260,h-105)
+        c.drawString(375-cal_string_width(c,"( 40 - 70 %)","Times-BoldItalic",12),h-30,"( 40 - 70 %)")
+        c.drawString(375-cal_string_width(c,"( 40 - 70 %)","Times-BoldItalic",12),h-55,"( 20 - 40 %)")
+        c.drawString(375-cal_string_width(c,"( 40 - 70 %)","Times-BoldItalic",12),h-80,"( 02 - 06 %)")
+        c.drawString(375-cal_string_width(c,"( 40 - 70 %)","Times-BoldItalic",12),h-105,"( 01 - 04 %)")
+    else:
+        pass
+    return c,h - entity_height
+
+
+def crp_canvas():
+    pass
+
+def widal_canvas():
+    pass
+
+def full_cbp_canvas():
+    pass
+
+def blood_group_canvas():
+    pass
+
+def total_bilirubin_canvas():
+    pass
+
+def direct_and_indirect_bilirubin_canvas():
+    pass
+
+def heamogram_canvas():
+    pass
+
+def hb1ac_canvas():
+    pass
+
+def blood_urea_canvas():
+    pass
+
+def serum_creat_canvas():
+    pass
+
+def uric_acid_cavnas():
+    pass
+
+def urine_analysis_canvas():
+    pass
+
+def mantaux_canvas():
+    pass
+
+def random_sugar_canvas():
+    pass
+
+def fasting_sugar_canvas():
+    pass
+
+def blood_for_aec_canvas():
+    pass
+
+def ra_factor_canvas():
+    pass
+
+def aso_titre_canvas():
+    pass
+
+
+
+
+reports_canvas_dict = {
+    "Hb":hb_canvas,
+    "Total Count (TC)":tc_canvas,
+    "Platelet Count":plt_canvas,
+    "Differential Count (DC)":dc_canvas,
+    "CRP":crp_list,
+    "Widal":widal_list,
+    "Full CBP":full_cbp_list,
+    "Blood Group":blood_group_list,
+    "Total Bilirubin":total_bilirubin_list,
+    "Direct & Indirect Bilirubin":direct_indirect_bilirubin_list,
+    "Heamogram":heamogram_list,
+    "HBA1C":hba1c_list,
+    "Blood Urea":blood_urea_list,
+    "Serum Creatinine":serum_creatinine_list,
+    "Uric Acid":uric_acid_list,
+    "Urine Analysis":urine_analysis_list,
+    "Mantaoux":mantaoux_list,
+    "Random Sugar":sugar_random_list,
+    "Fasting Sugar":sugar_fasting_list,
+    "Blood for AEC count":blood_for_aec_list,
+    "RA Factor":ra_factor_list,
+    "ASO Titre":aso_titre_list
+}
+
+report_canvas_values_dict = {
+    "Hb":"hb",
+    "Total Count (TC)":"tc_count",
+    "Platelet Count":"plt_count",
+    "Differential Count (DC)":"dc_count",
+    "CRP":crp_list,
+    "Widal":widal_list,
+    "Full CBP":full_cbp_list,
+    "Blood Group":blood_group_list,
+    "Total Bilirubin":total_bilirubin_list,
+    "Direct & Indirect Bilirubin":direct_indirect_bilirubin_list,
+    "Heamogram":heamogram_list,
+    "HBA1C":hba1c_list,
+    "Blood Urea":blood_urea_list,
+    "Serum Creatinine":serum_creatinine_list,
+    "Uric Acid":uric_acid_list,
+    "Urine Analysis":urine_analysis_list,
+    "Mantaoux":mantaoux_list,
+    "Random Sugar":sugar_random_list,
+    "Fasting Sugar":sugar_fasting_list,
+    "Blood for AEC count":blood_for_aec_list,
+    "RA Factor":ra_factor_list,
+    "ASO Titre":aso_titre_list
+}
 
 def create_pdf(serial_no,page_size,details_dict):
 
     global copy_df,all_patients_values
-    def cal_string_width(total_string,font_name,font_size):
-        return c.stringWidth(total_string,font_name,font_size)
     patient_serial_no = serial_no
     collection_date = str(get_df_item(serial_no,"Date"))
     collection_time = get_df_item(serial_no,"Time")
@@ -414,40 +710,44 @@ def create_pdf(serial_no,page_size,details_dict):
         c = canvas.Canvas(filename,pagesize=portrait(A5))
         page_width, page_height = A5
         c.rect(40,40,page_width - 2 * 40, page_height - 2 * 50)
-        c.setDash(6,3)
-        c.setFont(font_name,5)
-        for x in range(0,int(page_width),10):
-            if x % 20 == 0:
-                c.line(x,page_height,x,0)
-                c.drawString(x+2,page_height-30,str(x))
-        for x in range(0,int(page_height),10):
-            if x % 20 == 0:
-                c.line(0,x,page_width,x)
-                c.drawString(30,x+2,str(x))
-        c.setFont(font_name,font_size)
-        c.drawString(42,page_height-75,f"Pt. Name : {patient_name.upper()}")
-        c.drawString(42,page_height-(75 + patient_details_space),f"Gender : {patient_gender}")                  
-        age_string = f"Age: {patient_age} {patient_age_group}"
-        c.drawString(375-cal_string_width(age_string,font_name,font_size),page_height-(75 + patient_details_space),age_string)     # s
-        c.drawString(42,page_height-(75 + 2*patient_details_space),f"Ref.Dr.By. : {doctor_name}")                                                # 99 + 24
-        c.drawString(42,page_height-(75 + 3*patient_details_space),f"Serial No: 000{patient_serial_no}")
-        time_string = f"Collection Time: {collection_time}"
-        c.drawString(375-cal_string_width(time_string,font_name,font_size),page_height-(75 + 3*patient_details_space),time_string)        # s
-        c.drawString(42,page_height-(75 + 4*patient_details_space),f"Specimen: {patient_specimen}")
-        date_string = f"Date: {frmt_time}"
-        c.drawString(375-cal_string_width(date_string,font_name,font_size),page_height-(75 + 4*patient_details_space),date_string)                         # s
-        c.setDash()
-        c.line(40,page_height-(75 + 4 * patient_details_space) - 5,379,page_height-(75 + 4 * patient_details_space) - 5)
-        c.line(40,page_height-(75 + 4 * patient_details_space) - 18,379,page_height-(75 + 4 * patient_details_space) - 20)
-        c.setFont(font_name,8)
-        c.drawString(42,page_height-(75 + 4 * patient_details_space) - 15,"test".upper())
-        c.drawString(190,page_height-(75 + 4 * patient_details_space) - 15,"value".upper())
-        reference_string = "reference range".upper()
-        c.drawString(375-cal_string_width(reference_string,font_name,8),page_height-(75 + 4 * patient_details_space) - 15,reference_string)
+
+        # c.setDash(6,3)
+        # c.setFont(font_name,5)
+        # for x in range(0,int(page_width),10):
+        #     if x % 20 == 0:
+        #         c.line(x,page_height,x,0)
+        #         c.drawString(x+2,page_height-30,str(x))
+        # for x in range(0,int(page_height),10):
+        #     if x % 20 == 0:
+        #         c.line(0,x,page_width,x)
+        #         c.drawString(30,x+2,str(x))
+
+
+        c = patient_details_canvas(
+            c,
+            font_name,
+            font_size,
+            page_height,
+            patient_name,
+            patient_details_space,
+            patient_age,
+            patient_age_group,
+            patient_gender,
+            doctor_name,
+            patient_serial_no,
+            collection_time,
+            patient_specimen,
+            frmt_time
+        )
+
+        h = 410
+        serial_no = str(serial_no)
+        tests_list = details_dict[serial_no]["tests"]
+        for t in tests_list:
+            c,h = reports_canvas_dict[t](c,details_dict[serial_no][report_canvas_values_dict[t]],page_size,h)
         c.save()
     else:
         pass
-    print(all_patients_values)
     return filename
 
 @callback(
@@ -466,7 +766,13 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
     if not input_values:
         raise PreventUpdate
     if n_clicks:
-        temp_dict = {id['name']: value for id,value in zip(input_ids,input_values)}
+        temp_dict = {"dc_count":[]}
+        for id,value in zip(input_ids,input_values):
+            print(id['name'])
+            if id['name'] in ['polymo','lympho','esino']:
+                temp_dict["dc_count"].append(value)
+            else:
+                temp_dict[id['name']] = value
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],**temp_dict}
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],'page_size':page_size_value}
         return all_patients_values
@@ -477,16 +783,17 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
     Output("report-preview","children"),
     Input("preview-button","n_clicks"),
     [
+        State("patient-data-store","data"),
         State("patients-dropdown","value"),
         State("page-size-dropdown","value")
     ]
 )
-def preview_report(n_clicks,patient_sno,page_size):
-    global all_patients_values
+def preview_report(n_clicks,data,patient_sno,page_size):
     if not n_clicks:
         raise PreventUpdate
     if n_clicks:
-        filename = create_pdf(patient_sno,page_size,all_patients_values)
+        print(data)
+        filename = create_pdf(patient_sno,page_size,data)
         return html.Iframe(
             src=filename,
             style=dict(width="100%",height="1650px")
