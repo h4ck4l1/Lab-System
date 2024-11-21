@@ -1,4 +1,4 @@
-import json,os
+import json,os,flask,datetime
 import pandas as pd
 from io import StringIO
 from reportlab.pdfgen import canvas            
@@ -12,7 +12,6 @@ from dash.exceptions import PreventUpdate
 registerFont(TTFont("CenturySchoolBook-BoldItalic","assets/schlbkbi.ttf"))
 
 all_reports_dict = {}
-all_reports_done_dict = {}
 copy_df = None
 all_patients_values = {}
 
@@ -77,8 +76,6 @@ templates_dropdown = dcc.Dropdown(
     id="template-dropdown"
 )
 
-
-
 layout = html.Div(
     [
         html.Div(html.H1("Patients report",className="page-heading"),className="heading-divs"),
@@ -97,7 +94,8 @@ layout = html.Div(
         html.Div(id="last-output"),
         html.Button("Submit".upper(),id="submit-report-button",style=dict(width="200px",height="100px",position="relative",backgroundColor="cyan",left="800px",fontSize=25,borderRadius="20px")),
         html.Div(html.H1("report preview".upper(),className="page-heading"),className="heading-divs",style=dict(position="relative",top="50px")),
-        html.Div("type report to preview".upper(),id="report-preview",style=dict(color="cyan",border="10px solid #4b70f5",padding="50px",position="relative",top="100px"))
+        html.Button("preview".upper(),id="preview-button",style=dict(width="200px",height="100px",position="relative",left="1500px",fontSize=25,borderRadius="20px",backgroundColor="cyan")),
+        html.Div("type report to preview".upper(),id="report-preview",style=dict(color="cyan",border="10px solid #4b70f5",padding="50px",position="relative",top="100px",height="1750px")),
     ],
     className="subpage-content"
 )
@@ -357,7 +355,6 @@ def submit_report(patients_sno, reports_value,template_value):
     if patients_sno:
         all_patients_values[patients_sno] = {}
         all_reports_dict[patients_sno] = {"patient_details":[],"report_details":[]}
-        all_reports_done_dict[patients_sno] = {}
         patients_details = [
                 html.Div(f"Patient Name: {get_df_item(patients_sno,item_name='Patient Name')}"),
                 html.Div(f"Age: {get_df_item(patients_sno,item_name='Patient Age')}"),
@@ -366,8 +363,10 @@ def submit_report(patients_sno, reports_value,template_value):
             ]
         all_reports_dict[patients_sno]["patient_details"] = patients_details
         if reports_value:
+            all_patients_values[patients_sno]["tests"] = []
             for x in reports_value:
                 all_reports_dict[patients_sno]['report_details'] += reports_original_dict[x]
+                all_patients_values[patients_sno]["tests"].append(x)
         if template_value:
             template_value = json.loads(template_value)
             for x in template_value:
@@ -380,29 +379,68 @@ def submit_report(patients_sno, reports_value,template_value):
 
 def create_pdf(serial_no,page_size,details_dict):
 
-    global copy_df
-    date_of_patient_visit = get_df_item(serial_no,"Date")
+    global copy_df,all_patients_values
+    def cal_string_width(total_string,font_name,font_size):
+        return c.stringWidth(total_string,font_name,font_size)
+    patient_serial_no = serial_no
+    collection_date = str(get_df_item(serial_no,"Date"))
+    collection_time = get_df_item(serial_no,"Time")
     patient_name = get_df_item(serial_no,"Patient Name")
-    patient_name = patient_name.replace(".")
-    first_part = date_of_patient_visit.split(" ")[0]
-    year_extract,month_extract,date_extract = first_part.split("-")
-    base_dir = "all_files"
+    patient_age = get_df_item(serial_no,"Patient Age")
+    patient_age_group = get_df_item(serial_no,"Age Group")
+    patient_gender = get_df_item(serial_no,"Gender")
+    patient_specimen = "Blood"
+    doctor_name = get_df_item(serial_no,"Reference By")
+    patient_details_space = 18
+    time_obj = datetime.datetime.strptime(collection_date,"%Y-%m-%d %H:%M:%S")
+    frmt_time = time_obj.strftime("%d-%m-%y")
+    patient_name_save = patient_name.replace(".","_")
+    year_extract,month_extract,day_extract = time_obj.strftime("%Y"),time_obj.strftime("%m"),time_obj.strftime("%d")
+    base_dir = "assets"
     year_dir = os.path.join(base_dir,year_extract)
     month_dir = os.path.join(year_dir,month_extract)
-    os.makedirs(month_dir,exist_ok=True)
-    filename = os.path.join(month_dir,f"{patient_name}.pdf")
+    day_dir = os.path.join(month_dir,day_extract)
+    os.makedirs(day_dir,exist_ok=True)
+    filename = os.path.join(day_dir,f"{patient_name_save}.pdf")
     if page_size == "SMALL/A5":
+        font_name = "Times-BoldItalic"
+        font_size = 12
         c = canvas.Canvas(filename,pagesize=portrait(A5))
-        page_width,page_height = A5
-        c.rect(45,40,page_width- 2 * 45,page_height - 2 * 50)
-        c.setFont("Times-BoldItalic",12)
-        c.drawString()
+        page_width, page_height = A5
+        c.rect(40,40,page_width - 2 * 40, page_height - 2 * 50)
+        c.setDash(6,3)
+        c.setFont(font_name,5)
+        for x in range(0,int(page_width),10):
+            if x % 20 == 0:
+                c.line(x,page_height-500,x,page_height)
+                c.drawString(x+2,page_height-30,str(x))
+            else:
+                c.line(x,page_height-20,x,page_height-20)
+        c.setFont(font_name,font_size)
+        c.drawString(42,page_height-75,f"Pt. Name : {patient_name.upper()}")
+        c.drawString(42,page_height-(75 + patient_details_space),f"Gender : {patient_gender}")                  
+        age_string = f"Age: {patient_age} {patient_age_group}"
+        c.drawString(375-cal_string_width(age_string,font_name,font_size),page_height-(75 + patient_details_space),age_string)     # s
+        c.drawString(42,page_height-(75 + 2*patient_details_space),f"Ref.Dr.By. : {doctor_name}")                                                # 99 + 24
+        c.drawString(42,page_height-(75 + 3*patient_details_space),f"Serial No: 000{patient_serial_no}")
+        time_string = f"Collection Time: {collection_time}"
+        c.drawString(375-cal_string_width(time_string,font_name,font_size),page_height-(75 + 3*patient_details_space),time_string)        # s
+        c.drawString(42,page_height-(75 + 4*patient_details_space),f"Specimen: {patient_specimen}")
+        date_string = f"Date: {frmt_time}"
+        c.drawString(375-cal_string_width(date_string,font_name,font_size),page_height-(75 + 4*patient_details_space),date_string)                         # s
+        c.setDash()
+        c.line(40,page_height-(75 + 4 * patient_details_space) - 5,379,page_height-(75 + 4 * patient_details_space) - 5)
+        c.line(40,page_height-(75 + 4 * patient_details_space) - 18,379,page_height-(75 + 4 * patient_details_space) - 20)
+        c.setFont(font_name,8)
+        c.drawString(42,page_height-(75 + 4 * patient_details_space) - 15,"test".upper())
+        c.drawString(190,page_height-(75 + 4 * patient_details_space) - 15,"value".upper())
+        reference_string = "reference range".upper()
+        c.drawString(375-cal_string_width(reference_string,font_name,8),page_height-(75 + 4 * patient_details_space) - 15,reference_string)
+        c.save()
     else:
         pass
-
-
-
-
+    print(all_patients_values)
+    return filename
 
 @callback(
     Output("patient-data-store","data"),
@@ -420,10 +458,31 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
     if not input_values:
         raise PreventUpdate
     if n_clicks:
-        all_patients_values[patients_sno] = {id['name']: value for id,value in zip(input_ids,input_values)}
+        temp_dict = {id['name']: value for id,value in zip(input_ids,input_values)}
+        all_patients_values[patients_sno] = {**all_patients_values[patients_sno],**temp_dict}
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],'page_size':page_size_value}
         return all_patients_values
+    
 
+
+@callback(
+    Output("report-preview","children"),
+    Input("preview-button","n_clicks"),
+    [
+        State("patients-dropdown","value"),
+        State("page-size-dropdown","value")
+    ]
+)
+def preview_report(n_clicks,patient_sno,page_size):
+    global all_patients_values
+    if not n_clicks:
+        raise PreventUpdate
+    if n_clicks:
+        filename = create_pdf(patient_sno,page_size,all_patients_values)
+        return html.Iframe(
+            src=filename,
+            style=dict(width="100%",height="1650px")
+        )
 
 
 register_page(

@@ -1,4 +1,4 @@
-import os
+import os,time
 from datetime import datetime,date
 from glob import glob
 import numpy as np
@@ -14,7 +14,7 @@ df = pd.DataFrame(
         "Date":pd.Series(dtype="str"),
         "Patient Name":pd.Series(dtype="str"),
         "Reference By":pd.Series(dtype="str"),
-        "Patient Age":pd.Series(dtype="str"),
+        "Patient Age":pd.Series(dtype="int64"),
         "Age Group":pd.Series(dtype="str"),
         "Gender":pd.Series(dtype="str"),
         "Amount":pd.Series(dtype="int64"),
@@ -172,9 +172,10 @@ def initialize_df(date_value,n_clicks):
             {
                 "S.No.":pd.Series(dtype="int32"),
                 "Date":pd.Series(dtype="str"),
+                "Time":pd.Series(dtype="str"),
                 "Patient Name":pd.Series(dtype="str"),
                 "Reference By":pd.Series(dtype="str"),
-                "Patient Age":pd.Series(dtype="str"),
+                "Patient Age":pd.Series(dtype="int64"),
                 "Age Group":pd.Series(dtype="str"),
                 "Gender":pd.Series(dtype="str"),
                 "Amount":pd.Series(dtype="int64"),
@@ -183,8 +184,8 @@ def initialize_df(date_value,n_clicks):
                 "Print":pd.Series(dtype="bool")
             }
         )
-        df.loc[1,:] = [1,datetime.today().strftime("%d-%m-%y"),"first_name","some_doc","1","Y","Male",10,20,False,False]
-        df.loc[2,:] = [2,datetime.today().strftime("%d-%m-%y"),"second_name","some_doc","2","M","Female",20,30,False,False]
+        df.loc[1,:] = [1,datetime.today().strftime("%d-%m-%y"),"01:11:23 PM","first_name","some_doc",1,"Y","Male",10,20,False,False]
+        df.loc[2,:] = [2,datetime.today().strftime("%d-%m-%y"),"12:10:56 AM","second_name","some_doc",2,"M","Female",20,30,False,False]
     return df.to_dict('records'),df.to_json(date_format="iso",orient="split")
 
 
@@ -217,6 +218,15 @@ def append_name_to_dataframe(n_clicks,*vals):
         df.loc[index_number,"S.No."] = vals[4]
         date_obj = date.fromisoformat(vals[3])
         df.loc[index_number,"Date"] = date_obj.strftime("%d-%m-%y")
+        t = time.localtime()
+        t_hour,t_min,t_sec = t.tm_hour,t.tm_min,t.tm_sec
+        if t_hour > 11:
+            if t_hour != 12:
+                t_hour -= 12
+            t_time = f"{t_hour}:{t_min}:{t_sec} PM"
+        else:
+            t_time = f"{t_hour}:{t_min}:{t_sec} AM"
+        df.loc[index_number,"Time"] = t_time
         df.loc[index_number,"Patient Name"] = vals[5]
         if vals[6] == None:
             df.loc[index_number,"Reference By"] = vals[2]

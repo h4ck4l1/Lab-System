@@ -37,6 +37,14 @@ dropdown_options = [
                 dcc.Link("reports".upper(),href="/reports",className="dropdown-link")
             ]
         )
+    ),
+    html.Li(
+        html.Span(
+            [
+                html.Img(src="assets/paper.png"),
+                dcc.Link("papermill".upper(),href="/papermill",className="dropdown-link")
+            ]
+        )
     )
 ]
 
@@ -70,4 +78,4 @@ app.layout = dcc.Loading(
 )
 
 if __name__ == '__main__':
-    app.run_server(host="0.0.0.0",port=8050,debug=True)
+    app.run_server(host="0.0.0.0",port=8050)
