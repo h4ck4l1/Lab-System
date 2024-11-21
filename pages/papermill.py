@@ -87,8 +87,6 @@ def make_pdf(pt_name:str,pt_age:int,input_date:str,pt_id:int):
     return f"assets/papermill_reports/{pt_name}.pdf"
 
 
-# make_pdf("gera venkata siva prasad",22,574478,160,65,"21 / 11 / 24")
-
 @callback(
     Output("papermill-output-container","children"),
     Input("papermill-submit-button","n_clicks"),
