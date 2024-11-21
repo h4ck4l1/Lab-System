@@ -376,6 +376,11 @@ def submit_report(patients_sno, reports_value,template_value):
 
 
 
+def hb_canvas(c:canvas.Canvas,hb_value:str,r_space):
+    c.drawString(62,)
+    return c
+
+
 
 def create_pdf(serial_no,page_size,details_dict):
 
@@ -392,6 +397,7 @@ def create_pdf(serial_no,page_size,details_dict):
     patient_specimen = "Blood"
     doctor_name = get_df_item(serial_no,"Reference By")
     patient_details_space = 18
+    report_details_space = 18
     time_obj = datetime.datetime.strptime(collection_date,"%Y-%m-%d %H:%M:%S")
     frmt_time = time_obj.strftime("%d-%m-%y")
     patient_name_save = patient_name.replace(".","_")
@@ -412,10 +418,12 @@ def create_pdf(serial_no,page_size,details_dict):
         c.setFont(font_name,5)
         for x in range(0,int(page_width),10):
             if x % 20 == 0:
-                c.line(x,page_height-500,x,page_height)
+                c.line(x,page_height,x,0)
                 c.drawString(x+2,page_height-30,str(x))
-            else:
-                c.line(x,page_height-20,x,page_height-20)
+        for x in range(0,int(page_height),10):
+            if x % 20 == 0:
+                c.line(0,x,page_width,x)
+                c.drawString(30,x+2,str(x))
         c.setFont(font_name,font_size)
         c.drawString(42,page_height-75,f"Pt. Name : {patient_name.upper()}")
         c.drawString(42,page_height-(75 + patient_details_space),f"Gender : {patient_gender}")                  
