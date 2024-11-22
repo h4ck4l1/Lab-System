@@ -14,6 +14,9 @@ registerFont(TTFont("CenturySchoolBook-BoldItalic","assets/schlbkbi.ttf"))
 all_reports_dict = {}
 copy_df = None
 all_patients_values = {}
+big_break = [html.Br()] * 5
+large_break = [html.Br()] * 10
+small_break = [html.Br()] * 2
 
 patients_dropdown = dcc.Dropdown(
     placeholder="Select Serial Number..,",
@@ -33,19 +36,21 @@ all_options = [
     "Total Bilirubin",
     "Direct & Indirect Bilirubin",
     "Heamogram",
-    "HBA1C",      # -------------------------- pack 1
-    "Fasting Sugar",                      
+    "HBA1C",
+    "Fasting Sugar",       
     "Random Sugar",
-    "Blood Urea", # ----------------------- pack 2
+    "Blood Urea",
     "Serum Creatinine",
     "Uric Acid",
     "Urine Analysis",
+    "Urine Pregnancy",
     "Lipid Profile",
     "Mantaoux",
     "Heamogram",
     "Blood for AEC Count",
     "RA Factor",
     "ASO Titre",
+    "PT APTT",
     "Serum Amylase",
     "Serum Lipase",
     "Serum Protein",
@@ -53,7 +58,7 @@ all_options = [
     "Serum Globulin",
     "Serum A/G Ratio",
     "Serum Sodium",
-    "Serum Pottasium",
+    "Serum Potassium",
     "Serum Chloride",
     "Serum Calcium"
 ]
@@ -91,13 +96,13 @@ templates_dropdown = dcc.Dropdown(
 layout = html.Div(
     [
         html.Div(html.H1("Patients report",className="page-heading"),className="heading-divs"),
-        *[html.Br()]*5,
+        *big_break,
         html.Div(patients_dropdown,style=dict(width="400px",alignItems="center")),
-        *[html.Br()]*5,
+        *big_break,
         html.Div(reports_dropdown,style=dict(width="400px",alignItems="center")),
         html.Div(page_size_dropdown,style=dict(width="400px",alignItems="center",position="relative",left="420px",bottom="36px")),
         html.Div(templates_dropdown,style=dict(width="400px",alignItems="center",position="relative",left="840px",bottom="73px")),
-        *[html.Br()]*10,
+        *large_break,
         html.Div(id="output-report",style=dict(border="2px solid rgba(0,255,255,0.7)",borderBottom=None,padding="20px",position="relative",left="100px",width="900px",fontSize=18)),
         html.Hr(style=dict(position="relative",left="100px",width="900px",border="1px solid cyan")),
         html.Div("Test Value Reference",style=dict(wordSpacing="300px",paddingTop="20px",paddingLeft="50px",border="2px solid rgba(0,255,255,0.7)",borderTop=None,borderBottom=None,width="900px",height="50px",position="relative",left="100px")),
@@ -280,11 +285,11 @@ heamogram_list = [
 
 hba1c_list = [
     html.Div("Glycosylated Hb (HbA1c) Test: ",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'hba1c_first'},type="number",placeholder="Type Hba1c %..",style=input_style),
-    html.Div("%",style=limits_style),
+    dcc.Input(id={'type':'dynamic-input','name':'hba1c_first'},type="number",placeholder="Type Hba1c %..",style={**input_style,"left":"500px"}),
+    html.Div("%",style={**limits_style,"left":"700px"}),
     html.Div("Esitmiated Average Glucose (eAG): ",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'hba1c_second'},type="number",placeholder="Type Hba1c mg/dl..",style=input_style),
-    html.Div("mg/dl",style=limits_style)
+    dcc.Input(id={'type':'dynamic-input','name':'hba1c_second'},type="number",placeholder="Type Hba1c mg/dl..",style={**input_style,"left":"500px"}),
+    html.Div("mg/dl",style={**limits_style,"left":"700px"})
 ]
 
 blood_urea_list = [
@@ -296,7 +301,7 @@ blood_urea_list = [
 serum_creatinine_list = [
     html.Div("Serum creatinine : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'serum-creat'},type="number",placeholder="Enter creatinine",style=input_style),
-    html.Div()
+    html.Div("( 2.5 - 7.5 IU/L )",style=limits_style)
 ]
 
 uric_acid_list = [
@@ -357,17 +362,23 @@ urine_pregnency_list = [
 ]
 
 pt_aptt_list = [
-    html.Div("Prothrombin Time Test",style={**text_style,"left":"500px"}),
-    html.Div("P.T Test: 14.9 seconds",text_style),
-    html.Div("P.T. Control : ",text_style),
+    html.Div("Prothrombin Time Test",style={**text_style,"left":"400px","text-decoration":"underline"}),
+    *big_break,
+    html.Div("P.T Test:",style=text_style),
+    html.Div(" 14.9 seconds",style=input_style),
+    html.Div("P.T. Control : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'pt_control'},type="number",placeholder="13.4 seconds",style=input_style),
     html.Div("INR : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'pt_inr'},type="number",placeholder="1.2",style=input_style),
-    html.Div("Activate Partial Thromboplastin Time",style=text_style),
-    html.Div("APTT Test : 36 (Nor: 26 - 38 sec)",style=text_style),
+    *small_break,
+    html.Div("Activate Partial Thromboplastin Time",style={**text_style,"left":"400px","text-decoration":"underline"}),
+    *big_break,
+    html.Div("APTT Test :",style=text_style),
+    html.Div(" 36",style=input_style),
+    html.Div(" ( Nor: 26 - 38 sec )",style=limits_style),
     html.Div("APTT Control : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'aptt_control'},type="number",placeholder="33.6 seconds...",style=input_style),
-    html.Div("( Nor 2i - 38 sec )",style=limits_style)
+    html.Div("( Nor 26 - 38 sec )",style=limits_style)
 ]
 
 mantaoux_list = [
@@ -376,28 +387,28 @@ mantaoux_list = [
 ]
 
 sugar_random_list = [
-    html.Div("Blood Sugar ( Random ) : ",style=text_style),
+    html.Div("Blood Sugar (Random):",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'random_sugar'},type="number",placeholder="Type RBS..",style=input_style),
     html.Div(" ( 70 - 140 mg/dl ) ",style=limits_style)
 ]
 
 sugar_fasting_list = [
-    html.Div("Blood Sugar ( Fasting ) : ",style=text_style),
+    html.Div("Blood Sugar (Fasting):",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'fasting_sugar'},type="number",placeholder="Type FBS..",style=input_style),
     html.Div(" ( 70 - 110 mg/dl ) ",style=limits_style)
 ]
 
 lipid_profile_list = [
     html.Div("Total Cholesterol : ",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'lipid_tc'},type="number",placeholder="Type Tc..",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'lipid_tc'},type="number",placeholder="Type Tc..",style={**input_style,"left":"500px"}),
     html.Div("High Density Lipoprotein ( HDL ) : ",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'lipid_hdl'},type="number",placeholder="Type HDL...",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'lipid_hdl'},type="number",placeholder="Type HDL...",style={**input_style,"left":"500px"}),
     html.Div("Low Density Lipoprotein : ",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'lipid_ldl'},type="number",placeholder="Type LDL...",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'lipid_ldl'},type="number",placeholder="Type LDL...",style={**input_style,"left":"500px"}),
     html.Div("Very Low Density Lipoprotein : ",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'lipid_vldl'},type="number",placeholder="Type VLDL",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'lipid_vldl'},type="number",placeholder="Type VLDL",style={**input_style,"left":"500px"}),
     html.Div("Triglyceride (F): ",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'lipid_tri'},type="number",placeholder="Type Triglyceride...",style=input_style)
+    dcc.Input(id={'type':'dynamic-input','name':'lipid_tri'},type="number",placeholder="Type Triglyceride...",style={**input_style,"left":"500px"})
 ]
 
 blood_for_aec_list = [
@@ -414,54 +425,117 @@ ra_factor_list = [
     html.Div(" dilutions ) ",style={**limits_style,"left":"730px","bottom":"95px"})
 ]
 
-aso_titre_list = []
+aso_titre_list = [
+    html.Div("ASO TITRE : ",style=text_style),
+    html.Div([dcc.Dropdown(["POSITIVE","NEGATIVE"],"NEGATIVE",id={'type':'dynamic-input','name':'aso_titre_drop'})],style=input_style),
+    html.Div([
+        "( 1 : ",
+        dcc.Input(id={'type':'dynamic-input','name':'aso_titre_dilutions'},type="number"),
+        " dilutions"
+    ],style=limits_style)
+]
 
-serum_amylase_list = []
+serum_amylase_list = [
+    html.Div("Serum Amylase : ", style=text_style),
+    dcc.Input(id={'type': 'dynamic-input', 'name': 'serum_amylase'}, type="number", placeholder="Type amylase", style=input_style),
+    html.Div(" (30 - 110 U/L) ", style=limits_style)
+]
 
-serum_lipase_list = []
+serum_lipase_list = [
+    html.Div("Serum Lipase : ", style=text_style),
+    dcc.Input(id={'type': 'dynamic-input', 'name': 'serum_lipase'}, type="number", placeholder="Type lipase", style=input_style),
+    html.Div(" (23 - 300 U/L) ", style=limits_style)
+]
 
-serum_protein_list = []
+serum_protein_list = [
+    html.Div("Serum Protein : ", style=text_style),
+    dcc.Input(id={'type': 'dynamic-input', 'name': 'serum_protein'}, type="number", placeholder="Type protein", style=input_style),
+    html.Div(" (6.6 - 8.3 g/dl) ", style=limits_style)
+]
 
-serum_albumin_list = []
+serum_albumin_list = [
+    html.Div("Serum Albumin : ", style=text_style),
+    dcc.Input(id={'type': 'dynamic-input', 'name': 'serum_albumin'}, type="number", placeholder="Type albumin", style=input_style),
+    html.Div(" (3.5 - 5.0 g/dl) ", style=limits_style)
+]
 
-serum_globulin_list = []
+serum_globulin_list = [
+    html.Div("Serum Globulin : ", style=text_style),
+    dcc.Input(id={'type': 'dynamic-input', 'name': 'serum_globulin'}, type="number", placeholder="Type globulin", style=input_style),
+    html.Div(" (2.0 - 3.5 g/dl) ", style=limits_style)
+]
 
-serum_ag_ratio_list = []
+serum_ag_ratio_list = [
+    html.Div("Serum A/G Ratio : ", style=text_style),
+    dcc.Input(id={'type': 'dynamic-input', 'name': 'serum_ag_ratio'}, type="number", placeholder="Type A/G ratio", style=input_style),
+    html.Div(" (0.9 - 2.0 g/dl) ", style=limits_style)
+]
 
-serum_sodium_list = []
+serum_sodium_list = [
+    html.Div("Serum Sodium : ", style=text_style),
+    dcc.Input(id={'type': 'dynamic-input', 'name': 'serum_sodium'}, type="number", placeholder="Type sodium", style=input_style),
+    html.Div(" (135 - 155 mmol/L) ", style=limits_style)
+]
 
-serum_pottasium_list = []
+serum_potassium_list = [
+    html.Div("Serum Potassium : ", style=text_style),
+    dcc.Input(id={'type': 'dynamic-input', 'name': 'serum_potassium'}, type="number", placeholder="Type potassium", style=input_style),
+    html.Div(" (3.5 - 5.5 mmol/L) ", style=limits_style)
+]
 
-serum_chloride_list = []
+serum_chloride_list = [
+    html.Div("Serum Chloride : ", style=text_style),
+    dcc.Input(id={'type': 'dynamic-input', 'name': 'serum_chloride'}, type="number", placeholder="Type chloride", style=input_style),
+    html.Div(" (98 - 107 mmol/L) ", style=limits_style)
+]
 
-serum_calcium_list = []
+serum_calcium_list = [
+    html.Div("Serum Calcium : ", style=text_style),
+    dcc.Input(id={'type': 'dynamic-input', 'name': 'serum_calcium'}, type="number", placeholder="Type calcium", style=input_style),
+    html.Div(" (8.5 - 10.5 mmol/L) ", style=limits_style)
+]
+
 
 
 reports_original_dict = {
-    "Hb":hb_list,
-    "Total Count (TC)":tc_list,
-    "Platelet Count":plt_list,
-    "Differential Count (DC)":dc_list,
-    "ESR":esr_list,
-    "CRP":crp_list,
-    "Widal":widal_list,
-    "Full CBP":full_cbp_list,
-    "Blood Group":blood_group_list,
-    "Total Bilirubin":total_bilirubin_list,
-    "Direct & Indirect Bilirubin":direct_indirect_bilirubin_list,
-    "Heamogram":heamogram_list,
-    "HBA1C":hba1c_list,
-    "Blood Urea":blood_urea_list,
-    "Serum Creatinine":serum_creatinine_list,
-    "Uric Acid":uric_acid_list,
-    "Urine Analysis":urine_analysis_list,
-    "Mantaoux":mantaoux_list,
-    "Random Sugar":sugar_random_list,
-    "Fasting Sugar":sugar_fasting_list,
-    "Blood for AEC count":blood_for_aec_list,
-    "RA Factor":ra_factor_list,
-    "ASO Titre":aso_titre_list
+    "Hb": hb_list,
+    "Total Count (TC)": tc_list,
+    "Platelet Count": plt_list,
+    "Differential Count (DC)": dc_list,
+    "ESR": esr_list,
+    "CRP": crp_list,
+    "Widal": widal_list,
+    "Full CBP": full_cbp_list,
+    "Blood Group": blood_group_list,
+    "Total Bilirubin": total_bilirubin_list,
+    "Direct & Indirect Bilirubin": direct_indirect_bilirubin_list,
+    "Heamogram": heamogram_list,
+    "HBA1C": hba1c_list,
+    "Blood Urea": blood_urea_list,
+    "Serum Creatinine": serum_creatinine_list,
+    "Uric Acid": uric_acid_list,
+    "Urine Analysis": urine_analysis_list,
+    "Urine Pregnancy": urine_pregnency_list,
+    "Mantaoux": mantaoux_list,
+    "Random Sugar": sugar_random_list,
+    "Fasting Sugar": sugar_fasting_list,
+    "Blood for AEC count": blood_for_aec_list,
+    "RA Factor": ra_factor_list,
+    "ASO Titre": aso_titre_list,
+    "PT APTT": pt_aptt_list,
+    "Lipid Profile": lipid_profile_list,
+    "Serum Amylase": serum_amylase_list,
+    "Serum Lipase": serum_lipase_list,
+    "Serum Protein": serum_protein_list,
+    "Serum Albumin": serum_albumin_list,
+    "Serum Globulin": serum_globulin_list,
+    "Serum A/G Ratio": serum_ag_ratio_list,
+    "Serum Sodium": serum_sodium_list,
+    "Serum Potassium": serum_potassium_list,
+    "Serum Chloride": serum_chloride_list,
+    "Serum Calcium": serum_calcium_list
 }
+
 
 
 
@@ -773,7 +847,7 @@ def create_pdf(serial_no,page_size,details_dict):
         font_size = 12
         c = canvas.Canvas(filename,pagesize=portrait(A5))
         page_width, page_height = A5
-        c.rect(40,40,page_width - 2 * 40, page_height - 2 * 50)
+        c.rect(40,20,page_width - 2 * 40, page_height - 2 * 40)
 
         # c.setDash(6,3)
         # c.setFont(font_name,5)
