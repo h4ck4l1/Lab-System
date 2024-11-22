@@ -30,8 +30,12 @@ doctor_options = [
     "NEELIMA AGARWAL GARU, MD(Homeo).,",
     "m rama krishna garu, mbbs, dch.,".upper(),
     "Smt. M.N. SRI DEVI GARU, MBBS, DGO.,",
-    "S. Prasad",
-    "Babu garu"
+    "akula satyanarayana garu, mbbs, dch.,".upper(),
+    "a. ganga bhavani garu, mbbs, dgo.,".upper(),
+    "k. rajendra prasad garu, b.m.p.,".upper(),
+    "ch. kiran kumar garu, b.m.p.,".upper(),
+    "S. Prasad".upper(),
+    "Babu garu".upper(),
 ]
 
 

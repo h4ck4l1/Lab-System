@@ -359,8 +359,15 @@ urine_pregnency_list = [
 pt_aptt_list = [
     html.Div("Prothrombin Time Test",style={**text_style,"left":"500px"}),
     html.Div("P.T Test: 14.9 seconds",text_style),
-    html.Div("P.T. Control : 13.4 seconds",text_style),
-    html.Div("INR : 1.2",style=text_style)
+    html.Div("P.T. Control : ",text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'pt_control'},type="number",placeholder="13.4 seconds",style=input_style),
+    html.Div("INR : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'pt_inr'},type="number",placeholder="1.2",style=input_style),
+    html.Div("Activate Partial Thromboplastin Time",style=text_style),
+    html.Div("APTT Test : 36 (Nor: 26 - 38 sec)",style=text_style),
+    html.Div("APTT Control : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'aptt_control'},type="number",placeholder="33.6 seconds...",style=input_style),
+    html.Div("( Nor 2i - 38 sec )",style=limits_style)
 ]
 
 mantaoux_list = [
