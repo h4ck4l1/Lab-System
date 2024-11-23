@@ -320,8 +320,7 @@ uric_acid_list = [
 
 urine_analysis_list = [
     html.Div("Urine analysis :",style=text_style),
-    html.Br(),
-    html.Br(),
+    *small_break,
     html.Div("Sugar : ",style=text_style),
     html.Div([dcc.Dropdown(["NIL","+","++","+++"],"NIL",id={'type':'dynamic-input','name':'urine_sugar'})],style=input_style),
     html.Div("Albumin : ",style=text_style),
@@ -426,7 +425,7 @@ blood_for_aec_list = [
 ]
 
 ra_factor_list = [
-    html.Div("ra factor :".upper(),style=text_style),
+    html.Div("ra-factor :".upper(),style=text_style),
     html.Div(dcc.Dropdown(["positive".upper(),"negative".upper()],"negative".upper(),id={'type':'dynamic-input','name':'ra-factor'}),style=dict(position="relative",width="200px",left="300px",bottom="25px")),
     html.Div(" ( 1 : ",style={**limits_style,"bottom":"50px"}),
     dcc.Input(id={'type':'dynamic-input','name':'ra-dilutions'},type="number",placeholder="None",style={**limits_style,"bottom":"75px","left":"620px","width":"100px"}),
@@ -435,7 +434,7 @@ ra_factor_list = [
 
 aso_titre_list = [
     html.Div("ASO TITRE : ",style=text_style),
-    html.Div([dcc.Dropdown(["POSITIVE","NEGATIVE"],"NEGATIVE",id={'type':'dynamic-input','name':'aso_titre_drop'})],style=input_style),
+    html.Div([dcc.Dropdown(["POSITIVE","NEGATIVE"],"NEGATIVE",id={'type':'dynamic-input','name':'aso_titre'})],style=input_style),
     html.Div([
         "( 1 : ",
         dcc.Input(id={'type':'dynamic-input','name':'aso_titre_dilutions'},type="number"),
@@ -661,44 +660,50 @@ def if_draw_bold(c:canvas.Canvas,value,value_string,limit_a,limit_b,x,y):
     return c
 
 
-def hb_canvas(c:canvas.Canvas,hb_value:float,page_size:str,h:int):
+small_left_extreme = 62
+small_value_point = 182
+small_right_extreme = 375
+small_font_name = "Times-BoldItalic"
+small_font_size = 12
+big_left_extreme = 43
+big_right_extreme = 540
+big_value_point = 240
+
+def hb_canvas(c:canvas.Canvas,hb_value:float,page_size:str,h:int,entity_height = 25):
+    hb_string = "( 11.0 - 16.8 Grams% )"
     if page_size == "SMALL/A5":
-        entity_height = 25
-        c.setFont("Times-BoldItalic",12)
-        c.drawString(62,h,"Heamoglobin")
-        c = if_draw_bold(c,hb_value,hb_value,11.0,16.8,182,h)
-        hb_string = "( 11.0 - 16.8 Grams% )"
-        c.drawString(375-cal_string_width(c,hb_string,"Times-BoldItalic",12),h,hb_string)
+        c.setFont(small_font_name,small_font_size)
+        c.drawString(small_left_extreme,h,"Heamoglobin")
+        c = if_draw_bold(c,hb_value,hb_value,11.0,16.8,small_value_point,h)
+        c.drawString(small_right_extreme-cal_string_width(c,hb_string,small_font_name,small_font_size),h,hb_string)
     else:
         pass
     return c,h - entity_height
 
 
-def tc_canvas(c:canvas.Canvas,tc_value:int,page_size:str,h:int):
+def tc_canvas(c:canvas.Canvas,tc_value:int,page_size:str,h:int,entity_height = 25):
+    tc_string = "( 5,000 - 10,000 Cells/cumm )"
     if page_size == "SMALL/A5":
-        entity_height = 25
-        c.setFont("Times-BoldItalic",12)
-        c.drawString(62,h,"Total WBC Count")
-        c = if_draw_bold(c,tc_value,f"{tc_value//1000},000",5000,10000,182,h)
-        tc_string = "( 5,000 - 10,000 Cells/cumm )"
-        c.drawString(375-cal_string_width(c,tc_string,"Times-BoldItalic",12),h,tc_string)
+        c.setFont(small_font_name,small_font_size)
+        c.drawString(small_left_extreme,h,"Total WBC Count")
+        c = if_draw_bold(c,tc_value,f"{tc_value//1000},000",5000,10000,small_value_point,h)
+        c.drawString(small_right_extreme-cal_string_width(c,tc_string,small_font_name,small_font_size),h,tc_string)
     else:
         pass
     return c,h-entity_height
 
 
-def plt_canvas(c:canvas.Canvas,plt_value:float,page_size:str,h:int):
+def plt_canvas(c:canvas.Canvas,plt_value:float,page_size:str,h:int,entity_height = 25):
+    plt_string = "( 1.5 - 4.0 Lakhs/cumm )"
     if page_size == "SMALL/A5":
-        entity_height = 25
-        c.setFont("Times-BoldItalic",12)
-        c.drawString(62,h,"Platelet Count : ")
+        c.setFont(small_font_name,small_font_size)
+        c.drawString(small_left_extreme,h,"Platelet Count : ")
         if plt_value < 1:
             plt_string = f"{int(plt_value * 100)},000"
         else:
             plt_string = str(plt_value)
-        c = if_draw_bold(c,plt_value,plt_string,1.5,4.0,182,h)
-        plt_string = "( 1.5 - 4.0 Lakhs/cumm )"
-        c.drawString(375-cal_string_width(c,plt_string,"Times-BoldItalic",12),h,plt_string)
+        c = if_draw_bold(c,plt_value,plt_string,1.5,4.0,small_value_point,h)
+        c.drawString(small_right_extreme-cal_string_width(c,plt_string,small_font_name,small_font_size),h,plt_string)
     else:
         pass
     return c,h-entity_height
@@ -707,7 +712,8 @@ def dc_canvas(
         c:canvas.Canvas,
         dc_count:list,
         page_size:str,
-        h:int
+        h:int,
+        entity_height=25
     ):
     
     def p(v):
@@ -722,10 +728,9 @@ def dc_canvas(
         esnio_value -= 1
     mono_value = 100 - (polymo_value + lympho_value + esnio_value)
     if page_size == "SMALL/A5":
-        entity_height = 130            # 25 * 5 + 5
-        c.setFont("Times-BoldItalic",12)
+        c.setFont(small_font_name,12)
         c.drawString(62,h,"Differential Count:")
-        c.line(62,h-5,62+cal_string_width(c,"Differential Count","Times-BoldItalic",12),h-5)
+        c.line(62,h-5,62+cal_string_width(c,"Differential Count",small_font_name,12),h-5)
         c.drawString(142,h-30,"Polymorphs")
         c.drawString(142,h-55,"Lymphocytes")
         c.drawString(142,h-80,"Eosinophils")
@@ -734,125 +739,238 @@ def dc_canvas(
         c = if_draw_bold(c,lympho_value,p(lympho_value),20,40,260,h-55)
         c = if_draw_bold(c,esnio_value,p(esnio_value),2,6,260,h-80)
         c = if_draw_bold(c,mono_value,p(mono_value),1,4,260,h-105)
-        c.drawString(375-cal_string_width(c,"( 40 - 70 %)","Times-BoldItalic",12),h-30,"( 40 - 70 %)")
-        c.drawString(375-cal_string_width(c,"( 40 - 70 %)","Times-BoldItalic",12),h-55,"( 20 - 40 %)")
-        c.drawString(375-cal_string_width(c,"( 40 - 70 %)","Times-BoldItalic",12),h-80,"( 02 - 06 %)")
-        c.drawString(375-cal_string_width(c,"( 40 - 70 %)","Times-BoldItalic",12),h-105,"( 01 - 04 %)")
+        c.drawString(small_left_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_font_size),h-30,"( 40 - 70 %)")
+        c.drawString(small_left_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_font_size),h-55,"( 20 - 40 %)")
+        c.drawString(small_left_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_font_size),h-80,"( 02 - 06 %)")
+        c.drawString(small_left_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_font_size),h-105,"( 01 - 04 %)")
+        h -= entity_height * 10.4
     else:
         pass
-    return c,h - entity_height
+    return c,h
 
 
-def crp_canvas():
-    pass
+def crp_canvas(c:canvas.Canvas,crp_value:float,page_size:str,h:int,entity_height=25):
+    crp_string = " ( < 6 ) "
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def widal_canvas():
-    pass
+def widal_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def full_cbp_canvas():
-    pass
+def full_cbp_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def hct_canvas():
-    pass
+def hct_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def blood_group_canvas():
-    pass
+def blood_group_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def total_bilirubin_canvas():
-    pass
+def total_bilirubin_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def heamogram_canvas():
-    pass
+def heamogram_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def direct_and_indirect_bilirubin_canvas():
-    pass
+def direct_and_indirect_bilirubin_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def hb1ac_canvas():
-    pass
+def hb1ac_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def blood_urea_canvas():
-    pass
+def blood_urea_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def serum_creat_canvas():
-    pass
+def serum_creat_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def uric_acid_cavnas():
-    pass
+def uric_acid_cavnas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def urine_analysis_canvas():
-    pass
+def urine_analysis_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def mantaux_canvas():
-    pass
+def mantaux_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def random_sugar_canvas():
-    pass
+def random_sugar_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def fasting_sugar_canvas():
-    pass
+def fasting_sugar_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def blood_for_aec_canvas():
-    pass
+def blood_for_aec_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def ra_factor_canvas():
-    pass
+def ra_factor_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def aso_titre_canvas():
-    pass
+def aso_titre_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def esr_canvas():
-    pass
+def esr_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def urine_preg_canvas():
-    pass
+def urine_preg_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def lipid_profile_canvas():
-    pass
+def lipid_profile_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def pt_aptt_canvas():
-    pass
+def pt_aptt_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def serum_amylase_canvas():
-    pass
+def serum_amylase_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def serum_lipase_canvas():
-    pass
+def serum_lipase_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def serum_protein_canvas():
-    pass
+def serum_protein_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def serum_albumin_canvas():
-    pass
+def serum_albumin_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def serum_globulin_canvas():
-    pass
+def serum_globulin_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def serum_ag_ratio_canvas():
-    pass
+def serum_ag_ratio_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def serum_sodium_canvas():
-    pass
+def serum_sodium_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def serum_pottassium_canvas():
-    pass
+def serum_pottassium_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def serum_chloride_canvas():
-    pass
+def serum_chloride_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def serum_calcium_canvas():
-    pass
+def serum_calcium_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def vdrl_canvas():
-    pass
+def vdrl_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def hbsag_canvas():
-    pass
+def hbsag_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def hiv_canvas():
-    pass
+def hiv_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
-def hcv_canvas():
-    pass
+def hcv_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
 
 
 
@@ -967,7 +1085,7 @@ def create_pdf(serial_no,page_size,details_dict):
     os.makedirs(day_dir,exist_ok=True)
     filename = os.path.join(day_dir,f"{patient_name_save}.pdf")
     if page_size == "SMALL/A5":
-        font_name = "Times-BoldItalic"
+        font_name = small_font_name
         font_size = 12
         c = canvas.Canvas(filename,pagesize=portrait(A5))
         page_width, page_height = A5
@@ -1006,7 +1124,7 @@ def create_pdf(serial_no,page_size,details_dict):
         serial_no = str(serial_no)
         tests_list = details_dict[serial_no]["tests"]
         for t in tests_list:
-            c,h = reports_canvas_dict[t](c,details_dict[serial_no][report_canvas_values_dict[t]],page_size,h)
+            c,h = reports_canvas_dict[t](c,details_dict[serial_no][report_canvas_values_dict[t]],page_size,h,report_details_space)
         c.save()
     else:
         pass

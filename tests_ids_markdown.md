@@ -31,8 +31,18 @@
 'direct-bili'
 'indirect-bili'
 
+
+# HCT 
+'hct'
+
 # ESR
 'esr'
+
+# DENGUE
+'dengue_igm'
+'dengue_igg'
+'dengue_ns'
+
 
 # FULL CBP
 'hb'
@@ -77,3 +87,65 @@
 'uric-acid'
 
 # URINE ANALYSIS
+'urine_sugar'
+'urine_albumin'
+'urine_bs'
+'urine_bp'
+'urine_first_pus'
+'urine_second_pus'
+'urine_first_rbc'
+'urine_second_rbc'
+'urine_first_casts'
+'urine_second_casts'
+'urine_first_crystals'
+'urine_second_crystals'
+'urine_first_ep'
+'urine_second_ep'
+
+
+# URINE PREGNANCY
+'preg_test'
+
+# PT APTT
+'pt_control'
+'pt_inr'
+'aptt_control'
+
+# MANTAOUX
+'mantoux_test'
+
+# RANDOM SUGAR
+'random_sugar'
+
+# FASTING SUGAR
+'fasting_sugar'
+
+# LIPID PROFILES
+'lipid_tc'
+'lipid_hdl'
+'lipid_ldl'
+'lipid_vldl'
+'lipid_tri'
+
+# BLOOD FOR AEC
+'aec-count'
+
+# RA-FACTOR
+'ra-factor'
+'ra-dilutions'
+
+# ASO TITRE
+'aso_titre'
+'aso_titre_dilutions'
+
+# VDRL
+'vdrl'
+
+# HBSAG
+'hbsag'
+
+# HIV
+'hiv_ant'
+
+# HCV
+'hcv_ant'
