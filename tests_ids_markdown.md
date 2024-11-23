@@ -57,3 +57,23 @@
 'polymo'
 'lympho'
 'esino'
+'heamo-rbc'
+'blast-cells'
+'platelet-opinion'
+'hemoparasites-opinion'
+'total-opinion'
+
+# HB1AC
+'hba1c_first'
+'hba1c_second'
+
+# BLOOD UREA
+'blood-urea'
+
+# CREATININE
+'serum-creat'
+
+# URIC ACID
+'uric-acid'
+
+# URINE ANALYSIS
