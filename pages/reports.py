@@ -202,16 +202,7 @@ blood_group_list = [
     html.Div("Blood Group: ",style=text_style),
     html.Div(
         dcc.Dropdown(
-            options = [
-                "O POSITIVE",
-                "A POSITIVE",
-                "B POSITIVE",
-                "AB POSITIVE",
-                "O NEGATIVE",
-                "A NEGATIVE",
-                "B NEGATIVE",
-                "AB NEGATIVE"
-            ],
+            options = ["O POSITIVE","A POSITIVE","B POSITIVE","AB POSITIVE","O NEGATIVE","A NEGATIVE","B NEGATIVE","AB NEGATIVE"],
             id={'type':'dynamic-input','name':'blood-group'}    
         ),
         style={**input_style,"width":"200px"}    
