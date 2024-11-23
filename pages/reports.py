@@ -32,6 +32,7 @@ all_options = [
     "CRP",
     "ESR",
     "Full CBP",
+    "PCV(HCT)",
     "Blood Group",
     "Total Bilirubin",
     "Direct & Indirect Bilirubin",
@@ -60,7 +61,11 @@ all_options = [
     "Serum Sodium",
     "Serum Potassium",
     "Serum Chloride",
-    "Serum Calcium"
+    "Serum Calcium",
+    "V.D.R.L",
+    "HBsAg",
+    "HIV I & II Antibodies Test",
+    "HCV I & II Antibodies Test",
 ]
 
 reports_dropdown = dcc.Dropdown(
@@ -88,7 +93,8 @@ templates_dropdown = dcc.Dropdown(
         {"label":"PACK 1","value":json.dumps(["HBA1C","Random Sugar","Fasting Sugar"])},
         {"label":"PACK 2","value":json.dumps(["Blood Urea","Serum Creatinine","Lipid Profile"])},
         {"label":"RFT","value":json.dumps(["Blood Urea","Serum Creatinine","Uric Acid"])},
-        {"label":"Lipid Profile","value":json.dumps(["Lipid Profile"])}
+        {"label":"Lipid Profile","value":json.dumps(["Lipid Profile"])},
+        {"label":"Electrolytes","value":json.dumps(["Serum Amylase","Serum Lipase","Serum Protein","Serum Albumin","Serum Globulin","Serum A/G Ratio","Serum Sodium","Serum Potassium","Serum Chloride","Serum Calcium"])}
     ],
     id="template-dropdown"
 )
@@ -111,7 +117,7 @@ layout = html.Div(
         html.Div(id="last-output"),
         html.Button("Submit".upper(),id="submit-report-button",style=dict(width="200px",height="100px",position="relative",backgroundColor="cyan",left="800px",fontSize=25,borderRadius="20px")),
         html.Div(html.H1("report preview".upper(),className="page-heading"),className="heading-divs",style=dict(position="relative",top="50px")),
-        html.Button("preview".upper(),id="preview-button",style=dict(width="200px",height="100px",position="relative",left="1500px",fontSize=25,borderRadius="20px",backgroundColor="cyan")),
+        html.Button("preview".upper(),id="preview-button",style=dict(width="200px",height="100px",position="relative",left="1000px",top="75px",fontSize=25,borderRadius="20px",backgroundColor="cyan")),
         html.Div("type report to preview".upper(),id="report-preview",style=dict(color="cyan",border="10px solid #4b70f5",padding="50px",position="relative",top="100px",height="1750px")),
     ],
     className="subpage-content"
@@ -208,8 +214,7 @@ blood_group_list = [
             id={'type':'dynamic-input','name':'blood-group'}    
         ),
         style={**input_style,"width":"200px"}    
-    ),
-    *[html.Br()]*10
+    )
 ]
 
 total_bilirubin_list = [
@@ -233,14 +238,18 @@ esr_list = [
     html.Div(" (02 - 10 mm/1 hour) ",style=limits_style)
 ]
 
+hct_list = [
+    html.Div("PCV (Haematocrit) : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'hct'},type="number",placeholder="HCT..",style=input_style),
+    html.Div(" (40% - 45%) ",style=limits_style),
+]
+
 full_cbp_list = [
     *hb_list,
     html.Div("Total RBC Count : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'rbc-count'},type="number",placeholder="Rbc Count..",style=input_style),
     html.Div(" ( 4.0 - 5.0 milli/cumm ) ",style=limits_style),
-    html.Div("PCV (Haematocrit) : ",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'hct'},type="number",placeholder="HCT..",style=input_style),
-    html.Div(" (40% - 45%) ",style=limits_style),
+    *hct_list,
     *tc_list,
     *plt_list,
     *esr_list,
@@ -252,9 +261,7 @@ heamogram_list = [
     html.Div("Total RBC Count : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'rbc-count'},type="number",placeholder="Rbc Count..",style=input_style),
     html.Div(" ( 4.0 - 5.0 milli/cumm ) ",style=limits_style),
-    html.Div("PCV (Haematocrit) : ",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'hct'},type="number",placeholder="HCT..",style=input_style),
-    html.Div(" (40% - 45%) ",style=limits_style),
+    *hct_list,
     *tc_list,
     *plt_list,
     html.Div("MCV : ",style=text_style),
@@ -266,15 +273,14 @@ heamogram_list = [
     html.Div("MCHC : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'mchc'},type="number",placeholder="MCHC..",style=input_style),
     html.Div(" ( 32 - 32 g/dl ) ",style=limits_style),
-    html.Div("E.S.R : ",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'esr'},type="number",placeholder="E.S.R..,",style=input_style),
-    html.Div(" (02 - 10 mm/1 hour) ",style=limits_style),
+    *esr_list,
     *dc_list,
     html.Div("peripheral smear examination :".upper(),style={**text_style,"text-decoraton":"underline"}),
-    html.Br(),
-    html.Div("RBC: Normocytic Normochromic",style=text_style),
+    *small_break,
+    html.Div("RBC: ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'heamo-rbc'},type="text",placeholder="Normocytic Normochromic",style=input_style),
     html.Div("WBC: will be same as Total opinion",style=text_style),
-    html.Div("No Blast cells are seen",style=text_style),
+    dcc.Input(placeholder="No Blast cells are seen",style=text_style),
     html.Div("Platelets : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'platelet-opinion'},type="text",placeholder="Adequate",style=input_style),
     html.Div("Hemoparasites : ",style=text_style),
@@ -495,7 +501,25 @@ serum_calcium_list = [
     html.Div(" (8.5 - 10.5 mmol/L) ", style=limits_style)
 ]
 
+vdrl_list = [
+    html.Div("V.D.R.L : ",style=text_style),
+    html.Div([dcc.Dropdown(["reactive".upper(),"non-reactive".upper()],"non-reactive".upper(),id={'type':'dynamic-input','name':'vdrl'})],style=input_style)
+]
 
+hbsag_list = [
+    html.Div("HBsAg : ",style=text_style),
+    html.Div([dcc.Dropdown(["reactive".upper(),"non-reactive".upper()],"non-reactive".upper(),id={'type':'dynamic-input','name':'hbsag'})],style=input_style)
+]
+
+hiv_list = [
+    html.Div("HIV I & II Antibodies Test : ",text_style),
+    html.Div([dcc.Dropdown(["reactive".upper(),"non-reactive".upper()],"non-reactive".upper(),id={'type':'dynamic-input','name':'hiv_ant'})],style=input_style)
+]
+
+hcv_list = [
+    html.Div("HCV I & II Antibodies Test : ",text_style),
+    html.Div([dcc.Dropdown(["reactive".upper(),"non-reactive".upper()],"non-reactive".upper(),id={'type':'dynamic-input','name':'hcv_ant'})],style=input_style)
+]
 
 reports_original_dict = {
     "Hb": hb_list,
@@ -506,6 +530,7 @@ reports_original_dict = {
     "CRP": crp_list,
     "Widal": widal_list,
     "Full CBP": full_cbp_list,
+    "PCV(HCT)":hct_list,
     "Blood Group": blood_group_list,
     "Total Bilirubin": total_bilirubin_list,
     "Direct & Indirect Bilirubin": direct_indirect_bilirubin_list,
@@ -519,7 +544,7 @@ reports_original_dict = {
     "Mantaoux": mantaoux_list,
     "Random Sugar": sugar_random_list,
     "Fasting Sugar": sugar_fasting_list,
-    "Blood for AEC count": blood_for_aec_list,
+    "Blood for AEC Count": blood_for_aec_list,
     "RA Factor": ra_factor_list,
     "ASO Titre": aso_titre_list,
     "PT APTT": pt_aptt_list,
@@ -533,7 +558,11 @@ reports_original_dict = {
     "Serum Sodium": serum_sodium_list,
     "Serum Potassium": serum_potassium_list,
     "Serum Chloride": serum_chloride_list,
-    "Serum Calcium": serum_calcium_list
+    "Serum Calcium": serum_calcium_list,
+    "V.D.R.L":vdrl_list,
+    "HBsAg":hbsag_list,
+    "HIV I & II Antibodies Test":hiv_list,
+    "HCV I & II Antibodies Test":hcv_list,
 }
 
 
@@ -720,16 +749,19 @@ def widal_canvas():
 def full_cbp_canvas():
     pass
 
+def hct_canvas():
+    pass
+
 def blood_group_canvas():
     pass
 
 def total_bilirubin_canvas():
     pass
 
-def direct_and_indirect_bilirubin_canvas():
+def heamogram_canvas():
     pass
 
-def heamogram_canvas():
+def direct_and_indirect_bilirubin_canvas():
     pass
 
 def hb1ac_canvas():
@@ -765,6 +797,59 @@ def ra_factor_canvas():
 def aso_titre_canvas():
     pass
 
+def esr_canvas():
+    pass
+
+def urine_preg_canvas():
+    pass
+
+def lipid_profile_canvas():
+    pass
+
+def pt_aptt_canvas():
+    pass
+
+def serum_amylase_canvas():
+    pass
+
+def serum_lipase_canvas():
+    pass
+
+def serum_protein_canvas():
+    pass
+
+def serum_albumin_canvas():
+    pass
+
+def serum_globulin_canvas():
+    pass
+
+def serum_ag_ratio_canvas():
+    pass
+
+def serum_sodium_canvas():
+    pass
+
+def serum_pottassium_canvas():
+    pass
+
+def serum_chloride_canvas():
+    pass
+
+def serum_calcium_canvas():
+    pass
+
+def vdrl_canvas():
+    pass
+
+def hbsag_canvas():
+    pass
+
+def hiv_canvas():
+    pass
+
+def hcv_canvas():
+    pass
 
 
 
@@ -773,24 +858,42 @@ reports_canvas_dict = {
     "Total Count (TC)":tc_canvas,
     "Platelet Count":plt_canvas,
     "Differential Count (DC)":dc_canvas,
-    "CRP":crp_list,
-    "Widal":widal_list,
-    "Full CBP":full_cbp_list,
-    "Blood Group":blood_group_list,
-    "Total Bilirubin":total_bilirubin_list,
-    "Direct & Indirect Bilirubin":direct_indirect_bilirubin_list,
-    "Heamogram":heamogram_list,
-    "HBA1C":hba1c_list,
-    "Blood Urea":blood_urea_list,
-    "Serum Creatinine":serum_creatinine_list,
-    "Uric Acid":uric_acid_list,
-    "Urine Analysis":urine_analysis_list,
-    "Mantaoux":mantaoux_list,
-    "Random Sugar":sugar_random_list,
-    "Fasting Sugar":sugar_fasting_list,
-    "Blood for AEC count":blood_for_aec_list,
-    "RA Factor":ra_factor_list,
-    "ASO Titre":aso_titre_list
+    "Widal":widal_canvas,
+    "CRP":crp_canvas,
+    "ESR":esr_canvas,
+    "Full CBP":full_cbp_canvas,
+    "Blood Group":blood_group_canvas,
+    "Total Bilirubin":total_bilirubin_canvas,
+    "Direct & Indirect Bilirubin":direct_and_indirect_bilirubin_canvas,
+    "Heamogram":heamogram_canvas,
+    "HBA1C":hb1ac_canvas,
+    "Fasting Sugar":fasting_sugar_canvas,    
+    "Random Sugar":random_sugar_canvas,
+    "Blood Urea":blood_urea_canvas,
+    "Serum Creatinine":serum_creat_canvas,
+    "Uric Acid":uric_acid_cavnas,
+    "Urine Analysis":urine_analysis_canvas,
+    "Urine Pregnancy":urine_preg_canvas,
+    "Lipid Profile":lipid_profile_canvas,
+    "Mantaoux":mantaux_canvas,
+    "Blood for AEC Count":blood_for_aec_canvas,
+    "RA Factor":ra_factor_canvas,
+    "ASO Titre":aso_titre_canvas,
+    "PT APTT":pt_aptt_canvas,
+    "Serum Amylase":serum_amylase_canvas,
+    "Serum Lipase":serum_lipase_canvas,
+    "Serum Protein":serum_protein_canvas,
+    "Serum Albumin":serum_albumin_canvas,
+    "Serum Globulin":serum_globulin_canvas,
+    "Serum A/G Ratio":serum_ag_ratio_canvas,
+    "Serum Sodium":serum_sodium_canvas,
+    "Serum Potassium":serum_pottassium_canvas,
+    "Serum Chloride":serum_chloride_canvas,
+    "Serum Calcium":serum_calcium_canvas,
+    "V.D.R.L":vdrl_canvas,
+    "HBsAg":hbsag_canvas,
+    "HIV I & II Antibodies Test":hiv_canvas,
+    "HCV I & II Antibodies Test":hcv_canvas,
 }
 
 report_canvas_values_dict = {
@@ -798,24 +901,42 @@ report_canvas_values_dict = {
     "Total Count (TC)":"tc_count",
     "Platelet Count":"plt_count",
     "Differential Count (DC)":"dc_count",
-    "CRP":crp_list,
-    "Widal":widal_list,
-    "Full CBP":full_cbp_list,
-    "Blood Group":blood_group_list,
-    "Total Bilirubin":total_bilirubin_list,
-    "Direct & Indirect Bilirubin":direct_indirect_bilirubin_list,
-    "Heamogram":heamogram_list,
-    "HBA1C":hba1c_list,
-    "Blood Urea":blood_urea_list,
-    "Serum Creatinine":serum_creatinine_list,
-    "Uric Acid":uric_acid_list,
-    "Urine Analysis":urine_analysis_list,
-    "Mantaoux":mantaoux_list,
-    "Random Sugar":sugar_random_list,
-    "Fasting Sugar":sugar_fasting_list,
-    "Blood for AEC count":blood_for_aec_list,
-    "RA Factor":ra_factor_list,
-    "ASO Titre":aso_titre_list
+    "Widal":"widal",
+    "CRP":"crp",
+    "ESR":"esr",
+    "Full CBP":"cbp",
+    "Blood Group":"blood-group",
+    "Total Bilirubin":"total-bili",
+    "Direct & Indirect Bilirubin":"direct-bili",
+    "Heamogram":"heamo",
+    "HBA1C":hb1ac_canvas,
+    "Fasting Sugar":fasting_sugar_canvas,    
+    "Random Sugar":random_sugar_canvas,
+    "Blood Urea":blood_urea_canvas,
+    "Serum Creatinine":serum_creat_canvas,
+    "Uric Acid":uric_acid_cavnas,
+    "Urine Analysis":urine_analysis_canvas,
+    "Urine Pregnancy":urine_preg_canvas,
+    "Lipid Profile":lipid_profile_canvas,
+    "Mantaoux":mantaux_canvas,
+    "Blood for AEC Count":blood_for_aec_canvas,
+    "RA Factor":ra_factor_canvas,
+    "ASO Titre":aso_titre_canvas,
+    "PT APTT":pt_aptt_canvas,
+    "Serum Amylase":serum_amylase_canvas,
+    "Serum Lipase":serum_lipase_canvas,
+    "Serum Protein":serum_protein_canvas,
+    "Serum Albumin":serum_albumin_canvas,
+    "Serum Globulin":serum_globulin_canvas,
+    "Serum A/G Ratio":serum_ag_ratio_canvas,
+    "Serum Sodium":serum_sodium_canvas,
+    "Serum Potassium":serum_pottassium_canvas,
+    "Serum Chloride":serum_chloride_canvas,
+    "Serum Calcium":serum_calcium_canvas,
+    "V.D.R.L":vdrl_canvas,
+    "HBsAg":hbsag_canvas,
+    "HIV I & II Antibodies Test":hiv_canvas,
+    "HCV I & II Antibodies Test":hcv_canvas,
 }
 
 def create_pdf(serial_no,page_size,details_dict):
@@ -849,16 +970,16 @@ def create_pdf(serial_no,page_size,details_dict):
         page_width, page_height = A5
         c.rect(40,20,page_width - 2 * 40, page_height - 2 * 40)
 
-        # c.setDash(6,3)
-        # c.setFont(font_name,5)
-        # for x in range(0,int(page_width),10):
-        #     if x % 20 == 0:
-        #         c.line(x,page_height,x,0)
-        #         c.drawString(x+2,page_height-30,str(x))
-        # for x in range(0,int(page_height),10):
-        #     if x % 20 == 0:
-        #         c.line(0,x,page_width,x)
-        #         c.drawString(30,x+2,str(x))
+        c.setDash(6,3)
+        c.setFont(font_name,5)
+        for x in range(0,int(page_width),10):
+            if x % 20 == 0:
+                c.line(x,page_height,x,0)
+                c.drawString(x+2,page_height-30,str(x))
+        for x in range(0,int(page_height),10):
+            if x % 20 == 0:
+                c.line(0,x,page_width,x)
+                c.drawString(30,x+2,str(x))
 
 
         c = patient_details_canvas(
@@ -904,11 +1025,22 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
     if not input_values:
         raise PreventUpdate
     if n_clicks:
-        temp_dict = {"dc_count":[]}
+        temp_dict = {
+            "dc_count":[],
+            "widal":[],
+            "direct-bili":[],
+            "heamo":[]
+        }
         for id,value in zip(input_ids,input_values):
             print(id['name'])
             if id['name'] in ['polymo','lympho','esino']:
                 temp_dict["dc_count"].append(value)
+            elif id['name'] in ['widal','widal-ot-react','widal-ht-react']:
+                temp_dict['widal'].append(value)
+            elif id['name'] == ["total-bili","direct-bili"]:
+                temp_dict["direct-bili"].append(value)
+            elif ("Heamogram" in all_patients_values[patients_sno]["test"]) & (id["name"] in ["hb"]):
+                pass
             else:
                 temp_dict[id['name']] = value
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],**temp_dict}

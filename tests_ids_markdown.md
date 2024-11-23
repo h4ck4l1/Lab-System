@@ -1,50 +1,59 @@
+# HB
 'hb'
+
+# TC COUNT
 'tc_count'
+
+# PLT COUNT
 'plt_count'
+
+# DC COUNT
 'polymo'
 'lympho'
 'esino'
-'mono'
+
+# CRP
 'crp'
+
+# WIDAL
 'widal'
 'widal-ot-react'
 'widal-ht-react'
+
+# BLOOD GROUP
 'blood-group'
+
+# TOTAl BILIRUBIN
+'total-bili'
+
+# DIRECT AND INDIRECT BILIRUBIN
 'total-bili'
 'direct-bili'
 'indirect-bili'
+
+# ESR
+'esr'
+
+# FULL CBP
+'hb'
 'rbc-count'
 'hct'
+'tc_count'
+'plt_count'
 'esr'
-'mch'
+'dc_count'
+
+
+# Heamogram
+'hb'
+'rbc-count'
+'hct'
+'tc_count'
+'plt_count'
 'mcv'
+'mch'
 'mchc'
-
-
-Serum  Amylase 	:           8.9            U/L                (30-110 )
-
-Serum  Lipase	:           8.9            U/L                (23-300 )
-
-Serum  Protein	:           6.8            g/dl               (6.6 – 8.3 )
-
-Serum  Albumin	:           6.8            g/dl               (3.5 – 5.0 )
-
-Serum  Globulin	:           6.8            g/dl               (2.0 – 3.5 )
-
-Serum  A/G Ratio	:           6.8            g/dl               (0.9 – 2.0 )
-
-
-
-
-
-
-Serum Sodium			:  	133.8 	        mmol/L       (135 - 155)
-
-
-Serum Pottasium			:  	4.6	        mmol/L          (3.5 - 5.5)
-
-
-Serum Chloride                        :           104.8       mmol/L          ( 98 -107 )
-
-
-Serum Calcium	:           8.9            mmol/L          (8.5-10.5 )
+'esr'
+'polymo'
+'lympho'
+'esino'
