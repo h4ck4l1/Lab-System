@@ -33,6 +33,7 @@ all_options = [
     "ESR",
     "Full CBP",
     "PCV(HCT)",
+    "DENGUE",
     "Blood Group",
     "Total Bilirubin",
     "Direct & Indirect Bilirubin",
@@ -242,6 +243,16 @@ hct_list = [
     html.Div("PCV (Haematocrit) : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'hct'},type="number",placeholder="HCT..",style=input_style),
     html.Div(" (40% - 45%) ",style=limits_style),
+]
+
+dengue_list = [
+    html.Div("dengue test".upper(),style={**input_style,"text-decoration":"underline"}),
+    html.Div("IgM  antibodies to Dengue Virus   : ",style=text_style),
+    html.Div([dcc.Dropdown(["negative".upper(),"positive".upper()],"negative".upper(),id={'type':'dynamic-input','name':'dengue_igm'},style=input_style)]),
+    html.Div("IgG  antibodies to Dengue Virus   : ",style=text_style),
+    html.Div([dcc.Dropdown(["negative".upper(),"positive".upper()],"negative".upper(),id={'type':'dynamic-input','name':'dengue_igg'},style=input_style)]),
+    html.Div("NS1  antibodies to Dengue Virus  : ",style=text_style),
+    html.Div([dcc.Dropdown(["negative".upper(),"positive".upper()],"positive".upper(),id={'type':'dynamic-input','name':'dengue_ns'},style=input_style)]),
 ]
 
 full_cbp_list = [
