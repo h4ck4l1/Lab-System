@@ -120,8 +120,9 @@ layout = html.Div(
         html.Div(id="last-output"),
         html.Button("Submit".upper(),id="submit-report-button",style=dict(width="200px",height="100px",position="relative",backgroundColor="cyan",left="800px",fontSize=25,borderRadius="20px")),
         html.Div(html.H1("report preview".upper(),className="page-heading"),className="heading-divs",style=dict(position="relative",top="50px")),
-        html.Button("preview".upper(),id="preview-button",style=dict(width="200px",height="100px",position="relative",left="1000px",top="75px",fontSize=25,borderRadius="20px",backgroundColor="cyan")),
-        html.Div("type report to preview".upper(),id="report-preview",style=dict(color="cyan",border="10px solid #4b70f5",padding="50px",position="relative",top="100px",height="1750px")),
+        html.Button("preview".upper(),id="preview-button",style=dict(width="200px",height="100px",position="relative",left="600px",top="75px",fontSize=25,borderRadius="20px",backgroundColor="cyan")),
+        html.Div([dcc.Slider(min=10,max=40,step=2,value=24,id="slider")],style=dict(left="100px",position="relative",width="500px")),
+        html.Div("type report to preview".upper(),id="report-preview",style=dict(color="cyan",border="10px solid #4b70f5",padding="50px",position="relative",height="1750px",top="100px")),
     ],
     className="subpage-content"
 )
@@ -650,6 +651,33 @@ big_font_name = "CenturySchoolBook-BoldItalic"
 big_font_size = 14
 big_limits_font_size = 12
 
+size_dict = {
+    "font_size":{
+        0:small_font_size,
+        1:big_font_size
+    },
+    "font_name":{
+        0:small_font_name,
+        1:big_font_name
+    },
+    "left_extreme":{
+        0:small_left_extreme,
+        1:big_left_extreme
+    },
+    "value_point":{
+        0:small_value_point,
+        1:big_value_point
+    },
+    "limits_font":{
+        0:small_limits_font_size,
+        1:big_limits_font_size
+    },
+    "right_extreme":{
+        0:small_right_extreme,
+        1:big_right_extreme
+    }
+}
+
 def patient_details_canvas(
         c:canvas.Canvas,
         font_name:str,
@@ -683,13 +711,13 @@ def patient_details_canvas(
     date_string = f"Date: {frmt_time}"
     c.drawString(right_extreme-cal_string_width(c,date_string,font_name,font_size),page_height-(drop_height + 4*patient_details_space),date_string)                         # s
     c.setDash()
-    c.line(left_extreme - 2,page_height-(drop_height + 4.3 * patient_details_space),right_extreme+2,page_height-(drop_height + 4.3 * patient_details_space))
-    c.line(left_extreme - 2,page_height-(drop_height + 5 * patient_details_space),right_extreme+2,page_height-(drop_height + 5 * patient_details_space))
+    c.line(left_extreme - 2,page_height-(drop_height + 4.5 * patient_details_space),right_extreme+2,page_height-(drop_height + 4.5 * patient_details_space))
+    c.line(left_extreme - 2,page_height-(drop_height + 5.2 * patient_details_space),right_extreme+2,page_height-(drop_height + 5.2 * patient_details_space))
     c.setFont(font_name,font_size-4)
-    c.drawString(left_extreme,page_height-(drop_height + 4.8 * patient_details_space),"test".upper())
-    c.drawString(midpoint,page_height-(75 + 4.8 * patient_details_space),"value".upper())
+    c.drawString(left_extreme,page_height-(drop_height + 5 * patient_details_space),"test".upper())
+    c.drawString(midpoint,page_height-(75 + 5 * patient_details_space),"value".upper())
     reference_string = "reference range".upper()
-    c.drawString(right_extreme-cal_string_width(c,reference_string,font_name,font_size-4),page_height-(drop_height + 4.8 * patient_details_space),reference_string)
+    c.drawString(right_extreme-cal_string_width(c,reference_string,font_name,font_size-4),page_height-(drop_height + 5 * patient_details_space),reference_string)
     return c
 
 def if_draw_bold(c:canvas.Canvas,value,value_string,limit_a,limit_b,x,y):
@@ -700,63 +728,60 @@ def if_draw_bold(c:canvas.Canvas,value,value_string,limit_a,limit_b,x,y):
         c.drawString(x,y,f":  {value_string}")
     return c
 
-
-def hb_canvas(c:canvas.Canvas,hb_value:float,page_size:str,h:int,entity_height = 25):
-    hb_string = "( 11.0 - 16.8 Grams% )"
-    if page_size == "SMALL/A5":
-        c.setFont(small_font_name,small_font_size)
-        c.drawString(small_left_extreme,h,"Heamoglobin")
-        c = if_draw_bold(c,hb_value,float(hb_value),11.0,16.8,small_value_point,h)
-        c.setFont(small_font_name,small_limits_font_size)
-        c.drawString(small_right_extreme-cal_string_width(c,hb_string,small_font_name,small_limits_font_size),h,hb_string)
+def mundane_things(c:canvas.Canvas,x,text_string,value,value_string,limits_string,limit_a,limit_b,h,if_limits=True):
+    c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
+    c.drawString(size_dict["left_extreme"][x],h,text_string)
+    if if_limits:
+        c = if_draw_bold(c,value,value_string,limit_a,limit_b,size_dict["value_point"][x],h)
     else:
-        entity_height += 5
-        c.setFont(big_font_name,big_font_size)
-        c.drawString(big_left_extreme,h,"Heamoglobin")
-        c = if_draw_bold(c,hb_value,float(hb_value),11.0,16.8,big_value_point,h)
-        c.setFont(big_font_name,big_limits_font_size)
-        c.drawString(big_right_extreme-cal_string_width(c,hb_string,big_font_name,big_limits_font_size),h,hb_string)
-    return c,h - entity_height
+        c.drawString(size_dict["value_point"][x],h,value)
+    c.setFont(size_dict["font_name"][x],size_dict["limits_font"][x])
+    c.drawString(size_dict["right_extreme"][x]-cal_string_width(c,limits_string,size_dict["font_name"][x],size_dict["limits_font"][x]),h,limits_string)
+    return c
 
-
-def tc_canvas(c:canvas.Canvas,tc_value:int,page_size:str,h:int,entity_height = 25):
-    tc_string = "( 5,000 - 10,000 Cells/cumm )"
-    tc_text_string = "Total WBC Count"
+def hb_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height = 18):
+    limits_string = "( 11.0 - 16.8 Grams% )"
+    text_string = "Heamoglobin"
+    limit_a = 11.0
+    limit_b = 16.8
+    value_string = float(value)
     if page_size == "SMALL/A5":
-        c.setFont(small_font_name,small_font_size)
-        c.drawString(small_left_extreme,h,tc_text_string)
-        c = if_draw_bold(c,tc_value,f"{tc_value//1000},000",5000,10000,small_value_point,h)
-        c.setFont(small_font_name,small_limits_font_size)
-        c.drawString(small_right_extreme-cal_string_width(c,tc_string,small_font_name,small_limits_font_size),h,tc_string)
+        x = 0
     else:
+        x = 1
         entity_height += 5
-        c.setFont(big_font_name,big_font_size)
-        c.drawString(big_left_extreme,h,tc_text_string)
-        c = if_draw_bold(c,tc_value,f"{tc_value//1000},000",5000,10000,big_value_point,h)
-        c.setFont(big_font_name,big_limits_font_size)
-        c.drawString(big_right_extreme-cal_string_width(c,tc_string,big_font_name,big_limits_font_size),h,tc_string)
+    c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
     return c,h-entity_height
 
-def plt_canvas(c:canvas.Canvas,plt_value:float,page_size:str,h:int,entity_height = 25):
-    plt_limit_string = "( 1.5 - 4.0 Lakhs/cumm )"
-    plt_text_string = "Platelet Count : "
-    if plt_value < 1:
-        plt_string = f"{int(plt_value * 100)},000"
-    else:
-        plt_string = str(plt_value)
+def tc_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_height = 18):
+    limits_string = "( 5,000 - 10,000 Cells/cumm )"
+    text_string = "Total WBC Count"
+    value_string = f"{value//1000},000"
+    limit_a = 5000
+    limit_b = 10000
     if page_size == "SMALL/A5":
-        c.setFont(small_font_name,small_font_size)
-        c.drawString(small_left_extreme,h,plt_text_string)
-        c = if_draw_bold(c,plt_value,plt_string,1.5,4.0,small_value_point,h)
-        c.setFont(small_font_name,small_limits_font_size)
-        c.drawString(small_right_extreme-cal_string_width(c,plt_limit_string,small_font_name,small_limits_font_size),h,plt_limit_string)
+        x = 0
     else:
+        x = 1
         entity_height += 5
-        c.setFont(big_font_name,big_font_size)
-        c.drawString(big_left_extreme,h,plt_text_string)
-        c = if_draw_bold(c,plt_value,plt_string,1.5,4.0,big_value_point,h)
-        c.setFont(big_font_name,big_limits_font_size)
-        c.drawString(big_right_extreme-cal_string_width(c,plt_limit_string,big_font_name,big_limits_font_size),h,plt_limit_string)
+    c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
+    return c,h-entity_height
+
+def plt_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height = 18):
+    limits_string = "( 1.5 - 4.0 Lakhs/cumm )"
+    text_string = "Platelet Count : "
+    limit_a = 1.5
+    limit_b = 4.0
+    if value < 1:
+        value_string = f"{int(value * 100)},000"
+    else:
+        value_string = str(value)
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
     return c,h-entity_height
 
 def dc_canvas(
@@ -764,7 +789,7 @@ def dc_canvas(
         dc_count:list,
         page_size:str,
         h:int,
-        entity_height=25
+        entity_height=18
     ):
     
     def p(v):
@@ -786,64 +811,60 @@ def dc_canvas(
     if page_size == "SMALL/A5":
         c.setFont(small_font_name,small_font_size)
         c.drawString(small_left_extreme,h,dc_string)
-        c.line(small_left_extreme,h-5,small_left_extreme+cal_string_width(c,dc_string,small_font_name,small_font_size),h-5)
-        c.drawString(142,h-30,poly_string)
-        c.drawString(142,h-55,lympho_string)
-        c.drawString(142,h-80,eosino_string)
-        c.drawString(142,h-105,mono_string)
-        c = if_draw_bold(c,polymo_value,p(polymo_value),40,70,260,h-30)
-        c = if_draw_bold(c,lympho_value,p(lympho_value),20,40,260,h-55)
-        c = if_draw_bold(c,esino_value,p(esino_value),2,6,260,h-80)
-        c = if_draw_bold(c,mono_value,p(mono_value),1,4,260,h-105)
+        c.line(small_left_extreme,h-(0.2 * entity_height),small_left_extreme+cal_string_width(c,dc_string,small_font_name,small_font_size),h-5)
+        c.drawString(142,h-(1.2 * entity_height),poly_string)
+        c.drawString(142,h-(2.2 * entity_height),lympho_string)
+        c.drawString(142,h-(3.2 * entity_height),eosino_string)
+        c.drawString(142,h-(4.2 * entity_height),mono_string)
+        c = if_draw_bold(c,polymo_value,p(polymo_value),40,70,260,h-(1.2 * entity_height))
+        c = if_draw_bold(c,lympho_value,p(lympho_value),20,40,260,h-(2.2 * entity_height))
+        c = if_draw_bold(c,esino_value,p(esino_value),2,6,260,h-(3.2 * entity_height))
+        c = if_draw_bold(c,mono_value,p(mono_value),1,4,260,h-(4.2 * entity_height))
         c.setFont(small_font_name,small_limits_font_size)
-        c.drawString(small_right_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_limits_font_size),h-30,"( 40 - 70 %)")
-        c.drawString(small_right_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_limits_font_size),h-55,"( 20 - 40 %)")
-        c.drawString(small_right_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_limits_font_size),h-80,"( 02 - 06 %)")
-        c.drawString(small_right_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_limits_font_size),h-105,"( 01 - 04 %)")
-        h -= (entity_height * 7.2)
+        c.drawString(small_right_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_limits_font_size),h-(1.2 * entity_height),"( 40 - 70 %)")
+        c.drawString(small_right_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_limits_font_size),h-(2.2 * entity_height),"( 20 - 40 %)")
+        c.drawString(small_right_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_limits_font_size),h-(3.2 * entity_height),"( 02 - 06 %)")
+        c.drawString(small_right_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_limits_font_size),h-(4.2 * entity_height),"( 01 - 04 %)")
+        h -= (entity_height * 5.5)
     else:
         c.setFont(big_font_name,big_font_size)
         c.drawString(big_left_extreme,h,dc_string)
         c.line(big_left_extreme,h-5,big_left_extreme+cal_string_width(c,dc_string,big_font_name,big_font_size),h-5)
-        c.drawString(182,h-30,poly_string)
-        c.drawString(182,h-55,lympho_string)
-        c.drawString(182,h-80,eosino_string)
-        c.drawString(182,h-105,mono_string)
-        c = if_draw_bold(c,polymo_value,p(polymo_value),40,70,300,h-30)
-        c = if_draw_bold(c,lympho_value,p(lympho_value),20,40,300,h-55)
-        c = if_draw_bold(c,esino_value,p(esino_value),2,6,300,h-80)
-        c = if_draw_bold(c,mono_value,p(mono_value),1,4,300,h-105)
+        c.drawString(182,h-(1.2 * entity_height),poly_string)
+        c.drawString(182,h-(2.2 * entity_height),lympho_string)
+        c.drawString(182,h-(3.2 * entity_height),eosino_string)
+        c.drawString(182,h-(4.2 * entity_height),mono_string)
+        c = if_draw_bold(c,polymo_value,p(polymo_value),40,70,300,h-(1.2 * entity_height))
+        c = if_draw_bold(c,lympho_value,p(lympho_value),20,40,300,h-(2.2 * entity_height))
+        c = if_draw_bold(c,esino_value,p(esino_value),2,6,300,h-(3.2 * entity_height))
+        c = if_draw_bold(c,mono_value,p(mono_value),1,4,300,h-(4.2 * entity_height))
         c.setFont(big_font_name,big_limits_font_size)
-        c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-30,"( 40 - 70 %)")
-        c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-55,"( 20 - 40 %)")
-        c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-80,"( 02 - 06 %)")
-        c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-105,"( 01 - 04 %)")
-        h -= (entity_height * 8)
+        c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(1.2 * entity_height),"( 40 - 70 %)")
+        c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(2.2 * entity_height),"( 20 - 40 %)")
+        c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(3.2 * entity_height),"( 02 - 06 %)")
+        c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(4.2 * entity_height),"( 01 - 04 %)")
+        h -= (entity_height * 6)
     return c,h
 
-def crp_canvas(c:canvas.Canvas,crp_value:float,page_size:str,h:int,entity_height=25):
-    crp_string = " ( < 6 ) "
-    crp_text_string = "CRP"
+def crp_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
+    limits_string = " ( < 6 ) "
+    text_string = "CRP"
+    value_string = value
+    limit_a = 0
+    limit_b = 6
     if page_size == "SMALL/A5":
-        c.setFont(small_font_name,small_font_size)
-        c.drawString(small_left_extreme,h,crp_text_string)
-        c = if_draw_bold(c,crp_value,crp_value,0,6,small_value_point,h)
-        c.setFont(small_font_name,small_limits_font_size)
-        c.drawString(small_right_extreme-cal_string_width(c,crp_string,small_font_name,small_limits_font_size),h,crp_string)
+        x = 0
         c.setFont(small_font_name,small_limits_font_size-2)
         c.drawString(small_left_extreme,h-10,"(Turbidmetric Immunoassay)")
     else:
+        x = 1
         entity_height += 5
-        c.setFont(big_font_name,big_font_size)
-        c.drawString(big_left_extreme,h,crp_text_string)
-        c = if_draw_bold(c,crp_value,crp_value,0,6,big_value_point,h)
-        c.setFont(big_font_name,big_limits_font_size)
-        c.drawString(big_right_extreme-cal_string_width(c,crp_string,big_font_name,big_limits_font_size),h,crp_string)
         c.setFont(big_font_name,big_limits_font_size-2)
         c.drawString(big_left_extreme,h-10,"(Turbidmetric Immunoassay)")
+    c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
     return c, h - entity_height - 5
 
-def widal_canvas(c:canvas.Canvas,widal_values,page_size:str,h:int,entity_height=25):
+def widal_canvas(c:canvas.Canvas,widal_values,page_size:str,h:int,entity_height=18):
     widal_value,widal_form,ot_value,ht_value = widal_values
     widal_string = "Blood for Widal"
     ot_string = f"OT - 1 : {ot_value} dilutions"
@@ -892,218 +913,246 @@ def widal_canvas(c:canvas.Canvas,widal_values,page_size:str,h:int,entity_height=
             h -= (entity_height)
     return c,h
 
-def hct_canvas(c:canvas.Canvas,hct_value,page_size:str,h:int,entity_height=25):
-    hct_string = "( 4.0 - 5.0 milli/cumm )"
-    hct_text_string = "PCV(Heamatocrit)"
+def hct_canvas(c:canvas.Canvas,value,page_size:str,h:int,entity_height=18):
+    limits_string = "( 40% - 45% )"
+    text_string = "PCV(Heamatocrit)"
+    value_string = value
+    limit_a = 40
+    limit_b = 45
     if page_size == "SMALL/A5":
-        c.setFont(small_font_name,small_font_size)
-        c.drawString(small_left_extreme,h,hct_text_string)
-        c = if_draw_bold(c,hct_value,hct_value,40,45,small_value_point,h)
-        c.setFont(small_font_name,small_limits_font_size)
-        c.drawString(small_right_extreme-cal_string_width(c,hct_string,small_font_name,small_limits_font_size),h,hct_string)
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
+    return c,h-entity_height
 
-def full_cbp_canvas(c:canvas.Canvas,cbp_values,page_size:str,h:int,entity_height=25):
+def esr_canvas(c:canvas.Canvas,value,page_size:str,h:int,entity_height=18):
+    text_string = "E.S.R"
+    limits_string = "( 02 - 10 mm/Hr )"
+    value_string = int(value)
+    limit_a = 2
+    limit_b = 11
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
+    return c,h - entity_height
+
+def full_cbp_canvas(c:canvas.Canvas,cbp_values:list,page_size:str,h:int,entity_height=30):
+    entity_height = 30
     if page_size == "BIG/A4":
+        print(cbp_values)
         hb,rbc_count,hct,tc_count,plt_count,esr,polymo,lympho,esino = cbp_values
-        c,h = hb_canvas(c,hb,page_size,h,entity_height)
-        return c
+        c,h = hb_canvas(c,hb,page_size,h,entity_height-5)
+        x = 1
+        text_string = "Total RBC Count"
+        limits_string = "( 4.0 - 5.0 millions/cumm)"
+        value_string = rbc_count
+        limit_a = 4.0
+        limit_b = 5.0
+        c = mundane_things(c,x,text_string,rbc_count,value_string,limits_string,limit_a,limit_b,h)
+        h -= entity_height
+        c,h = hct_canvas(c,hct,page_size,h,entity_height-5)
+        c,h = tc_canvas(c,tc_count,page_size,h,entity_height - 5)
+        c,h = plt_canvas(c,plt_count,page_size,h,entity_height - 5)
+        c,h = esr_canvas(c,esr,page_size,h,entity_height-5)
+        c,h = dc_canvas(c,[polymo,lympho,esino],page_size,h,entity_height-5)
+    return c,h-entity_height
 
+def blood_group_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
+    text_string = "blood group".upper()
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    c = mundane_things(c,x,text_string,value,value,limits_string="",limit_a="",limit_b="",h=h,if_limits=False)
+    return c,h
 
-def blood_group_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def total_bilirubin_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def total_bilirubin_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def heamogram_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def heamogram_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def direct_and_indirect_bilirubin_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def direct_and_indirect_bilirubin_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def hb1ac_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def hb1ac_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def blood_urea_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def blood_urea_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def serum_creat_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def serum_creat_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def uric_acid_cavnas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def uric_acid_cavnas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def urine_analysis_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def urine_analysis_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def mantaux_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def mantaux_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def random_sugar_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def random_sugar_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def fasting_sugar_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def fasting_sugar_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def blood_for_aec_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def blood_for_aec_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def ra_factor_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def ra_factor_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def aso_titre_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def aso_titre_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def urine_preg_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def esr_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def lipid_profile_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def urine_preg_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def pt_aptt_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def lipid_profile_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def serum_amylase_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def pt_aptt_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def serum_lipase_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def serum_amylase_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def serum_protein_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def serum_lipase_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def serum_albumin_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def serum_protein_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def serum_globulin_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def serum_albumin_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def serum_ag_ratio_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def serum_globulin_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def serum_sodium_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def serum_ag_ratio_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def serum_pottassium_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def serum_sodium_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def serum_chloride_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def serum_pottassium_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def serum_calcium_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def serum_chloride_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def vdrl_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def serum_calcium_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def hbsag_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def vdrl_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def hiv_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
         pass
 
-def hbsag_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
-    if page_size == "SMALL/A5":
-        pass
-    else:
-        pass
-
-def hiv_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
-    if page_size == "SMALL/A5":
-        pass
-    else:
-        pass
-
-def hcv_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=25):
+def hcv_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
@@ -1197,20 +1246,18 @@ report_canvas_values_dict = {
     "HCV I & II Antibodies Test":"hcv_ant",
 }
 
-def create_pdf(serial_no,page_size,all_patients_values):
+def create_pdf(serial_no,report_details_space,page_size,all_patients_values):
 
     global copy_df
-    patient_serial_no = serial_no
     collection_date = str(get_df_item(serial_no,"Date"))
     collection_time = get_df_item(serial_no,"Time")
     patient_name = get_df_item(serial_no,"Patient Name")
     patient_age = get_df_item(serial_no,"Patient Age")
     patient_age_group = get_df_item(serial_no,"Age Group")
     patient_gender = get_df_item(serial_no,"Gender")
-    patient_specimen = "Blood"
+    patient_specimen = "Blood & Urine" if (any(["Urine Analysis","Urine Pregnancy"]) in all_patients_values[str(serial_no)]["tests"]) else "Blood"
     doctor_name = get_df_item(serial_no,"Reference By")
     patient_details_space = 18
-    report_details_space = 18
     time_obj = datetime.datetime.strptime(collection_date,"%Y-%m-%d %H:%M:%S")
     frmt_time = time_obj.strftime("%d-%m-%y")
     patient_name_save = patient_name.replace(".","_")
@@ -1225,7 +1272,6 @@ def create_pdf(serial_no,page_size,all_patients_values):
         c = canvas.Canvas(filename,pagesize=portrait(A5))
         small_page_width, small_page_height = A5
         # c.rect(40,20,page_width - 2 * 40, page_height - 2 * 40)
-
         # grid
         # c.setDash(6,3)
         # c.setFont(font_name,5)
@@ -1249,7 +1295,7 @@ def create_pdf(serial_no,page_size,all_patients_values):
             patient_age_group,
             patient_gender,
             doctor_name,
-            patient_serial_no,
+            serial_no,
             collection_time,
             patient_specimen,
             frmt_time,
@@ -1293,7 +1339,7 @@ def create_pdf(serial_no,page_size,all_patients_values):
             patient_age_group,
             patient_gender,
             doctor_name,
-            patient_serial_no,
+            serial_no,
             collection_time,
             patient_specimen,
             frmt_time,
@@ -1332,23 +1378,22 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
             if id['name'] in ['polymo','lympho','esino']:
                 temp_dict["dc_count"] = temp_dict.get("dc_count",[])
                 temp_dict["dc_count"].append(value)
-            elif ("Widal" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['widal','widal-form','widal-ot-react','widal-ht-react']):
+            if ("Widal" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['widal','widal-form','widal-ot-react','widal-ht-react']):
                 temp_dict['widal'] = temp_dict.get('widal',[])
                 temp_dict['widal'].append(value)
-            elif ("Direct & Indirect Bilirubin" in all_patients_values[patients_sno]["tests"]) & (id["name"] in ["total-bili","direct-bili","indirect-bili"]):
+            if ("Direct & Indirect Bilirubin" in all_patients_values[patients_sno]["tests"]) & (id["name"] in ["total-bili","direct-bili","indirect-bili"]):
                 temp_dict["direct-bili"] = temp_dict.get("direct-bili",[])
                 temp_dict["direct-bili"].append(value)
-            elif("Full CBP" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['hb','rbc-count','hct','tc_count','plt_count','esr','polymo','lympho','esino']):
+            if("Full CBP" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['hb','rbc-count','hct','tc_count','plt_count','esr','polymo','lympho','esino']):
                 temp_dict["cbp"] = temp_dict.get("cbp",[])
                 temp_dict["cbp"].append(value)
-            elif ("Heamogram" in all_patients_values[patients_sno]["tests"]) & (id["name"] in ['hb','rbc-count','hct','tc_count','plt_count','mcv','mch','mchc','esr','polymo','lympho','esino','heamo-rbc','blast-cells','platelet-opinion','hemoparasites-opinion','total-opinion']):
+            if ("Heamogram" in all_patients_values[patients_sno]["tests"]) & (id["name"] in ['hb','rbc-count','hct','tc_count','plt_count','mcv','mch','mchc','esr','polymo','lympho','esino','heamo-rbc','blast-cells','platelet-opinion','hemoparasites-opinion','total-opinion']):
                 temp_dict["heamo"] = temp_dict.get("heamo",[])
                 temp_dict["heamo"].append(value)
-            elif ("HBA1C" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['hba1c_first','hba1c_second']):
+            if ("HBA1C" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['hba1c_first','hba1c_second']):
                 temp_dict["hba1c"] = temp_dict.get("hba1c",[])
                 temp_dict["hba1c"].append(value)
-            else:
-                temp_dict[id['name']] = value
+            temp_dict[id['name']] = value
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],**temp_dict}
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],'page_size':page_size_value}
         return all_patients_values
@@ -1357,18 +1402,21 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
 
 @callback(
     Output("report-preview","children"),
-    Input("preview-button","n_clicks"),
+    [
+        Input("preview-button","n_clicks"),
+        Input("slider","value")
+    ],
     [
         State("patient-data-store","data"),
         State("patients-dropdown","value"),
         State("page-size-dropdown","value")
     ]
 )
-def preview_report(n_clicks,data,patient_sno,page_size):
+def preview_report(n_clicks,slider_value,data,patient_sno,page_size):
     if not n_clicks:
         raise PreventUpdate
     if n_clicks:
-        filename = create_pdf(patient_sno,page_size,data)
+        filename = create_pdf(patient_sno,slider_value,page_size,data)
         return html.Iframe(
             src=filename,
             style=dict(width="100%",height="1650px")
