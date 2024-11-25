@@ -732,7 +732,7 @@ def patient_details_canvas(
     c.line(left_extreme - 2,page_height-(drop_height + 5.2 * patient_details_space),right_extreme+2,page_height-(drop_height + 5.2 * patient_details_space))
     c.setFont(font_name,font_size-4)
     c.drawString(left_extreme,page_height-(drop_height + 5 * patient_details_space),"test".upper())
-    c.drawString(midpoint,page_height-(75 + 5 * patient_details_space),"value".upper())
+    c.drawString(midpoint,page_height-(drop_height + 5 * patient_details_space),"value".upper())
     reference_string = "reference range".upper()
     c.drawString(right_extreme-cal_string_width(c,reference_string,font_name,font_size-4),page_height-(drop_height + 5 * patient_details_space),reference_string)
     return c
@@ -1068,17 +1068,40 @@ def heamogram_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_heig
 
     return c,h
 
-def direct_and_indirect_bilirubin_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+def direct_and_indirect_bilirubin_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
+    total_value,direct_value = values
+    direct_text_string = "Direct Bilirubin"
+    indirect_text_strig = "Indirect Bilirubin"
+    direct_limits_string = "( 0.2 - 0.4 mg/dl )"
+    indirect_limits_string = "( 0.2 - 0.6 mg/dl )"
+    indirect_value = total_value - direct_value
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    c = mundane_things(c,x,direct_text_string,direct_value,direct_value,direct_limits_string,0.2,0.4,h)
+    h -= entity_height
+    c = mundane_things(c,x,indirect_text_strig,indirect_value,indirect_value,indirect_limits_string,0.2,0.6,h)
+    return c, h - entity_height
 
-def hb1ac_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+def hb1ac_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
+    first_value,second_value = values
+    first_string = "Glycosylated Hb (HbA1c) Test"
+    second_string = "Estimated Average Glucose (eAG)"
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
+    c.drawString(size_dict["left_extreme"][x],h,first_string)
+    c.drawString(size_dict["value_point"][x]+60,h,f":  {first_value}%")
+    h -= entity_height
+    c.drawString(size_dict["left_extreme"][x],h,second_string)
+    c.drawString(size_dict["value_point"][x]+60,h,f":  {second_value}")
+    
+    return c,h-entity_height
 
 def blood_urea_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
@@ -1428,7 +1451,7 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
             patient_specimen,
             frmt_time,
             big_left_extreme,
-            big_value_point,
+            big_value_point+30,
             big_right_extreme+12,
             drop_height = 116
         )
