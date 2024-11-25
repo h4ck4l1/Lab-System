@@ -106,6 +106,7 @@ layout = html.Div(
         html.Div(html.H1("Patients report",className="page-heading"),className="heading-divs"),
         *big_break,
         html.Div(patients_dropdown,style=dict(width="400px",alignItems="center")),
+        html.Div(id="data-present",style=dict(position="relative",left="100px",top="50px",color="red")),
         html.Button("Storage Clear",id="clear-storage",style=dict(position="relative",backgroundColor="red",left="500px",bottom="50px",width="100px",height="50px")),
         *big_break,
         html.Div(reports_dropdown,style=dict(width="400px",alignItems="center")),
@@ -121,7 +122,8 @@ layout = html.Div(
         html.Button("Submit".upper(),id="submit-report-button",style=dict(width="200px",height="100px",position="relative",backgroundColor="cyan",left="800px",fontSize=25,borderRadius="20px")),
         html.Div(html.H1("report preview".upper(),className="page-heading"),className="heading-divs",style=dict(position="relative",top="50px")),
         html.Button("preview".upper(),id="preview-button",style=dict(width="200px",height="100px",position="relative",left="600px",top="75px",fontSize=25,borderRadius="20px",backgroundColor="cyan")),
-        html.Div([dcc.Slider(min=10,max=40,step=2,value=24,id="slider")],style=dict(left="100px",position="relative",width="500px")),
+        html.Div(["top space slider  ".upper(),dcc.Slider(min=0,max=200,step=20,value=0,id="top-slider")],style=dict(left="50px",position="relative",width="550px",fontSize=15)),
+        html.Div(["between space slider  ".upper(),dcc.Slider(min=10,max=40,step=2,value=24,id="slider")],style=dict(left="50px",position="relative",width="550px",top="20px",fontSize=15)),
         html.Div("type report to preview".upper(),id="report-preview",style=dict(color="cyan",border="10px solid #4b70f5",padding="50px",position="relative",height="1750px",top="100px")),
     ],
     className="subpage-content"
@@ -279,21 +281,21 @@ heamogram_list = [
     html.Div(" ( 27 - 32 pg ) ",style=limits_style),
     html.Div("MCHC : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'mchc'},type="number",placeholder="MCHC..",style=input_style),
-    html.Div(" ( 32 - 32 g/dl ) ",style=limits_style),
+    html.Div(" ( 32 - 36 g/dl ) ",style=limits_style),
     *esr_list,
     *dc_list,
     html.Div("peripheral smear examination :".upper(),style={**text_style,"text-decoraton":"underline"}),
     *small_break,
     html.Div("RBC: ",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'heamo-rbc'},type="text",placeholder="Normocytic Normochromic",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'heamo-rbc'},type="text",placeholder="Normocytic Normochromic",value="Normocytic Normochromic",style=input_style),
     html.Div("WBC: will be same as Total opinion",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'blast-cells'},type="text",placeholder="No Blast cells are seen",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'blast-cells'},type="text",placeholder="No Blast cells are seen",value="No Blast cells are seen",style=text_style),
     html.Div("Platelets : ",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'platelet-opinion'},type="text",placeholder="Adequate",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'platelet-opinion'},type="text",placeholder="Adequate",value="Adequate",style=input_style),
     html.Div("Hemoparasites : ",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'hemoparasites-opinion'},type="text",placeholder="Not Seen",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'hemoparasites-opinion'},type="text",placeholder="Not Seen",value="Not Seen",style=input_style),
     html.Div("Impression : ",style={**text_style,"text-decoration":"underline"}),
-    dcc.Input(id={'type':'dynamic-input','name':'total-opinion'},type="text",placeholder="Microcytic Hypochromic Anemia",style={**input_style,"width":"500px"})
+    dcc.Input(id={'type':'dynamic-input','name':'total-opinion'},type="text",placeholder="Microcytic Hypochromic Anemia",value="Microcytic Hypochromic Anemia",style={**input_style,"width":"500px"})
 ]
 
 hba1c_list = [
@@ -584,6 +586,7 @@ def get_df_item(p_sn:int,item_name:str):
         Output("output-report","children"),
         Output("output-report-boxes","children"),
         Output("patient-data-store","data"),
+        Output("data-present","children")
     ],
     [
         Input("patients-dropdown","value"),
@@ -593,11 +596,16 @@ def get_df_item(p_sn:int,item_name:str):
     State("patient-data-store","data"),
 )
 def submit_report(patients_sno, reports_value,template_value,all_patients_values):
+    is_present = False
+    s = ""
     if patients_sno:
         if all_patients_values is None:
             all_patients_values = {}
+        print(all_patients_values)
         if all_patients_values.get(str(patients_sno),{}) == {}:
             all_patients_values[str(patients_sno)] = {"tests":[]}
+        if all_patients_values[str(patients_sno)]["tests"] != []:
+            is_present = True
         report_details = []
         patients_details = [
                 html.Div(f"Patient Name: {get_df_item(patients_sno,item_name='Patient Name')}"),
@@ -616,12 +624,20 @@ def submit_report(patients_sno, reports_value,template_value,all_patients_values
                 report_details += reports_original_dict[x]
                 if x not in all_patients_values[str(patients_sno)]["tests"]:
                     all_patients_values[str(patients_sno)]["tests"].append(x)
-        return patients_details,report_details,all_patients_values
-    return "Select a Serial Number to Display....","Select a Test to Display....",all_patients_values
+        if is_present:
+            s = "*Data is present, Please Preview to see old values or Storage Clear to enter new values"
+        else:
+            s = ""
+        return patients_details,report_details,all_patients_values,s
+    return "Select a Serial Number to Display....","Select a Test to Display....",all_patients_values,s
+
 
 
 @callback(
-    Output("patient-data-store","data",allow_duplicate=True),
+    [
+        Output("patient-data-store","data",allow_duplicate=True),
+        Output("data-present","children",allow_duplicate=True)
+    ],
     Input("clear-storage","n_clicks"),
     [
         State("patients-dropdown","value"),
@@ -630,10 +646,11 @@ def submit_report(patients_sno, reports_value,template_value,all_patients_values
     prevent_initial_call="initial_duplicate"
 )
 def clear_storage_data(n_clicks,patients_sno,all_patients_values):
+    if not n_clicks:
+        raise PreventUpdate
     if n_clicks:
-        all_patients_values[str(patients_sno)]["tests"] = []
-        return all_patients_values
-    return all_patients_values
+        all_patients_values[str(patients_sno)] = {"tests":[]}
+        return all_patients_values,f"Storage Cleared for Serial No. {patients_sno}"
 
 def cal_string_width(c:canvas.Canvas,total_string,font_name,font_size):
     return c.stringWidth(total_string,font_name,font_size)
@@ -734,7 +751,7 @@ def mundane_things(c:canvas.Canvas,x,text_string,value,value_string,limits_strin
     if if_limits:
         c = if_draw_bold(c,value,value_string,limit_a,limit_b,size_dict["value_point"][x],h)
     else:
-        c.drawString(size_dict["value_point"][x],h,value)
+        c.drawString(size_dict["value_point"][x],h,f":  * {value.replace(" "," * ")}")
     c.setFont(size_dict["font_name"][x],size_dict["limits_font"][x])
     c.drawString(size_dict["right_extreme"][x]-cal_string_width(c,limits_string,size_dict["font_name"][x],size_dict["limits_font"][x]),h,limits_string)
     return c
@@ -941,11 +958,10 @@ def esr_canvas(c:canvas.Canvas,value,page_size:str,h:int,entity_height=18):
     c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
     return c,h - entity_height
 
-def full_cbp_canvas(c:canvas.Canvas,cbp_values:list,page_size:str,h:int,entity_height=30):
-    entity_height = 30
+def full_cbp_canvas(c:canvas.Canvas,cbp_values:list,page_size:str,h:int,entity_height=18):
+    entity_height += 5
+    hb,rbc_count,hct,tc_count,plt_count,esr,polymo,lympho,esino = cbp_values
     if page_size == "BIG/A4":
-        print(cbp_values)
-        hb,rbc_count,hct,tc_count,plt_count,esr,polymo,lympho,esino = cbp_values
         c,h = hb_canvas(c,hb,page_size,h,entity_height-5)
         x = 1
         text_string = "Total RBC Count"
@@ -970,19 +986,87 @@ def blood_group_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_heig
         x = 1
         entity_height += 5
     c = mundane_things(c,x,text_string,value,value,limits_string="",limit_a="",limit_b="",h=h,if_limits=False)
+    return c,h - entity_height
+
+def total_bilirubin_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
+    text_string = "Total Bilirubin"
+    limits_string = "( 0.2 - 1.0 mg/dl )"
+    value_string = value
+    limit_a = 0.2
+    limit_b = 1.0
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
+    return c,h - entity_height
+
+def heamogram_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
+    hb,rbc,hct,tc,plt,mcv,mch,mchc,esr,polymo,lympho,esino,heamo_rbc,blast_cells,plt_opinion,heamoparisites,total_opinion = values
+    if page_size == "BIG/A4":
+        entity_height -= 5
+        c,h = hb_canvas(c,hb,page_size,h,entity_height-5)
+        # rbc
+        text_string = "Total RBC Count"
+        limits_string = "( 4.0 - 5.0 millions/cumm)"
+        value_string = rbc
+        limit_a = 4.0
+        limit_b = 5.0
+        c = mundane_things(c,1,text_string,rbc,value_string,limits_string,limit_a,limit_b,h)
+        h -= entity_height
+        # end
+        c,h = hct_canvas(c,hct,page_size,h,entity_height-5)
+        c,h = tc_canvas(c,tc,page_size,h,entity_height-5)
+        c,h = plt_canvas(c,plt,page_size,h,entity_height-5)
+        # mcv
+        text_string = "MCV"
+        limits_string = "( 78 - 94 fl )"
+        value_string = mcv
+        limit_a = 78
+        limit_b = 94
+        c = mundane_things(c,1,text_string,mcv,value_string,limits_string,limit_a,limit_b,h)
+        h -= entity_height 
+        # mch
+        text_string = "MCH"
+        limits_string = "( 27 - 32 pg )"
+        value_string = mch
+        limit_a = 27
+        limit_b = 32
+        c = mundane_things(c,1,text_string,mch,value_string,limits_string,limit_a,limit_b,h)
+        h -= entity_height 
+        # mchc
+        text_string = "MCHC"
+        limits_string = "( 32 - 36 g/dl )"
+        value_string = mchc
+        limit_a = 32
+        limit_b = 36
+        c = mundane_things(c,1,text_string,mchc,value_string,limits_string,limit_a,limit_b,h)
+        h -= entity_height
+        c,h = esr_canvas(c,esr,page_size,h,entity_height-5)
+        c,h = dc_canvas(c,[polymo,lympho,esino],page_size,h,entity_height+2)
+        c.drawString(size_dict["left_extreme"][1],h+10,"peripheral smear examination".upper())
+        c.line(size_dict["left_extreme"][1],h+5,size_dict["left_extreme"][1] - 55 + c.stringWidth("peripheral smear examination".upper(),size_dict["font_name"][1],size_dict["font_size"][1]),h+5)
+        entity_height -= 5
+        h -= (entity_height - 5)
+        c.drawString(size_dict["left_extreme"][1],h,f"RBC:  {heamo_rbc}")
+        h -= entity_height
+        c.drawString(size_dict["left_extreme"][1],h,f"WBC:  {total_opinion}")
+        h -= entity_height
+        c.drawString(size_dict["left_extreme"][1],h,blast_cells)
+        h -= entity_height
+        c.drawString(size_dict["left_extreme"][1],h,f"Platelets:  {plt_opinion}")
+        h -= entity_height
+        c.drawString(size_dict["left_extreme"][1],h,f"Heamoparasites:  {heamoparisites}")
+        h -= entity_height
+        c.drawString(size_dict["left_extreme"][1],h,f"Impression:  “ {total_opinion} ”")
+    return c, h - entity_height
+
+    
+
+
+
     return c,h
-
-def total_bilirubin_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
-    if page_size == "SMALL/A5":
-        pass
-    else:
-        pass
-
-def heamogram_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
-    if page_size == "SMALL/A5":
-        pass
-    else:
-        pass
 
 def direct_and_indirect_bilirubin_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
@@ -1246,7 +1330,7 @@ report_canvas_values_dict = {
     "HCV I & II Antibodies Test":"hcv_ant",
 }
 
-def create_pdf(serial_no,report_details_space,page_size,all_patients_values):
+def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_values):
 
     global copy_df
     collection_date = str(get_df_item(serial_no,"Date"))
@@ -1304,7 +1388,7 @@ def create_pdf(serial_no,report_details_space,page_size,all_patients_values):
             small_right_extreme,
             drop_height=75
         )
-        h = 410
+        h = 410-top_space
         serial_no = str(serial_no)
         tests_list = all_patients_values[serial_no]["tests"]
         for t in tests_list:
@@ -1346,9 +1430,9 @@ def create_pdf(serial_no,report_details_space,page_size,all_patients_values):
             big_left_extreme,
             big_value_point,
             big_right_extreme+12,
-            drop_height = 75
+            drop_height = 116
         )
-        h = 640
+        h = 600 - top_space
         serial_no = str(serial_no)
         tests_list = all_patients_values[serial_no]["tests"]
         for t in tests_list:
@@ -1402,21 +1486,20 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
 
 @callback(
     Output("report-preview","children"),
+    Input("preview-button","n_clicks"),
     [
-        Input("preview-button","n_clicks"),
-        Input("slider","value")
-    ],
-    [
+        State("top-slider","value"),
+        State("slider","value"),
         State("patient-data-store","data"),
         State("patients-dropdown","value"),
         State("page-size-dropdown","value")
     ]
 )
-def preview_report(n_clicks,slider_value,data,patient_sno,page_size):
+def preview_report(n_clicks,top_slider_value,slider_value,data,patient_sno,page_size):
     if not n_clicks:
         raise PreventUpdate
     if n_clicks:
-        filename = create_pdf(patient_sno,slider_value,page_size,data)
+        filename = create_pdf(patient_sno,top_slider_value,slider_value,page_size,data)
         return html.Iframe(
             src=filename,
             style=dict(width="100%",height="1650px")

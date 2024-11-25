@@ -59,7 +59,7 @@ def make_pdf(pt_name:str,pt_age:int,input_date:str,pt_id:int,pt_blood_group:str)
     details_space = 25
     left_extreme = 540
     starting_point = 62
-    top_height = 735
+    top_height = 725
     d.drawString(starting_point,top_height,f"Pt. Name: Mr. {pt_name}")
     d.drawString(starting_point,top_height-details_space,f"Gender:   Male")
     age_string = f"Age :   {pt_age} Y"
@@ -69,17 +69,17 @@ def make_pdf(pt_name:str,pt_age:int,input_date:str,pt_id:int,pt_blood_group:str)
     date_string = f"Date:   {input_date.replace("/","-")}"
     d.drawString(left_extreme - d.stringWidth(date_string,font_name,font_size), top_height - 3 * details_space,date_string)
     d.setDash()
-    d.line(43,top_height - 4 * details_space,page_width-43,top_height - 4 * details_space)
+    d.line(43,top_height - 3.7 * details_space,page_width-43,top_height - 3.7 * details_space)
     d.setFont(font_name,12)
-    d.drawString(43,top_height - 4.5 * details_space,"Test")
-    d.drawString(240,top_height - 4.5 * details_space,"Value")
+    d.drawString(43,top_height - 4.2 * details_space,"Test")
+    d.drawString(240,top_height - 4.2 * details_space,"Value")
     reference_string = "Reference Range"
-    d.drawString(left_extreme - d.stringWidth(reference_string,font_name,12),top_height - 4.5 * details_space,reference_string)
-    d.line(43,top_height - 4.8 * details_space,page_width - 43, top_height - 4.8 * details_space)
+    d.drawString(left_extreme - d.stringWidth(reference_string,font_name,12),top_height - 4.2 * details_space,reference_string)
+    d.line(43,top_height - 4.4 * details_space,page_width - 43, top_height - 4.4 * details_space)
 
     # tests
     value_point = 240
-    top_height -= (6 * details_space)
+    top_height -= (5 * details_space)
     details_space = 25
     d.setFont(font_name,font_size)
 
