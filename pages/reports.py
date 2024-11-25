@@ -1144,6 +1144,20 @@ def fasting_sugar_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     else:
         pass
 
+
+def lipid_profile_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
+
+def urine_preg_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+    if page_size == "SMALL/A5":
+        pass
+    else:
+        pass
+
+
 def blood_for_aec_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
@@ -1157,18 +1171,6 @@ def ra_factor_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
         pass
 
 def aso_titre_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
-    if page_size == "SMALL/A5":
-        pass
-    else:
-        pass
-
-def urine_preg_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
-    if page_size == "SMALL/A5":
-        pass
-    else:
-        pass
-
-def lipid_profile_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         pass
     else:
