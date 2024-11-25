@@ -1100,7 +1100,6 @@ def hb1ac_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=1
     h -= entity_height
     c.drawString(size_dict["left_extreme"][x],h,second_string)
     c.drawString(size_dict["value_point"][x]+60,h,f":  {second_value}")
-    
     return c,h-entity_height
 
 def blood_urea_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
