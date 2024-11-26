@@ -1,4 +1,4 @@
-import json,os,flask,datetime
+import json,os,flask,datetime,time
 import pandas as pd
 from io import StringIO
 from reportlab.pdfgen import canvas            
@@ -67,6 +67,7 @@ all_options = [
     "Serum Potassium",
     "Serum Chloride",
     "Serum Calcium",
+    "Electrolytes",
     "V.D.R.L",
     "HBsAg",
     "HIV I & II Antibodies Test",
@@ -96,11 +97,12 @@ templates_dropdown = dcc.Dropdown(
         {"label":"HB, TC, PLATELET, DC, URINE","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","Urine Analysis"])},
         {"label":"HB, TC, PLATELET, DC, RBS","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","Random Sugar"])},
         {"label":"HB, TC, PLATELET, DC, WIDAL","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","Widal"])},
+        {"label":"Full CBP, MALARIA, WIDAL CRP","value":json.dumps(["Full CBP","Malaria","Widal","CRP"])},
         {"label":"PACK 1","value":json.dumps(["HBA1C","Random Sugar","Fasting Sugar"])},
         {"label":"PACK 2","value":json.dumps(["Blood Urea","Serum Creatinine","Lipid Profile"])},
         {"label":"RFT","value":json.dumps(["Blood Urea","Serum Creatinine","Uric Acid"])},
         {"label":"Lipid Profile","value":json.dumps(["Lipid Profile"])},
-        {"label":"Electrolytes","value":json.dumps(["Serum Amylase","Serum Lipase","Serum Protein","Serum Albumin","Serum Globulin","Serum A/G Ratio","Serum Sodium","Serum Potassium","Serum Chloride","Serum Calcium"])}
+        {"label":"Full Electrolytes","value":json.dumps(["Serum Amylase","Serum Lipase","Serum Protein","Serum Albumin","Serum Globulin","Serum A/G Ratio","Electrolytes"])}
     ],
     id="template-dropdown"
 )
@@ -196,7 +198,7 @@ crp_list = [
 
 malaria_list = [
     html.Div("Test For Malaria Parasite (M.P): NON-REACTIVE",style=text_style),
-    html.Div([dcc.Dropdown(["Long","Short"],"Short",id={'type':'dynamic-input','name':'malaria-test'})],style={**input_style,"left":"700px"})
+    html.Div([dcc.Dropdown(["Long".upper(),"Short".upper()],"Short".upper(),id={'type':'dynamic-input','name':'malaria-test'})],style={**input_style,"left":"700px"})
 ]
 
 widal_list = [
@@ -557,6 +559,13 @@ hcv_list = [
     html.Div([dcc.Dropdown(["reactive".upper(),"non-reactive".upper()],"non-reactive".upper(),id={'type':'dynamic-input','name':'hcv_ant'})],style=input_style)
 ]
 
+electrolytes_list = [
+    *serum_sodium_list,
+    *serum_potassium_list,
+    *serum_chloride_list,
+    *serum_calcium_list
+]
+
 reports_original_dict = {
     "Hb": hb_list,
     "Total Count (TC)": tc_list,
@@ -600,6 +609,7 @@ reports_original_dict = {
     "Serum Potassium": serum_potassium_list,
     "Serum Chloride": serum_chloride_list,
     "Serum Calcium": serum_calcium_list,
+    "Electrolytes":electrolytes_list,
     "V.D.R.L":vdrl_list,
     "HBsAg":hbsag_list,
     "HIV I & II Antibodies Test":hiv_list,
@@ -616,8 +626,8 @@ def get_df_item(p_sn:int,item_name:str):
     [
         Output("output-report","children"),
         Output("output-report-boxes","children"),
-        Output("patient-data-store","data"),
-        Output("data-present","children")
+        Output("data-present","children"),
+        Output("patient-data-store","data")
     ],
     [
         Input("patients-dropdown","value"),
@@ -632,7 +642,6 @@ def submit_report(patients_sno, reports_value,template_value,all_patients_values
     if patients_sno:
         if all_patients_values is None:
             all_patients_values = {}
-        print(all_patients_values)
         if all_patients_values.get(str(patients_sno),{}) == {}:
             all_patients_values[str(patients_sno)] = {"tests":[]}
         if len(all_patients_values[str(patients_sno)]) > 1:
@@ -647,20 +656,16 @@ def submit_report(patients_sno, reports_value,template_value,all_patients_values
         if reports_value:
             for x in reports_value:
                 report_details += reports_original_dict[x]
-                if x not in all_patients_values[str(patients_sno)]["tests"]:
-                    all_patients_values[str(patients_sno)]["tests"].append(x)
         if template_value:
             template_value = json.loads(template_value)
             for x in template_value:
                 report_details += reports_original_dict[x]
-                if x not in all_patients_values[str(patients_sno)]["tests"]:
-                    all_patients_values[str(patients_sno)]["tests"].append(x)
         if is_present:
             s = "*Data is present, Please Preview to see old values or Storage Clear to enter new values"
         else:
             s = ""
-        return patients_details,report_details,all_patients_values,s
-    return "Select a Serial Number to Display....","Select a Test to Display....",all_patients_values,s
+        return patients_details,report_details,s,all_patients_values
+    return "Select a Serial Number to Display....","Select a Test to Display....",s,all_patients_values
 
 
 
@@ -748,11 +753,15 @@ def patient_details_canvas(
     ):
     c.setFont(font_name,font_size)
     c.drawString(left_extreme,page_height-drop_height,f"Pt. Name : {patient_name.upper()}")
-    c.drawString(left_extreme,page_height-(drop_height + patient_details_space),f"Gender : {patient_gender}")                  
-    age_string = f"Age: {patient_age} {patient_age_group}"
-    c.drawString(right_extreme-cal_string_width(c,age_string,font_name,font_size),page_height-(drop_height + patient_details_space),age_string)     # s
+    c.drawString(left_extreme,page_height-(drop_height + patient_details_space),f"Age : {patient_age} {patient_age_group}")
+    gender_string = f"Gender : {patient_gender}"
+    c.drawString(right_extreme-cal_string_width(c,gender_string,font_name,font_size),page_height-(drop_height + patient_details_space),gender_string)     # s
     c.drawString(left_extreme,page_height-(drop_height + 2*patient_details_space),f"Ref.Dr.By. : {doctor_name}")                                                # 99 + 24
-    c.drawString(left_extreme,page_height-(drop_height + 3*patient_details_space),f"Serial No: 000{patient_serial_no}")
+    if patient_serial_no < 10:
+        patient_serial_no = f"000{patient_serial_no}"
+    else:
+        patient_serial_no = f"00{patient_serial_no}"
+    c.drawString(left_extreme,page_height-(drop_height + 3*patient_details_space),f"Serial No: {patient_serial_no}")
     time_string = f"Collection Time: {collection_time}"
     c.drawString(right_extreme-cal_string_width(c,time_string,font_name,font_size),page_height-(drop_height + 3*patient_details_space),time_string)        # s
     c.drawString(left_extreme,page_height-(drop_height + 4*patient_details_space),f"Specimen: {patient_specimen}")
@@ -776,17 +785,18 @@ def if_draw_bold(c:canvas.Canvas,value,value_string,limit_a,limit_b,x,y):
         c.drawString(x,y,f":  {value_string}")
     return c
 
-def mundane_things(c:canvas.Canvas,x,text_string,value,value_string,limits_string,limit_a,limit_b,h,if_limits=True):
+def mundane_things(c:canvas.Canvas,x,text_string,value,value_string,limits_string,limit_a,limit_b,h,if_limits=True,left_offset=0):
     c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
     c.drawString(size_dict["left_extreme"][x],h,text_string)
     if if_limits:
-        c = if_draw_bold(c,value,value_string,limit_a,limit_b,size_dict["value_point"][x],h)
+        c = if_draw_bold(c,value,value_string,limit_a,limit_b,size_dict["value_point"][x]+left_offset,h)
     else:
-        c.drawString(size_dict["value_point"][x],h,f":  * {value.replace(" "," * ")}")
+        c.drawString(size_dict["value_point"][x]+left_offset,h,f":   {value_string}")
     c.setFont(size_dict["font_name"][x],size_dict["limits_font"][x])
     c.drawString(size_dict["right_extreme"][x]-cal_string_width(c,limits_string,size_dict["font_name"][x],size_dict["limits_font"][x]),h,limits_string)
     return c
 
+# done
 def hb_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height = 18):
     limits_string = "( 11.0 - 16.8 Grams% )"
     text_string = "Heamoglobin"
@@ -801,6 +811,7 @@ def hb_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height = 18
     c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
     return c,h-entity_height
 
+# done
 def tc_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_height = 18):
     limits_string = "( 5,000 - 10,000 Cells/cumm )"
     text_string = "Total WBC Count"
@@ -891,7 +902,7 @@ def dc_canvas(
         c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(2.2 * entity_height),"( 20 - 40 %)")
         c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(3.2 * entity_height),"( 02 - 06 %)")
         c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(4.2 * entity_height),"( 01 - 04 %)")
-        h -= (entity_height * 6)
+        h -= (entity_height * 4.5)
     return c,h
 
 def crp_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
@@ -961,6 +972,7 @@ def widal_canvas(c:canvas.Canvas,widal_values,page_size:str,h:int,entity_height=
             h -= (entity_height)
     return c,h
 
+# done
 def hct_canvas(c:canvas.Canvas,value,page_size:str,h:int,entity_height=18):
     limits_string = "( 40% - 45% )"
     text_string = "PCV(Heamatocrit)"
@@ -975,6 +987,7 @@ def hct_canvas(c:canvas.Canvas,value,page_size:str,h:int,entity_height=18):
     c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
     return c,h-entity_height
 
+# done
 def esr_canvas(c:canvas.Canvas,value,page_size:str,h:int,entity_height=18):
     text_string = "E.S.R"
     limits_string = "( 02 - 10 mm/Hr )"
@@ -989,6 +1002,7 @@ def esr_canvas(c:canvas.Canvas,value,page_size:str,h:int,entity_height=18):
     c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
     return c,h - entity_height
 
+# done
 def full_cbp_canvas(c:canvas.Canvas,cbp_values:list,page_size:str,h:int,entity_height=18):
     entity_height += 5
     hb,rbc_count,hct,tc_count,plt_count,esr,polymo,lympho,esino = cbp_values
@@ -1009,16 +1023,19 @@ def full_cbp_canvas(c:canvas.Canvas,cbp_values:list,page_size:str,h:int,entity_h
         c,h = dc_canvas(c,[polymo,lympho,esino],page_size,h,entity_height-5)
     return c,h-entity_height
 
+# done
 def blood_group_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
     text_string = "blood group".upper()
+    value_string = f" * {value.replace(" "," * ")}"
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
-    c = mundane_things(c,x,text_string,value,value,limits_string="",limit_a="",limit_b="",h=h,if_limits=False)
+    c = mundane_things(c,x,text_string,value,value_string,limits_string="",limit_a="",limit_b="",h=h,if_limits=False)
     return c,h - entity_height
 
+# done
 def total_bilirubin_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
     text_string = "Total Bilirubin"
     limits_string = "( 0.2 - 1.0 mg/dl )"
@@ -1033,6 +1050,7 @@ def total_bilirubin_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entit
     c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
     return c,h - entity_height
 
+# done
 def heamogram_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
     hb,rbc,hct,tc,plt,mcv,mch,mchc,esr,polymo,lympho,esino,heamo_rbc,blast_cells,plt_opinion,heamoparisites,total_opinion = values
     if page_size == "BIG/A4":
@@ -1099,6 +1117,7 @@ def heamogram_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_heig
 
     return c,h
 
+# done
 def direct_and_indirect_bilirubin_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
     total_value,direct_value = values
     direct_text_string = "Direct Bilirubin"
@@ -1116,6 +1135,7 @@ def direct_and_indirect_bilirubin_canvas(c:canvas.Canvas,values:list,page_size:s
     c = mundane_things(c,x,indirect_text_strig,indirect_value,indirect_value,indirect_limits_string,0.2,0.6,h)
     return c, h - entity_height
 
+# done
 def hb1ac_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
     first_value,second_value,drop_value = values
     first_string = "Glycosylated Hb (HbA1c) Test"
@@ -1160,6 +1180,7 @@ def hb1ac_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=1
         c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
         c.drawString(_temp_x,h,"diabetics: ".upper())
         h -= (entity_height - 10)
+        c.setFont(size_dict["font_name"][x],size_dict["limits_font"][x])
         c.drawString(size_dict["right_extreme"][x] - cal_string_width(c,
             "( Excellent Control     - 6.0 % - 7.0% )",
         size_dict["font_name"][x],size_dict["limits_font"][x]),
@@ -1183,6 +1204,7 @@ def hb1ac_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=1
     return c,h-entity_height
 
 def dengue_canvas(c:canvas.Canvas,values,page_size:str,h:int,entity_height=18):
+    heading_string = "dengue test".upper()
     if page_size == "SMALL/A5":
         x = 0
     else:
@@ -1190,13 +1212,19 @@ def dengue_canvas(c:canvas.Canvas,values,page_size:str,h:int,entity_height=18):
         entity_height += 5
     return c,h-entity_height
 
-def sgot_canvas(c:canvas.Canvas,values,page_size:str,h:int,entity_height=18):
+def sgot_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
+    text_string = "Aspirate Amino Transferase"
+    limits_string = "( < 40 )"
+    limit_a = 0
+    limit_b = 40
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
-    return c,h-entity_height
+    c = mundane_things(c,x,text_string,value,value,limits_string,limit_a,limit_b,h,left_offset=20)
+    c.drawString(size_dict["left_extreme"][x]+150,h-16,"(sgot)".upper())
+    return c,h-(entity_height + 16)
 
 def sgpt_canvas(c:canvas.Canvas,values,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
@@ -1206,7 +1234,7 @@ def sgpt_canvas(c:canvas.Canvas,values,page_size:str,h:int,entity_height=18):
         entity_height += 5
     return c,h-entity_height
 
-def alkp_canvas(c:canvas.Canvas,values,page_size:str,h:int,entity_height=18):
+def alkp_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         x = 0
     else:
@@ -1214,28 +1242,50 @@ def alkp_canvas(c:canvas.Canvas,values,page_size:str,h:int,entity_height=18):
         entity_height += 5
     return c,h-entity_height
 
-def malaria_canvas(c:canvas.Canvas,values,page_size:str,h:int,entity_height=18):
+def malaria_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+    c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
+    c.drawString(size_dict["left_extreme"][x],h,"Blood for M.P. Parasite")
+    if value == "SHORT":
+        c.drawString(size_dict["value_point"][x],h,": non - reactive  (kit method)".upper())
+    else:
+        c.drawString(size_dict["value_point"][x],h,": non - reactive".upper())
+        h -= (entity_height)
+        c.drawString(size_dict["left_extreme"][x],h,"Plasmodium Vivex")
+        c.drawString(size_dict["value_point"][x],h,": non - reactive".upper())
+        h -= (entity_height)
+        c.drawString(size_dict["left_extreme"][x],h,"Plasmodium Falciparum")
+        c.drawString(size_dict["value_point"][x],h,": non - reactive  (kit method)".upper())
+    return c,h-(entity_height + 5)
+
+def blood_urea_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
+    text_string = "Blood Urea"
+    limits_string = "( 10 - 40 mg/dl )"
+    limit_a = 10
+    limit_b = 40
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
+    c = mundane_things(c,x,text_string,value,value,limits_string,limit_a,limit_b,h)
     return c,h-entity_height
 
-def blood_urea_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+# done
+def serum_creat_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
+    text_string = "Serum Creatinine"
+    limits_string = "( 0.8 - 1.4 mg/dl )"
+    limit_a = 0.8
+    limit_b = 1.4
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
-    return c,h-entity_height
-
-def serum_creat_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
-    if page_size == "SMALL/A5":
-        x = 0
-    else:
-        x = 1
-        entity_height += 5
+    c = mundane_things(c,x,text_string,value,value,limits_string,limit_a,limit_b,h)
     return c,h-entity_height
 
 def uric_acid_cavnas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
@@ -1254,6 +1304,7 @@ def urine_analysis_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
         entity_height += 5
     return c,h-entity_height
 
+
 def mantaux_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         x = 0
@@ -1262,22 +1313,35 @@ def mantaux_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
         entity_height += 5
     return c,h-entity_height
 
-def random_sugar_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+# done
+def random_sugar_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_height=18):
+    text_string = "Blood Sugar ( Fasting )"
+    value_string = value
+    limits_string = "( 70 - 110 mg/dl )"
+    limit_a = 70
+    limit_b = 110
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
+    c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
     return c,h-entity_height
 
-def fasting_sugar_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+# done
+def fasting_sugar_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_height=18):
+    text_string = "Blood Sugar ( Random )"
+    value_string = value
+    limits_string = "( 70 - 140 mg/dl )"
+    limit_a = 70
+    limit_b = 140
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
+    c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
     return c,h-entity_height
-
 
 def lipid_profile_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
@@ -1295,7 +1359,6 @@ def urine_preg_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
         entity_height += 5
     return c,h-entity_height
 
-
 def blood_for_aec_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         x = 0
@@ -1312,6 +1375,7 @@ def ra_factor_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
         entity_height += 5
     return c,h-entity_height
 
+
 def aso_titre_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         x = 0
@@ -1319,6 +1383,7 @@ def aso_titre_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
         x = 1
         entity_height += 5
     return c,h-entity_height
+
 
 def pt_aptt_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
@@ -1328,118 +1393,217 @@ def pt_aptt_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
         entity_height += 5
     return c,h-entity_height
 
-def serum_amylase_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+# done
+def serum_amylase_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
+    text_string = "Serum Amylase"
+    limits_string = "( 30 - 110 U/L )"
+    limit_a = 30
+    limit_b = 110
+    value_string = value
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
+    c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
     return c,h-entity_height
 
-def serum_lipase_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+# done
+def serum_lipase_canvas(c: canvas.Canvas, value: float, page_size: str, h: int, entity_height=18):
+    text_string = "Serum Lipase"
+    limits_string = "( 23 - 300 U/L )"
+    limit_a = 23
+    limit_b = 300
+    value_string = value
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
-    return c,h-entity_height
+    c = mundane_things(c, x, text_string, value, value_string, limits_string, limit_a, limit_b, h)
+    return c, h - entity_height
 
-def serum_protein_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+# done
+def serum_protein_canvas(c: canvas.Canvas, value: float, page_size: str, h: int, entity_height=18):
+    text_string = "Serum Protein"
+    limits_string = "( 6.6 – 8.3 g/dl )"
+    limit_a = 6.6
+    limit_b = 8.3
+    value_string = value
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
-    return c,h-entity_height
+    c = mundane_things(c, x, text_string, value, value_string, limits_string, limit_a, limit_b, h)
+    return c, h - entity_height
 
-def serum_albumin_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+# done
+def serum_albumin_canvas(c: canvas.Canvas, value: float, page_size: str, h: int, entity_height=18):
+    text_string = "Serum Albumin"
+    limits_string = "( 3.5 – 5.0 g/dl )"
+    limit_a = 3.5
+    limit_b = 5.0
+    value_string = value
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
-    return c,h-entity_height
+    c = mundane_things(c, x, text_string, value, value_string, limits_string, limit_a, limit_b, h)
+    return c, h - entity_height
 
-def serum_globulin_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+# done
+def serum_globulin_canvas(c: canvas.Canvas, value: float, page_size: str, h: int, entity_height=18):
+    text_string = "Serum Globulin"
+    limits_string = "( 2.0 – 3.5 g/dl )"
+    limit_a = 2.0
+    limit_b = 3.5
+    value_string = value
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
-    return c,h-entity_height
+    c = mundane_things(c, x, text_string, value, value_string, limits_string, limit_a, limit_b, h)
+    return c, h - entity_height
 
-def serum_ag_ratio_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+# done
+def serum_ag_ratio_canvas(c: canvas.Canvas, value: float, page_size: str, h: int, entity_height=18):
+    text_string = "Serum A/G Ratio"
+    limits_string = "( 0.9 – 2.0 )"
+    limit_a = 0.9
+    limit_b = 2.0
+    value_string = value
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
-    return c,h-entity_height
+    c = mundane_things(c, x, text_string, value, value_string, limits_string, limit_a, limit_b, h)
+    return c, h - entity_height
 
-def serum_sodium_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+# done
+def serum_sodium_canvas(c: canvas.Canvas, value: float, page_size: str, h: int, entity_height=18):
+    text_string = "Serum Sodium"
+    limits_string = "( 135 - 155 mmol/L )"
+    limit_a = 135
+    limit_b = 155
+    value_string = value
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
-    return c,h-entity_height
+    c = mundane_things(c, x, text_string, value, value_string, limits_string, limit_a, limit_b, h)
+    return c, h - entity_height
 
-def serum_pottassium_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+# done
+def serum_potassium_canvas(c: canvas.Canvas, value: float, page_size: str, h: int, entity_height=18):
+    text_string = "Serum Potassium"
+    limits_string = "( 3.5 - 5.5 mmol/L )"
+    limit_a = 3.5
+    limit_b = 5.5
+    value_string = value
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
-    return c,h-entity_height
+    c = mundane_things(c, x, text_string, value, value_string, limits_string, limit_a, limit_b, h)
+    return c, h - entity_height
 
-def serum_chloride_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+# done
+def serum_chloride_canvas(c: canvas.Canvas, value: float, page_size: str, h: int, entity_height=18):
+    text_string = "Serum Chloride"
+    limits_string = "( 98 - 107 mmol/L )"
+    limit_a = 98
+    limit_b = 107
+    value_string = value
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
-    return c,h-entity_height
+    c = mundane_things(c, x, text_string, value, value_string, limits_string, limit_a, limit_b, h)
+    return c, h - entity_height
 
-def serum_calcium_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+# done
+def serum_calcium_canvas(c: canvas.Canvas, value: float, page_size: str, h: int, entity_height=18):
+    text_string = "Serum Calcium"
+    limits_string = "( 8.5 - 10.5 mmol/L )"
+    limit_a = 8.5
+    limit_b = 10.5
+    value_string = value
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
-    return c,h-entity_height
+    c = mundane_things(c, x, text_string, value, value_string, limits_string, limit_a, limit_b, h)
+    return c, h - entity_height
 
-def vdrl_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+# done
+def electrolytes_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height = 18):
+    sod,pot,chl,cal = values
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
-    return c,h-entity_height
+    c.drawString(size_dict["value_point"][x],h,"electrolytes".upper())
+    h -= entity_height
+    c,h = serum_sodium_canvas(c,sod,page_size,h,entity_height)
+    c,h = serum_potassium_canvas(c,pot,page_size,h,entity_height)
+    c,h = serum_chloride_canvas(c,chl,page_size,h,entity_height)
+    c,h = serum_calcium_canvas(c,cal,page_size,h,entity_height)
+    return c,h - entity_height
 
-def hbsag_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+# done
+def vdrl_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
+    text_string = "v.d.r.l".upper()
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
+    c = mundane_things(c,x,text_string,value,value,"","","",h,if_limits=False)
     return c,h-entity_height
 
-def hiv_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+# done
+def hbsag_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
+    text_string = "HBsAg"
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
+    c = mundane_things(c,x,text_string,value,value,"","","",h,if_limits=False)
     return c,h-entity_height
 
-def hcv_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+# done
+def hiv_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
+    text_string = "HIV I & II Antibodies Test".upper()
+    value_string = f"{value} (Tridot Method)"
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
+    c = mundane_things(c,x,text_string,value,value_string,"","","",h,if_limits=False,left_offset=22)
     return c,h-entity_height
 
+# done
+def hcv_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
+    text_string = "HCV I & II Antibodies Test".upper()
+    value_string = f"{value} (Tridot Method)"
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    c = mundane_things(c,x,text_string,value,value_string,"","","",h,if_limits=False,left_offset=25)
+    return c,h-entity_height
 
 
 reports_canvas_dict = {
@@ -1480,9 +1644,10 @@ reports_canvas_dict = {
     "Serum Globulin":serum_globulin_canvas,
     "Serum A/G Ratio":serum_ag_ratio_canvas,
     "Serum Sodium":serum_sodium_canvas,
-    "Serum Potassium":serum_pottassium_canvas,
+    "Serum Potassium":serum_potassium_canvas,
     "Serum Chloride":serum_chloride_canvas,
     "Serum Calcium":serum_calcium_canvas,
+    "Electrolytes":electrolytes_canvas,
     "V.D.R.L":vdrl_canvas,
     "HBsAg":hbsag_canvas,
     "HIV I & II Antibodies Test":hiv_canvas,
@@ -1494,7 +1659,7 @@ report_canvas_values_dict = {
     "Total Count (TC)":"tc_count",
     "Platelet Count":"plt_count",
     "Differential Count (DC)":"dc_count",
-    "Widal":"widal",
+    "Widal":"Widal",
     "CRP":"crp",
     "ESR":"esr",
     "Malaria":"malaria-test",
@@ -1522,7 +1687,7 @@ report_canvas_values_dict = {
     "PT APTT":"full-pt-aptt",
     "Serum Amylase":"serum_amylase",
     "Serum Lipase":"serum_lipase",
-    "Serum Protein":"serum_protien",
+    "Serum Protein":"serum_protein",
     "Serum Albumin":"serum_albumin",
     "Serum Globulin":"serum_globulin",
     "Serum A/G Ratio":"serum_ag_ratio",
@@ -1530,6 +1695,7 @@ report_canvas_values_dict = {
     "Serum Potassium":"serum_potassium",
     "Serum Chloride":"serum_chloride",
     "Serum Calcium":"serum_calcium",
+    "Electrolytes":"electrolytes",
     "V.D.R.L":"vdrl",
     "HBsAg":"hbsag",
     "HIV I & II Antibodies Test":"hiv_ant",
@@ -1597,6 +1763,7 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
         h = 410-top_space
         serial_no = str(serial_no)
         tests_list = all_patients_values[serial_no]["tests"]
+        print(all_patients_values)
         for t in tests_list:
             c,h = reports_canvas_dict[t](c,all_patients_values[serial_no][report_canvas_values_dict[t]],page_size,h,report_details_space)
         c.save()
@@ -1606,7 +1773,7 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
 
         # grid
 
-        c.rect(40,45,big_page_width - 2 * 40, big_page_height - 2 * 50)
+        c.rect(40,65,big_page_width - 2 * 40, big_page_height - 2 * 80)
         # c.setDash(6,3)
         # c.setFont(small_font_name,5)
         # for x in range(0,int(big_page_width),10):
@@ -1641,6 +1808,7 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
         h = 600 - top_space
         serial_no = str(serial_no)
         tests_list = all_patients_values[serial_no]["tests"]
+        print(all_patients_values)
         for t in tests_list:
             c,h = reports_canvas_dict[t](c,all_patients_values[serial_no][report_canvas_values_dict[t]],page_size,h,report_details_space)
         c.save()
@@ -1655,22 +1823,28 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
         State({'type':'dynamic-input','name':ALL},'value'),
         State({'type':'dynamic-input','name':ALL},'id'),
         State("patient-data-store","data"),
+        State("reports-dropdown","value"),
+        State("template-dropdown","value")
     ],
     prevent_initial_call=True
 )
-def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,input_ids,all_patients_values):
+def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,input_ids,all_patients_values,reports_dropdown_list,templates_dropdown_list):
     if not input_values:
         raise PreventUpdate
     if n_clicks:
         patients_sno = str(patients_sno)
+        if templates_dropdown_list:
+            all_patients_values[patients_sno]["tests"] += json.loads(templates_dropdown_list)
+        if reports_dropdown_list:
+            all_patients_values[patients_sno]["tests"] += reports_dropdown_list
         temp_dict = {}
         for id,value in zip(input_ids,input_values):
             if id['name'] in ['polymo','lympho','esino']:
                 temp_dict["dc_count"] = temp_dict.get("dc_count",[])
                 temp_dict["dc_count"].append(value)
             if ("Widal" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['widal','widal-form','widal-ot-react','widal-ht-react']):
-                temp_dict['widal'] = temp_dict.get('widal',[])
-                temp_dict['widal'].append(value)
+                temp_dict['Widal'] = temp_dict.get('Widal',[])
+                temp_dict['Widal'].append(value)
             if ("Direct & Indirect Bilirubin" in all_patients_values[patients_sno]["tests"]) & (id["name"] in ["total-bili","direct-bili","indirect-bili"]):
                 temp_dict["direct-bili"] = temp_dict.get("direct-bili",[])
                 temp_dict["direct-bili"].append(value)
@@ -1683,6 +1857,9 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
             if ("HBA1C" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['hba1c_first','hba1c_second','hba1c_dropdown']):
                 temp_dict["hba1c"] = temp_dict.get("hba1c",[])
                 temp_dict["hba1c"].append(value)
+            if ("Electrolytes" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ["serum_sodium","serum_potassium","serum_chloride","serum_calcium"]):
+                temp_dict["electrolytes"] = temp_dict.get("electrolytes",[])
+                temp_dict["electrolytes"].append(value)
             temp_dict[id['name']] = value
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],**temp_dict}
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],'page_size':page_size_value}
@@ -1706,8 +1883,9 @@ def preview_report(n_clicks,top_slider_value,slider_value,data,patient_sno,page_
         raise PreventUpdate
     if n_clicks:
         filename = create_pdf(patient_sno,top_slider_value,slider_value,page_size,data)
+        cache_buster = f"?v={int(time.time())}"
         return html.Iframe(
-            src=filename,
+            src=f"{filename}{cache_buster}",
             style=dict(width="100%",height="1650px")
         )
 
