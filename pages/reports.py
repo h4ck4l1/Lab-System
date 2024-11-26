@@ -32,11 +32,15 @@ all_options = [
     "CRP",
     "ESR",
     "Full CBP",
+    "Malaria",
     "PCV(HCT)",
     "DENGUE",
     "Blood Group",
     "Total Bilirubin",
     "Direct & Indirect Bilirubin",
+    "SGOT",
+    "SGPT",
+    "ALKP",
     "Heamogram",
     "HBA1C",
     "Fasting Sugar",       
@@ -190,6 +194,11 @@ crp_list = [
     html.Div(" ( < 6 ) ",style=limits_style)
 ]
 
+malaria_list = [
+    html.Div("Test For Malaria Parasite (M.P): NON-REACTIVE",style=text_style),
+    html.Div([dcc.Dropdown(["Long","Short"],"Short",id={'type':'dynamic-input','name':'malaria-test'})],style={**input_style,"left":"700px"})
+]
+
 widal_list = [
     html.Div("Blood for Widal : ",style=text_style),
     html.Div([dcc.Dropdown(["NON-REACTIVE","REACTIVE"],"REACTIVE",id={'type':'dynamic-input','name':'widal'})],style={**input_style,"width":"200px"}),
@@ -229,6 +238,24 @@ direct_indirect_bilirubin_list = [
     html.Div("Indirect Bilirubin: ",style=text_style),
     html.Div("-----------",style=limits_style),
     html.Div(" ( 0.2 - 0.6 mg/dl )",style=limits_style)
+]
+
+sgot_list = [
+    html.Div("Aspirate Amino Transferase (SGOT): ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'sgot'},type="number",placeholder="29 (normal)",style={**input_style,"left":"500px"}),
+    html.Div("( < 40 )",style={**limits_style,"left":"700px"})
+]
+
+sgpt_list = [
+    html.Div("Alinine  Amino Transferase (SGPT): ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'sgpt'},type="number",placeholder="29 (normal)",style={**input_style,"left":"500px"}),
+    html.Div("( < 40 )",style={**limits_style,"left":"700px"})
+]
+
+alkp_list = [
+    html.Div("Alkaline Phosphatase (ALKP): ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'alkp'},type="number",placeholder="29 (normal)",style={**input_style,"left":"500px"}),
+    html.Div("( 37 - 147 )",style={**limits_style,"left":"700px"})
 ]
 
 esr_list = [
@@ -538,10 +565,14 @@ reports_original_dict = {
     "CRP": crp_list,
     "Widal": widal_list,
     "Full CBP": full_cbp_list,
+    "Malaria":malaria_list,
     "PCV(HCT)":hct_list,
     "Blood Group": blood_group_list,
     "Total Bilirubin": total_bilirubin_list,
     "Direct & Indirect Bilirubin": direct_indirect_bilirubin_list,
+    "SGOT":sgot_list,
+    "SGPT":sgpt_list,
+    "ALKP":alkp_list,
     "DENGUE":dengue_list,
     "Heamogram": heamogram_list,
     "HBA1C": hba1c_list,
@@ -576,7 +607,6 @@ reports_original_dict = {
 
 
 
-
 def get_df_item(p_sn:int,item_name:str):
     return copy_df.loc[copy_df.loc[:,"S.No."] == p_sn,item_name].item()
 
@@ -604,7 +634,7 @@ def submit_report(patients_sno, reports_value,template_value,all_patients_values
         print(all_patients_values)
         if all_patients_values.get(str(patients_sno),{}) == {}:
             all_patients_values[str(patients_sno)] = {"tests":[]}
-        if all_patients_values[str(patients_sno)]["tests"] != []:
+        if len(all_patients_values[str(patients_sno)]) > 1:
             is_present = True
         report_details = []
         patients_details = [
@@ -1100,171 +1130,271 @@ def hb1ac_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=1
     h -= entity_height
     c.drawString(size_dict["left_extreme"][x],h,second_string)
     c.drawString(size_dict["value_point"][x]+60,h,f":  {second_value}")
+    c.drawString(size_dict["right_extreme"][x] - cal_string_width(c,
+        "(Non-Biabetic Adults > 18 Years - < 5.7 %)",
+    size_dict["font_name"][x],size_dict["limits_font"][x]),
+        h-8,
+        "(Non-Biabetic Adults > 18 Years - < 5.7 %)"
+    )
+    return c,h-entity_height
+
+def dengue_canvas(c:canvas.Canvas,values,page_size:str,h:int,entity_height=18):
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
+
+def sgot_canvas(c:canvas.Canvas,values,page_size:str,h:int,entity_height=18):
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
+
+def sgpt_canvas(c:canvas.Canvas,values,page_size:str,h:int,entity_height=18):
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
+
+def alkp_canvas(c:canvas.Canvas,values,page_size:str,h:int,entity_height=18):
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
+
+def malaria_canvas(c:canvas.Canvas,values,page_size:str,h:int,entity_height=18):
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
     return c,h-entity_height
 
 def blood_urea_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def serum_creat_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def uric_acid_cavnas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def urine_analysis_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def mantaux_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def random_sugar_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def fasting_sugar_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 
 def lipid_profile_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def urine_preg_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 
 def blood_for_aec_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def ra_factor_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def aso_titre_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def pt_aptt_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def serum_amylase_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def serum_lipase_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def serum_protein_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def serum_albumin_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def serum_globulin_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def serum_ag_ratio_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def serum_sodium_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def serum_pottassium_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def serum_chloride_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def serum_calcium_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def vdrl_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def hbsag_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def hiv_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 def hcv_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
-        pass
+        x = 0
     else:
-        pass
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
 
 
 
@@ -1276,10 +1406,14 @@ reports_canvas_dict = {
     "Widal":widal_canvas,
     "CRP":crp_canvas,
     "ESR":esr_canvas,
+    "Malaria":malaria_canvas,
     "Full CBP":full_cbp_canvas,
     "Blood Group":blood_group_canvas,
     "Total Bilirubin":total_bilirubin_canvas,
     "Direct & Indirect Bilirubin":direct_and_indirect_bilirubin_canvas,
+    "SGPT":sgpt_canvas,
+    "SGOT":sgot_canvas,
+    "ALKP":alkp_canvas,
     "Heamogram":heamogram_canvas,
     "HBA1C":hb1ac_canvas,
     "Fasting Sugar":fasting_sugar_canvas,    
@@ -1319,10 +1453,14 @@ report_canvas_values_dict = {
     "Widal":"widal",
     "CRP":"crp",
     "ESR":"esr",
+    "Malaria":"malaria-test",
     "Full CBP":"cbp",
     "Blood Group":"blood-group",
     "Total Bilirubin":"total-bili",
     "Direct & Indirect Bilirubin":"direct-bili",
+    "SGPT":"sgpt",
+    "SGOT":"sgot",
+    "ALKP":"alkp",
     "Heamogram":"heamo",
     "HBA1C":"hba1c",
     "Fasting Sugar":"fasting_sugar",    
