@@ -331,7 +331,8 @@ hba1c_list = [
     html.Div("%",style={**limits_style,"left":"700px"}),
     html.Div("Esitmiated Average Glucose (eAG): ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'hba1c_second'},type="number",placeholder="Type Hba1c mg/dl..",style={**input_style,"left":"500px"}),
-    html.Div("mg/dl",style={**limits_style,"left":"700px"})
+    html.Div("mg/dl",style={**limits_style,"left":"700px"}),
+    html.Div([dcc.Dropdown(["SMALL","LONG"],"LONG",id={'type':'dynamic-input','name':'hba1c_dropdown'})],style={**limits_style,"width":"150px","left":"800px","bottom":"25px"})
 ]
 
 blood_urea_list = [
@@ -1116,7 +1117,7 @@ def direct_and_indirect_bilirubin_canvas(c:canvas.Canvas,values:list,page_size:s
     return c, h - entity_height
 
 def hb1ac_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
-    first_value,second_value = values
+    first_value,second_value,drop_value = values
     first_string = "Glycosylated Hb (HbA1c) Test"
     second_string = "Estimated Average Glucose (eAG)"
     if page_size == "SMALL/A5":
@@ -1126,16 +1127,59 @@ def hb1ac_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=1
         entity_height += 5
     c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
     c.drawString(size_dict["left_extreme"][x],h,first_string)
+    c.setFont(size_dict["font_name"][x],size_dict["font_size"][x]+5)
     c.drawString(size_dict["value_point"][x]+60,h,f":  {first_value}%")
     h -= entity_height
+    c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
     c.drawString(size_dict["left_extreme"][x],h,second_string)
+    c.setFont(size_dict["font_name"][x],size_dict["font_size"][x]+5)
     c.drawString(size_dict["value_point"][x]+60,h,f":  {second_value}")
-    c.drawString(size_dict["right_extreme"][x] - cal_string_width(c,
-        "(Non-Biabetic Adults > 18 Years - < 5.7 %)",
-    size_dict["font_name"][x],size_dict["limits_font"][x]),
-        h-8,
+    c.setFont(size_dict["font_name"][x],size_dict["limits_font"][x])
+    h -= (entity_height + 1)
+    _temp_x = size_dict["right_extreme"][x] - cal_string_width(c,"(Non-Biabetic Adults > 18 Years - < 5.7 %)",size_dict["font_name"][x],size_dict["limits_font"][x])
+    c.drawString(_temp_x,
+        h,
         "(Non-Biabetic Adults > 18 Years - < 5.7 %)"
     )
+    h -= (entity_height - 10)
+    c.drawString(size_dict["right_extreme"][x] - cal_string_width(c,
+        "(AT Risk (Prediabetes)   - 5.7 % - 6.4%)",
+    size_dict["font_name"][x],size_dict["limits_font"][x]),
+        h,
+        "(AT Risk (Prediabetes)   - 5.7 % - 6.4%)"
+    )
+    h -= (entity_height - 10)
+    c.drawString(size_dict["right_extreme"][x] - cal_string_width(c,
+        "(Diagnising Diabetes   - > 6.5 %)",
+    size_dict["font_name"][x],size_dict["limits_font"][x]),
+        h,
+        "(Diagnising Diabetes   - > 6.5 %)"
+    )
+    h -= (entity_height - 5)
+    if drop_value == "LONG":
+        c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
+        c.drawString(_temp_x,h,"diabetics: ".upper())
+        h -= (entity_height - 10)
+        c.drawString(size_dict["right_extreme"][x] - cal_string_width(c,
+            "( Excellent Control     - 6.0 % - 7.0% )",
+        size_dict["font_name"][x],size_dict["limits_font"][x]),
+            h,
+            "( Excellent Control     - 6.0 % - 7.0% )"
+        )    
+        h -= (entity_height - 10)
+        c.drawString(size_dict["right_extreme"][x] - cal_string_width(c,
+            "( Excellent Control     - 6.0 % - 7.0% )",
+        size_dict["font_name"][x],size_dict["limits_font"][x]),
+            h,
+            "( Excellent Control     - 6.0 % - 7.0% )"
+        )
+        h -= (entity_height - 10)
+        c.drawString(size_dict["right_extreme"][x] - cal_string_width(c,
+            "( Excellent Control     - 6.0 % - 7.0% )",
+        size_dict["font_name"][x],size_dict["limits_font"][x]),
+            h,
+            "( Excellent Control     - 6.0 % - 7.0% )"
+        )
     return c,h-entity_height
 
 def dengue_canvas(c:canvas.Canvas,values,page_size:str,h:int,entity_height=18):
@@ -1636,7 +1680,7 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
             if ("Heamogram" in all_patients_values[patients_sno]["tests"]) & (id["name"] in ['hb','rbc-count','hct','tc_count','plt_count','mcv','mch','mchc','esr','polymo','lympho','esino','heamo-rbc','blast-cells','platelet-opinion','hemoparasites-opinion','total-opinion']):
                 temp_dict["heamo"] = temp_dict.get("heamo",[])
                 temp_dict["heamo"].append(value)
-            if ("HBA1C" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['hba1c_first','hba1c_second']):
+            if ("HBA1C" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['hba1c_first','hba1c_second','hba1c_dropdown']):
                 temp_dict["hba1c"] = temp_dict.get("hba1c",[])
                 temp_dict["hba1c"].append(value)
             temp_dict[id['name']] = value
