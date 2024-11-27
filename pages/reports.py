@@ -1,4 +1,4 @@
-import json,os,flask,datetime,time,win32api,win32print
+import json,os,flask,datetime,time,win32api,win32print,pywintypes
 import pandas as pd
 from io import StringIO
 from reportlab.pdfgen import canvas            
@@ -667,8 +667,8 @@ def submit_report(patients_sno, reports_value,template_value,all_patients_values
             s = "*Data is present, Please Preview to see old values or Storage Clear to enter new values"
         else:
             s = ""
-        return patients_details,report_details,s,all_patients_values
-    return "Select a Serial Number to Display....","Select a Test to Display....",s,all_patients_values
+        return patients_details,report_details,s,all_patients_values[str(patients_sno)]["filenames"],all_patients_values
+    return "Select a Serial Number to Display....","Select a Test to Display....",s,[],all_patients_values
 
 
 
@@ -688,7 +688,7 @@ def clear_storage_data(n_clicks,patients_sno,all_patients_values):
     if not n_clicks:
         raise PreventUpdate
     if n_clicks:
-        all_patients_values[str(patients_sno)] = {"tests":[]}
+        all_patients_values[str(patients_sno)] = {"tests":[],"filenames":all_patients_values[str(patients_sno)]["filenames"]}
         return all_patients_values,f"Storage Cleared for Serial No. {patients_sno}"
 
 def cal_string_width(c:canvas.Canvas,total_string,font_name,font_size):
@@ -1783,7 +1783,7 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
     month_dir = os.path.join(year_dir,month_extract)
     day_dir = os.path.join(month_dir,day_extract)
     os.makedirs(day_dir,exist_ok=True)
-    filename = os.path.join(day_dir,f"{patient_name_save}.pdf")
+    filename = os.path.join(day_dir,f"{patient_name_save}_{all_patients_values[str(serial_no)]["tests"][0]}.pdf")
     if page_size == "SMALL/A5":
         c = canvas.Canvas(filename,pagesize=portrait(A5))
         small_page_width, small_page_height = A5
@@ -1933,7 +1933,7 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
 @callback(
     [
         Output("report-preview","children"),
-        Output("patients-files","options"),
+        Output("patients-files","options",allow_duplicate=True),
         Output("patient-data-store","data",allow_duplicate=True)
     ],
     [
@@ -1951,10 +1951,13 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
 )
 def preview_report(n_clicks,drop_value,top_slider_value,slider_value,all_patients_values,patient_sno,page_size):
     cache_buster = f"?v={int(time.time())}"
+    if (not n_clicks) & (not drop_value):
+        raise PreventUpdate
     if n_clicks:
         filename = create_pdf(patient_sno,top_slider_value,slider_value,page_size,all_patients_values)
         all_patients_values[str(patient_sno)]["filenames"] = all_patients_values[str(patient_sno)].get("filenames",[])
-        all_patients_values[str(patient_sno)]["filenames"].append(filename)
+        if filename not in all_patients_values[str(patient_sno)]["filenames"]:
+            all_patients_values[str(patient_sno)]["filenames"].append(filename)
         return html.Iframe(
             src=f"{filename}{cache_buster}",
             style=dict(width="100%",height="1650px")
@@ -1985,8 +1988,16 @@ def print_report(n_clicks,all_patients_values,s_no):
             devmode.PaperSize = 11
         else:
             devmode.PaperSize = 9
-        win32print.SetPrinter(printer_handle,2,printer_settings,0)
-        win32api.ShellExecute(0,"print",all_patients_values[str(s_no)]["filenames"][-1],None,".",0)
+        try:
+            win32print.SetPrinter(printer_handle,2,printer_settings,0)
+        except pywintypes.error as e:
+            print(f"\nError originated and the message is: \n{e}\n")
+        print("\nFile name is: ",all_patients_values[str(s_no)]["filenames"][-1])
+        total_filename = rf"C:\Users\sohai\source\repos\Lab System\{all_patients_values[str(s_no)]["filenames"][-1]}"
+        try:
+            win32api.ShellExecute(0,"print",total_filename,None,".",0)
+        except pywintypes.error as e:
+            print(f"\nError originated and the second message is: \n{e}\n")
         win32print.ClosePrinter(printer_handle)
 
 
