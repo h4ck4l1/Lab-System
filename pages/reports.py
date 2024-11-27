@@ -133,7 +133,7 @@ layout = html.Div(
         html.Div(["between space slider  ".upper(),dcc.Slider(min=10,max=40,step=2,value=24,id="slider")],style=dict(left="50px",position="relative",width="550px",top="20px",fontSize=15)),
         html.Div("type report to preview".upper(),id="report-preview",style=dict(color="cyan",border="10px solid #4b70f5",padding="50px",position="relative",height="1750px",top="100px")),
         html.Button("print".upper(),id="print-button",style=dict(width="200px",height="100px",position="relative",left="600px",top="150px",fontSize=30,fontWeight=700,backgroundColor="red")),
-        html.Div([dcc.Dropdown(id="patients-files")],style=dict(width="300px",height="50px",position="relative",left="600px",top="50px"))
+        html.Div([dcc.Dropdown(id="patients-files")],style=dict(width="300px",height="50px",position="relative",left="200px",top="10px"))
     ],
     className="subpage-content"
 )
@@ -629,6 +629,7 @@ def get_df_item(p_sn:int,item_name:str):
         Output("output-report","children"),
         Output("output-report-boxes","children"),
         Output("data-present","children"),
+        Output("patients-files","options"),
         Output("patient-data-store","data")
     ],
     [
@@ -645,8 +646,8 @@ def submit_report(patients_sno, reports_value,template_value,all_patients_values
         if all_patients_values is None:
             all_patients_values = {}
         if all_patients_values.get(str(patients_sno),{}) == {}:
-            all_patients_values[str(patients_sno)] = {"tests":[]}
-        if len(all_patients_values[str(patients_sno)]) > 1:
+            all_patients_values[str(patients_sno)] = {"tests":[],"filenames":[]}
+        if len(all_patients_values[str(patients_sno)]) > 2:
             is_present = True
         report_details = []
         patients_details = [
@@ -1932,39 +1933,62 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
 @callback(
     [
         Output("report-preview","children"),
+        Output("patients-files","options"),
         Output("patient-data-store","data",allow_duplicate=True)
     ],
-    Input("preview-button","n_clicks"),
+    [
+        Input("preview-button","n_clicks"),
+        Input("patients-files","value")
+    ],
     [
         State("top-slider","value"),
         State("slider","value"),
         State("patient-data-store","data"),
         State("patients-dropdown","value"),
         State("page-size-dropdown","value")
-    ]
+    ],
+    prevent_initial_call=True
 )
-def preview_report(n_clicks,top_slider_value,slider_value,data,patient_sno,page_size):
-    if not n_clicks:
-        raise PreventUpdate
+def preview_report(n_clicks,drop_value,top_slider_value,slider_value,all_patients_values,patient_sno,page_size):
+    cache_buster = f"?v={int(time.time())}"
     if n_clicks:
-        filename = create_pdf(patient_sno,top_slider_value,slider_value,page_size,data)
-        data[str(patient_sno)]["filename"] = data[str(patient_sno)].get("filename",[])
-        data[str(patient_sno)]["filename"].append("filename")
-        cache_buster = f"?v={int(time.time())}"
+        filename = create_pdf(patient_sno,top_slider_value,slider_value,page_size,all_patients_values)
+        all_patients_values[str(patient_sno)]["filenames"] = all_patients_values[str(patient_sno)].get("filenames",[])
+        all_patients_values[str(patient_sno)]["filenames"].append(filename)
         return html.Iframe(
             src=f"{filename}{cache_buster}",
             style=dict(width="100%",height="1650px")
-        ),data
+        ),all_patients_values[str(patient_sno)]["filenames"],all_patients_values
+    if drop_value:
+        return html.Iframe(
+            src=f"{drop_value}{cache_buster}",
+            style=dict(width="100%",height="1650px")
+        ),all_patients_values[str(patient_sno)]["filenames"],all_patients_values
 
 
 @callback(
-    Output("patient-data-store","data"),
+    Output("patient-data-store","data",allow_duplicate=True),
     Input("print-button","n_clicks"),
-    State("patient-data-store","data")
+    [
+        State("patient-data-store","data"),
+        State("patients-dropdown","value")
+    ],
+    prevent_initial_call=True
 )
-def print_report(n_clicks,data):
+def print_report(n_clicks,all_patients_values,s_no):
     if n_clicks:
-        pass
+        printer_name = win32print.GetDefaultPrinter()
+        printer_handle = win32print.OpenPrinter(printer_name)
+        printer_settings = win32print.GetPrinter(printer_handle,2)
+        devmode = printer_settings["pDevMode"]
+        if all_patients_values[str(s_no)]["page_size"] == "SMALL/A5":
+            devmode.PaperSize = 11
+        else:
+            devmode.PaperSize = 9
+        win32print.SetPrinter(printer_handle,2,printer_settings,0)
+        win32api.ShellExecute(0,"print",all_patients_values[str(s_no)]["filenames"][-1],None,".",0)
+        win32print.ClosePrinter(printer_handle)
+
 
 register_page(
     "Reports",
