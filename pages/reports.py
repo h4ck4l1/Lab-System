@@ -102,6 +102,7 @@ templates_dropdown = dcc.Dropdown(
         {"label":"PACK 2","value":json.dumps(["Blood Urea","Serum Creatinine","Lipid Profile"])},
         {"label":"RFT","value":json.dumps(["Blood Urea","Serum Creatinine","Uric Acid"])},
         {"label":"Lipid Profile","value":json.dumps(["Lipid Profile"])},
+        {"label":"Liver Function Test","value":json.dumps(["Total Bilirubin","Direct & Indirect Bilirubin","SGOT","SGPT","ALKP"])},
         {"label":"Full Electrolytes","value":json.dumps(["Serum Amylase","Serum Lipase","Serum Protein","Serum Albumin","Serum Globulin","Serum A/G Ratio","Electrolytes"])}
     ],
     id="template-dropdown"
@@ -134,7 +135,6 @@ layout = html.Div(
     ],
     className="subpage-content"
 )
-
 
 @callback(
     Output("patients-dropdown","options"),
@@ -1047,7 +1047,7 @@ def total_bilirubin_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entit
     else:
         x = 1
         entity_height += 5
-    c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
+    c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h,left_offset=20)
     return c,h - entity_height
 
 # done
@@ -1124,15 +1124,15 @@ def direct_and_indirect_bilirubin_canvas(c:canvas.Canvas,values:list,page_size:s
     indirect_text_strig = "Indirect Bilirubin"
     direct_limits_string = "( 0.2 - 0.4 mg/dl )"
     indirect_limits_string = "( 0.2 - 0.6 mg/dl )"
-    indirect_value = total_value - direct_value
+    indirect_value = round(total_value - direct_value,1)
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
-    c = mundane_things(c,x,direct_text_string,direct_value,direct_value,direct_limits_string,0.2,0.4,h)
+    c = mundane_things(c,x,direct_text_string,direct_value,direct_value,direct_limits_string,0.2,0.4,h,left_offset=20)
     h -= entity_height
-    c = mundane_things(c,x,indirect_text_strig,indirect_value,indirect_value,indirect_limits_string,0.2,0.6,h)
+    c = mundane_things(c,x,indirect_text_strig,indirect_value,indirect_value,indirect_limits_string,0.2,0.6,h,left_offset=20)
     return c, h - entity_height
 
 # done
@@ -1224,24 +1224,37 @@ def sgot_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18
         entity_height += 5
     c = mundane_things(c,x,text_string,value,value,limits_string,limit_a,limit_b,h,left_offset=20)
     c.drawString(size_dict["left_extreme"][x]+150,h-16,"(sgot)".upper())
-    return c,h-(entity_height + 16)
+    return c,h-(entity_height + 10)
 
-def sgpt_canvas(c:canvas.Canvas,values,page_size:str,h:int,entity_height=18):
+def sgpt_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
+    text_string = "Alinine Amino Transferase"
+    limits_string = "( < 40 )"
+    limit_a = 0
+    limit_b = 40
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
-    return c,h-entity_height
+    c = mundane_things(c,x,text_string,value,value,limits_string,limit_a,limit_b,h,left_offset=20)
+    c.drawString(size_dict["left_extreme"][x]+150,h-16,"(sgpt)".upper())
+    return c,h-(entity_height + 10)
 
 def alkp_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_height=18):
+    text_string = "Alkaline Phosphatase"
+    limits_string = "( 37 - 147 )"
+    limit_a = 37
+    limit_b = 147
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
-    return c,h-entity_height
+    c = mundane_things(c,x,text_string,value,value,limits_string,limit_a,limit_b,h,left_offset=20)
+    c.drawString(size_dict["left_extreme"][x]+150,h-16,"(alkp)".upper())
+    return c,h-(entity_height + 10)
 
+# done
 def malaria_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         x = 0
@@ -1261,6 +1274,7 @@ def malaria_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=1
         c.drawString(size_dict["value_point"][x],h,": non - reactive  (kit method)".upper())
     return c,h-(entity_height + 5)
 
+# done
 def blood_urea_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
     text_string = "Blood Urea"
     limits_string = "( 10 - 40 mg/dl )"
@@ -1288,12 +1302,17 @@ def serum_creat_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_he
     c = mundane_things(c,x,text_string,value,value,limits_string,limit_a,limit_b,h)
     return c,h-entity_height
 
-def uric_acid_cavnas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+def uric_acid_cavnas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
+    text_string = "Uric Acid"
+    limits_string = "( 2.5 - 7.5 IU/L)"
+    limit_a = 2.5
+    limit_b = 7.5
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
+    c = mundane_things(c,x,text_string,value,value,limits_string,limit_a,limit_b,h)
     return c,h-entity_height
 
 def urine_analysis_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
@@ -1303,7 +1322,6 @@ def urine_analysis_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
         x = 1
         entity_height += 5
     return c,h-entity_height
-
 
 def mantaux_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
@@ -1343,12 +1361,14 @@ def fasting_sugar_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_he
     c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
     return c,h-entity_height
 
-def lipid_profile_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+def lipid_profile_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
+    tc,hdl,ldl,vldl,tri = values
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
+    
     return c,h-entity_height
 
 def urine_preg_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
@@ -1666,7 +1686,7 @@ report_canvas_values_dict = {
     "Full CBP":"cbp",
     "Blood Group":"blood-group",
     "Total Bilirubin":"total-bili",
-    "Direct & Indirect Bilirubin":"direct-bili",
+    "Direct & Indirect Bilirubin":"all_bili",
     "SGPT":"sgpt",
     "SGOT":"sgot",
     "ALKP":"alkp",
@@ -1845,9 +1865,9 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
             if ("Widal" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['widal','widal-form','widal-ot-react','widal-ht-react']):
                 temp_dict['Widal'] = temp_dict.get('Widal',[])
                 temp_dict['Widal'].append(value)
-            if ("Direct & Indirect Bilirubin" in all_patients_values[patients_sno]["tests"]) & (id["name"] in ["total-bili","direct-bili","indirect-bili"]):
-                temp_dict["direct-bili"] = temp_dict.get("direct-bili",[])
-                temp_dict["direct-bili"].append(value)
+            if ("Direct & Indirect Bilirubin" in all_patients_values[patients_sno]["tests"]) & (id["name"] in ["total-bili","direct-bili"]):
+                temp_dict["all_bili"] = temp_dict.get("all_bili",[])
+                temp_dict["all_bili"].append(value)
             if("Full CBP" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['hb','rbc-count','hct','tc_count','plt_count','esr','polymo','lympho','esino']):
                 temp_dict["cbp"] = temp_dict.get("cbp",[])
                 temp_dict["cbp"].append(value)
@@ -1860,6 +1880,9 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
             if ("Electrolytes" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ["serum_sodium","serum_potassium","serum_chloride","serum_calcium"]):
                 temp_dict["electrolytes"] = temp_dict.get("electrolytes",[])
                 temp_dict["electrolytes"].append(value)
+            if ("Lipid Profile" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['lipid_tc','lipid_hdl','lipid_ldl','lipid_vldl','lipid_tri']):
+                temp_dict["full-lipid"] = temp_dict.get("full-lipid",[])
+                temp_dict["full-lipid"].append(value)
             temp_dict[id['name']] = value
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],**temp_dict}
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],'page_size':page_size_value}
