@@ -132,7 +132,9 @@ layout = html.Div(
         html.Div(["top space slider  ".upper(),dcc.Slider(min=0,max=200,step=20,value=0,id="top-slider")],style=dict(left="50px",position="relative",width="550px",fontSize=15)),
         html.Div(["between space slider  ".upper(),dcc.Slider(min=10,max=80,step=5,value=24,id="slider")],style=dict(left="50px",position="relative",width="550px",top="20px",fontSize=15)),
         html.Div("type report to preview".upper(),id="report-preview",style=dict(color="cyan",border="10px solid #4b70f5",padding="50px",position="relative",height="1750px",top="100px")),
-        html.Div([dcc.Dropdown(id="patients-files")],style=dict(width="300px",height="50px",position="relative",left="200px",top="200px"))
+        html.Div([dcc.Dropdown(id="patients-files")],style=dict(width="600px",height="50px",position="relative",left="200px",top="150px")),
+        *large_break,
+        *large_break
     ],
     className="subpage-content"
 )
@@ -472,12 +474,10 @@ ra_factor_list = [
 
 aso_titre_list = [
     html.Div("ASO TITRE : ",style=text_style),
-    html.Div([dcc.Dropdown(["POSITIVE","NEGATIVE"],"NEGATIVE",id={'type':'dynamic-input','name':'aso_titre'})],style=input_style),
-    html.Div([
-        "( 1 : ",
-        dcc.Input(id={'type':'dynamic-input','name':'aso_titre_dilutions'},type="number"),
-        " dilutions"
-    ],style=limits_style)
+    html.Div(dcc.Dropdown(["POSITIVE","NEGATIVE"],"NEGATIVE",id={'type':'dynamic-input','name':'aso_titre'}),style=dict(position="relative",width="200px",left="300px",bottom="25px")),
+    html.Div("( 1 : ",style={**limits_style,"bottom":"50px"}),
+    dcc.Input(id={'type':'dynamic-input','name':'aso_titre_dilutions'},type="number",placeholder="None",style={**limits_style,"bottom":"75px","left":"620px","width":"100px"}),
+    html.Div(" dilutions ) ",style={**limits_style,"left":"730px","bottom":"95px"})
 ]
 
 serum_amylase_list = [
@@ -1284,6 +1284,7 @@ def blood_for_aec_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_he
     c = mundane_things(c,x,text_string,value,value,limits_string,limit_a,limit_b,h)
     return c,h-entity_height
 
+# done
 def ra_factor_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
     ra,dilutions = values
     if page_size == "SMALL/A5":
@@ -1298,6 +1299,7 @@ def ra_factor_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_heig
         c.drawString(size_dict["right_extreme"][x] - cal_string_width(c,limits_string,size_dict["font_name"][x],size_dict["font_size"][x]),h,limits_string)
     return c,h-entity_height
 
+# done
 def aso_titre_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
     aso,dilutions = values
     if page_size == "SMALL/A5":
@@ -1311,6 +1313,7 @@ def aso_titre_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_heig
         limits_string = f"( 1 : {dilutions} dilutions )"
         c.drawString(size_dict["right_extreme"][x] - cal_string_width(c,limits_string,size_dict["font_name"][x],size_dict["font_size"][x]),h,limits_string)
     return c,h-entity_height
+
 
 def pt_aptt_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
