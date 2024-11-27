@@ -1239,6 +1239,7 @@ def urine_analysis_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
         entity_height += 5
     return c,h-entity_height
 
+# done
 def mantaux_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         x = 0
@@ -1252,13 +1253,20 @@ def mantaux_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=1
     c.drawString(size_dict["right_extreme"][x]-70-cal_string_width(c,"( After 72 Hrs )",size_dict["font_name"][x],size_dict["limits_font"][x]),h-20,"( After 72 Hrs )")
     return c,h-(entity_height + 20)
 
+# done
 def urine_preg_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
-
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
+    h -= (entity_height * 5)
+    c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
+    c.drawString(size_dict["left_extreme"][x],h,"Urine Test Report")
+    c.rect(size_dict["left_extreme"][x]-5,h-5,cal_string_width(c,"Urine Test Report",size_dict["font_name"][x],size_dict["font_size"][x])+10,15)
+    h -= (entity_height * 3)
+    text_string = "Urine Pregnancy Test: "
+    c = mundane_things(c,x,text_string,value,value,"","","",h,if_limits=False,left_offset=10)
     return c,h-entity_height
 
 def blood_for_aec_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
