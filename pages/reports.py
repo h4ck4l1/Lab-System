@@ -1206,14 +1206,20 @@ def hb1ac_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=1
         )
     return c,h-entity_height
 
-def dengue_canvas(c:canvas.Canvas,values,page_size:str,h:int,entity_height=18):
+
+def dengue_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
+    igm,igg,ns = values
     heading_string = "dengue test".upper()
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
+    c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
+    c.drawString(size_dict["value_point"][x],h,heading_string)
+    c.line(size_dict["value_point"][x],h-5,cal_string_width(c,heading_string,size_dict["font_name"][x],size_dict["font_size"][x]),size_dict["font_size"][x]+5)
     return c,h-entity_height
+
 
 def urine_analysis_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
@@ -1675,6 +1681,7 @@ reports_canvas_dict = {
     "CRP":crp_canvas,
     "ESR":esr_canvas,
     "Malaria":malaria_canvas,
+    "DENGUE":dengue_canvas,
     "Full CBP":full_cbp_canvas,
     "Blood Group":blood_group_canvas,
     "Total Bilirubin":total_bilirubin_canvas,
@@ -1723,6 +1730,7 @@ report_canvas_values_dict = {
     "CRP":"crp",
     "ESR":"esr",
     "Malaria":"malaria-test",
+    "DENGUE":"dengue-test",
     "Full CBP":"cbp",
     "Blood Group":"blood-group",
     "Total Bilirubin":"total-bili",
@@ -1923,6 +1931,9 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
             if ("Lipid Profile" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['lipid_tc','lipid_hdl','lipid_ldl','lipid_vldl','lipid_tri']):
                 temp_dict["full-lipid"] = temp_dict.get("full-lipid",[])
                 temp_dict["full-lipid"].append(value)
+            if ("DENGUE" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['dengue_igm','dengue_igg','dengue_ns']):
+                temp_dict["dengue-test"] = temp_dict.get("dengue-test",[])
+                temp_dict["dengue-test"].append(value)
             temp_dict[id['name']] = value
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],**temp_dict}
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],'page_size':page_size_value}
