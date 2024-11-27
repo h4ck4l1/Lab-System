@@ -28,14 +28,14 @@ all_options = [
     "Total Count (TC)",
     "Platelet Count",
     "Differential Count (DC)",
-    "Widal",
     "CRP",
-    "ESR",
-    "Full CBP",
-    "Malaria",
-    "PCV(HCT)",
-    "DENGUE",
     "Blood Group",
+    "DENGUE",
+    "Widal",
+    "Full CBP",
+    "PCV(HCT)",
+    "ESR",
+    "Malaria",
     "Total Bilirubin",
     "Direct & Indirect Bilirubin",
     "SGOT",
@@ -43,7 +43,7 @@ all_options = [
     "ALKP",
     "Heamogram",
     "HBA1C",
-    "Fasting Sugar",       
+    "Fasting Sugar",      
     "Random Sugar",
     "Blood Urea",
     "Serum Creatinine",
@@ -1212,6 +1212,64 @@ def dengue_canvas(c:canvas.Canvas,values,page_size:str,h:int,entity_height=18):
         entity_height += 5
     return c,h-entity_height
 
+def urine_analysis_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
+
+def mantaux_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
+
+def urine_preg_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
+    
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
+
+def blood_for_aec_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
+
+def ra_factor_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
+
+def aso_titre_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
+
+def pt_aptt_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    return c,h-entity_height
+
+# done
 def sgot_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
     text_string = "Aspirate Amino Transferase"
     limits_string = "( < 40 )"
@@ -1226,6 +1284,7 @@ def sgot_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18
     c.drawString(size_dict["left_extreme"][x]+150,h-16,"(sgot)".upper())
     return c,h-(entity_height + 10)
 
+# done
 def sgpt_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
     text_string = "Alinine Amino Transferase"
     limits_string = "( < 40 )"
@@ -1240,6 +1299,7 @@ def sgpt_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18
     c.drawString(size_dict["left_extreme"][x]+150,h-16,"(sgpt)".upper())
     return c,h-(entity_height + 10)
 
+# done
 def alkp_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_height=18):
     text_string = "Alkaline Phosphatase"
     limits_string = "( 37 - 147 )"
@@ -1253,6 +1313,20 @@ def alkp_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_height=18):
     c = mundane_things(c,x,text_string,value,value,limits_string,limit_a,limit_b,h,left_offset=20)
     c.drawString(size_dict["left_extreme"][x]+150,h-16,"(alkp)".upper())
     return c,h-(entity_height + 10)
+
+# done
+def uric_acid_cavnas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
+    text_string = "Uric Acid"
+    limits_string = "( 2.5 - 7.5 IU/L)"
+    limit_a = 2.5
+    limit_b = 7.5
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    c = mundane_things(c,x,text_string,value,value,limits_string,limit_a,limit_b,h)
+    return c,h-entity_height
 
 # done
 def malaria_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
@@ -1302,35 +1376,6 @@ def serum_creat_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_he
     c = mundane_things(c,x,text_string,value,value,limits_string,limit_a,limit_b,h)
     return c,h-entity_height
 
-def uric_acid_cavnas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
-    text_string = "Uric Acid"
-    limits_string = "( 2.5 - 7.5 IU/L)"
-    limit_a = 2.5
-    limit_b = 7.5
-    if page_size == "SMALL/A5":
-        x = 0
-    else:
-        x = 1
-        entity_height += 5
-    c = mundane_things(c,x,text_string,value,value,limits_string,limit_a,limit_b,h)
-    return c,h-entity_height
-
-def urine_analysis_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
-    if page_size == "SMALL/A5":
-        x = 0
-    else:
-        x = 1
-        entity_height += 5
-    return c,h-entity_height
-
-def mantaux_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
-    if page_size == "SMALL/A5":
-        x = 0
-    else:
-        x = 1
-        entity_height += 5
-    return c,h-entity_height
-
 # done
 def random_sugar_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_height=18):
     text_string = "Blood Sugar ( Fasting )"
@@ -1361,6 +1406,7 @@ def fasting_sugar_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_he
     c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
     return c,h-entity_height
 
+# done
 def lipid_profile_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
     tc,hdl,ldl,vldl,tri = values
     if page_size == "SMALL/A5":
@@ -1368,49 +1414,40 @@ def lipid_profile_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_
     else:
         x = 1
         entity_height += 5
-    
-    return c,h-entity_height
-
-def urine_preg_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
-    if page_size == "SMALL/A5":
-        x = 0
-    else:
-        x = 1
-        entity_height += 5
-    return c,h-entity_height
-
-def blood_for_aec_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
-    if page_size == "SMALL/A5":
-        x = 0
-    else:
-        x = 1
-        entity_height += 5
-    return c,h-entity_height
-
-def ra_factor_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
-    if page_size == "SMALL/A5":
-        x = 0
-    else:
-        x = 1
-        entity_height += 5
-    return c,h-entity_height
-
-
-def aso_titre_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
-    if page_size == "SMALL/A5":
-        x = 0
-    else:
-        x = 1
-        entity_height += 5
-    return c,h-entity_height
-
-
-def pt_aptt_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
-    if page_size == "SMALL/A5":
-        x = 0
-    else:
-        x = 1
-        entity_height += 5
+    c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
+    c.drawString(size_dict["value_point"][x],h,"total lipid profile".upper())
+    c.rect(size_dict["value_point"][x]-5,h-5,cal_string_width(c,"total lipid profile".upper(),size_dict["font_name"][x],size_dict["font_size"][x])+10,18)
+    h -= (entity_height + 10)
+    text_string = "Total Cholesterol"
+    limits_string = "Low Risk < 220.0 mg/dl"
+    c = mundane_things(c,x,text_string,tc,tc,limits_string,limit_a=0,limit_b=250,h=h,left_offset=20)
+    h -= (entity_height - 9)
+    c.drawString(size_dict["right_extreme"][x]-cal_string_width(c,"BorderLine - 220 - 239 mg/dl",size_dict["font_name"][x],size_dict["limits_font"][x]),h,"BorderLine - 220 - 239 mg/dl")
+    h -= (entity_height - 9)
+    c.drawString(size_dict["right_extreme"][x]-cal_string_width(c,"High Risk > 130.0 mg/dl",size_dict["font_name"][x],size_dict["limits_font"][x]),h,"High Risk > 130.0 mg/dl")
+    h -= entity_height
+    text_string = "High Density Lipoprotein"
+    limits_string = "29 - 80 mg/dl"
+    c = mundane_things(c,x,text_string,hdl,hdl,limits_string,limit_a=29,limit_b=80,h=h,left_offset=20)
+    h -= (entity_height - 9)
+    c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
+    c.drawString(size_dict["left_extreme"][x]+50,h,"(hdl)".upper())
+    h -= (entity_height)
+    text_string = "Low Density Lipoprotein"
+    limits_string = "Desirable < 100"
+    c = mundane_things(c,x,text_string,ldl,ldl,limits_string,limit_a=0,limit_b=130,h=h,left_offset=20)
+    h -= (entity_height - 9)
+    c.drawString(size_dict["right_extreme"][x]-cal_string_width(c,"BorderLine - 110 - 129 mg/dl",size_dict["font_name"][x],size_dict["limits_font"][x]),h,"BorderLine - 220 - 239 mg/dl")
+    h -=(entity_height - 9)
+    c.drawString(size_dict["right_extreme"][x]-cal_string_width(c,"High Risk > 130 mg/dl",size_dict["font_name"][x],size_dict["limits_font"][x]),h,"High Risk > 130 mg/dl")
+    h -= entity_height
+    text_string = "Very Low Density Lipoprotein"
+    limits_string = "7.0 - 35.0 mg/dl"
+    c = mundane_things(c,x,text_string,vldl,vldl,limits_string,7.0,35.0,h,left_offset=20)
+    h -= entity_height
+    text_string = "Triglyceride (F)"
+    limits_string = "Normal < 170.0 mg/dl"
+    c = mundane_things(c,x,text_string,tri,tri,limits_string,0,170.0,h,left_offset=20)
     return c,h-entity_height
 
 # done
