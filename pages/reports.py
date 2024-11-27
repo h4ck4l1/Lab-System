@@ -132,7 +132,6 @@ layout = html.Div(
         html.Div(["top space slider  ".upper(),dcc.Slider(min=0,max=200,step=20,value=0,id="top-slider")],style=dict(left="50px",position="relative",width="550px",fontSize=15)),
         html.Div(["between space slider  ".upper(),dcc.Slider(min=10,max=80,step=5,value=24,id="slider")],style=dict(left="50px",position="relative",width="550px",top="20px",fontSize=15)),
         html.Div("type report to preview".upper(),id="report-preview",style=dict(color="cyan",border="10px solid #4b70f5",padding="50px",position="relative",height="1750px",top="100px")),
-        # html.Button("print".upper(),id="print-button",style=dict(width="200px",height="100px",position="relative",left="600px",top="150px",fontSize=30,fontWeight=700,backgroundColor="red")),
         html.Div([dcc.Dropdown(id="patients-files")],style=dict(width="300px",height="50px",position="relative",left="200px",top="200px"))
     ],
     className="subpage-content"
@@ -1228,6 +1227,8 @@ def dengue_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=
     h -= entity_height
     text_string = "NS1 antibodies to Dengue Virus"
     c = mundane_things(c,x,text_string,ns,ns,"","","",h,if_limits=False,left_offset=20)
+    h -= entity_height
+    c.drawString(size_dict["left_extreme"][x],h,"( Rapid Strip Method )")
     return c,h-entity_height
 
 
@@ -1269,28 +1270,46 @@ def urine_preg_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_heigh
     c = mundane_things(c,x,text_string,value,value,"","","",h,if_limits=False,left_offset=10)
     return c,h-entity_height
 
-def blood_for_aec_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+# done
+def blood_for_aec_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_height=18):
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
+    text_string = "Blood for A.E.C Count"
+    limits_string = "( 50 - 450 cells/cumm )"
+    limit_a = 50
+    limit_b = 450
+    c = mundane_things(c,x,text_string,value,value,limits_string,limit_a,limit_b,h)
     return c,h-entity_height
 
-def ra_factor_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+def ra_factor_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
+    ra,dilutions = values
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
+    c = mundane_things(c,x,"RA FACTOR",ra,ra,"","","",h,if_limits=False)
+    if ra == "positive".upper():
+        c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
+        limits_string = f"( 1 : {dilutions} dilutions )"
+        c.drawString(size_dict["right_extreme"][x] - cal_string_width(c,limits_string,size_dict["font_name"][x],size_dict["font_size"][x]),h,limits_string)
     return c,h-entity_height
 
-def aso_titre_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+def aso_titre_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
+    aso,dilutions = values
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
+    c = mundane_things(c,x,"ASO TITRE",aso,aso,"","","",h,if_limits=False)
+    if aso == "positive".upper():
+        c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
+        limits_string = f"( 1 : {dilutions} dilutions )"
+        c.drawString(size_dict["right_extreme"][x] - cal_string_width(c,limits_string,size_dict["font_name"][x],size_dict["font_size"][x]),h,limits_string)
     return c,h-entity_height
 
 def pt_aptt_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
@@ -1900,7 +1919,7 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
         h = 600 - top_space
         serial_no = str(serial_no)
         tests_list = all_patients_values[serial_no]["tests"]
-        print(all_patients_values)
+        # print(all_patients_values)
         for t in tests_list:
             c,h = reports_canvas_dict[t](c,all_patients_values[serial_no][report_canvas_values_dict[t]],page_size,h,report_details_space)
         c.save()
@@ -1958,6 +1977,12 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
             if ("DENGUE" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['dengue_igm','dengue_igg','dengue_ns']):
                 temp_dict["dengue-test"] = temp_dict.get("dengue-test",[])
                 temp_dict["dengue-test"].append(value)
+            if ("RA Factor" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['ra-factor','ra-dilutions']):
+                temp_dict["full-ra-factor"] = temp_dict.get("full-ra-factor",[])
+                temp_dict["full-ra-factor"].append(value)
+            if ("ASO Titre" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['aso_titre','aso_titre_dilutions']):
+                temp_dict["full-aso-titre"] = temp_dict.get("full-aso-titre",[])
+                temp_dict["full-aso-titre"].append(value)
             temp_dict[id['name']] = value
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],**temp_dict}
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],'page_size':page_size_value}
@@ -2002,36 +2027,6 @@ def preview_report(n_clicks,drop_value,top_slider_value,slider_value,all_patient
             style=dict(width="100%",height="1650px")
         ),all_patients_values[str(patient_sno)]["filenames"],all_patients_values
 
-
-# @callback(
-#     Input("print-button","n_clicks"),
-#     [
-#         State("patient-data-store","data"),
-#         State("patients-dropdown","value")
-#     ],
-#     prevent_initial_call=True
-# )
-# def print_report(n_clicks,all_patients_values,s_no):
-#     if n_clicks:
-#         printer_name = win32print.GetDefaultPrinter()
-#         printer_handle = win32print.OpenPrinter(printer_name)
-#         printer_settings = win32print.GetPrinter(printer_handle,2)
-#         devmode = printer_settings["pDevMode"]
-#         if all_patients_values[str(s_no)]["page_size"] == "SMALL/A5":
-#             devmode.PaperSize = 11
-#         else:
-#             devmode.PaperSize = 9
-#         try:
-#             win32print.SetPrinter(printer_handle,2,printer_settings,0)
-#         except pywintypes.error as e:
-#             print(f"\nError originated and the message is: \n{e}\n")
-#         print("\nFile name is: ",all_patients_values[str(s_no)]["filenames"][-1])
-#         total_filename = rf"C:\Users\sohai\source\repos\Lab System\{all_patients_values[str(s_no)]["filenames"][-1]}"
-#         try:
-#             win32api.ShellExecute(0,"print",total_filename,None,".",0)
-#         except pywintypes.error as e:
-#             print(f"\nError originated and the second message is: \n{e}\n")
-#         win32print.ClosePrinter(printer_handle)
 
 
 register_page(
