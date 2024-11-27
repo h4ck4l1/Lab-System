@@ -1,6 +1,7 @@
 import json,os,flask,datetime,time,win32api,win32print,pywintypes
 import pandas as pd
 from io import StringIO
+from glob import glob
 from reportlab.pdfgen import canvas            
 from reportlab.lib.pagesizes import A5,A4,portrait      
 from reportlab.lib.units import inch           
@@ -622,6 +623,21 @@ reports_original_dict = {
 def get_df_item(p_sn:int,item_name:str):
     return copy_df.loc[copy_df.loc[:,"S.No."] == p_sn,item_name].item()
 
+def get_all_files(s_no):
+    pt_name = get_df_item(s_no,"Patient Name")
+    options = {}
+    if os.path.exists("assets/" + datetime.date.today().strftime("%Y/%m/%d")):
+        all_files = glob("assets/"+datetime.date.today().strftime("%Y/%m/%d/"))
+        for file in all_files:
+            all_strings = os.path.basename(file).split("__")
+            if all_strings[0] == pt_name:
+                options["label"] = os.path.basename(file).replace("_"," ")
+                options["value"] = file
+        return [options]
+    return []
+
+
+
 
 @callback(
     [
@@ -638,16 +654,15 @@ def get_df_item(p_sn:int,item_name:str):
     ],
     State("patient-data-store","data"),
 )
-def submit_report(patients_sno, reports_value,template_value,all_patients_values):
+def submit_report(patients_sno,reports_value,template_value,all_patients_values):
     is_present = False
     s = ""
     if patients_sno:
         if all_patients_values is None:
             all_patients_values = {}
         if all_patients_values.get(str(patients_sno),{}) == {}:
-            all_patients_values[str(patients_sno)] = {"tests":[],"filenames":[]}
-        # print("all_pat values at first callback : ",all_patients_values[str(patients_sno)])
-        if len(all_patients_values[str(patients_sno)]) > 2:
+            all_patients_values[str(patients_sno)] = {"tests":[]}
+        if len(all_patients_values[str(patients_sno)]) > 1:
             is_present = True
         report_details = []
         patients_details = [
@@ -667,7 +682,7 @@ def submit_report(patients_sno, reports_value,template_value,all_patients_values
             s = "*Data is present, Please Preview to see old values or Storage Clear to enter new values"
         else:
             s = ""
-        return patients_details,report_details,s,all_patients_values[str(patients_sno)]["filenames"],all_patients_values
+        return patients_details,report_details,s,get_all_files(patients_sno),all_patients_values
     return "Select a Serial Number to Display....","Select a Test to Display....",s,[],all_patients_values
 
 
@@ -688,7 +703,7 @@ def clear_storage_data(n_clicks,patients_sno,all_patients_values):
     if not n_clicks:
         raise PreventUpdate
     if n_clicks:
-        all_patients_values[str(patients_sno)] = {"tests":[],"filenames":all_patients_values[str(patients_sno)]["filenames"]}
+        all_patients_values[str(patients_sno)] = {"tests":[]}
         return all_patients_values,f"Storage Cleared for Serial No. {patients_sno}"
 
 def cal_string_width(c:canvas.Canvas,total_string,font_name,font_size):
@@ -2023,12 +2038,12 @@ def preview_report(n_clicks,drop_value,top_slider_value,slider_value,all_patient
         return html.Iframe(
             src=f"{filename}{cache_buster}",
             style=dict(width="100%",height="1650px")
-        ),all_patients_values[str(patient_sno)]["filenames"],all_patients_values
+        ),get_all_files(patient_sno),all_patients_values
     if drop_value:
         return html.Iframe(
             src=f"{drop_value}{cache_buster}",
             style=dict(width="100%",height="1650px")
-        ),all_patients_values[str(patient_sno)]["filenames"],all_patients_values
+        ),get_all_files(patient_sno),all_patients_values
 
 
 
