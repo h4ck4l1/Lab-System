@@ -1,4 +1,4 @@
-import json,os,flask,datetime,time
+import json,os,flask,datetime,time,win32api,win32print
 import pandas as pd
 from io import StringIO
 from reportlab.pdfgen import canvas            
@@ -132,6 +132,8 @@ layout = html.Div(
         html.Div(["top space slider  ".upper(),dcc.Slider(min=0,max=200,step=20,value=0,id="top-slider")],style=dict(left="50px",position="relative",width="550px",fontSize=15)),
         html.Div(["between space slider  ".upper(),dcc.Slider(min=10,max=40,step=2,value=24,id="slider")],style=dict(left="50px",position="relative",width="550px",top="20px",fontSize=15)),
         html.Div("type report to preview".upper(),id="report-preview",style=dict(color="cyan",border="10px solid #4b70f5",padding="50px",position="relative",height="1750px",top="100px")),
+        html.Button("print".upper(),id="print-button",style=dict(width="200px",height="100px",position="relative",left="600px",top="150px",fontSize=30,fontWeight=700,backgroundColor="red")),
+        html.Div([dcc.Dropdown(id="patients-files")],style=dict(width="300px",height="50px",position="relative",left="600px",top="50px"))
     ],
     className="subpage-content"
 )
@@ -1229,7 +1231,7 @@ def mantaux_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
     return c,h-entity_height
 
 def urine_preg_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
-    
+
     if page_size == "SMALL/A5":
         x = 0
     else:
@@ -1928,7 +1930,10 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
 
 
 @callback(
-    Output("report-preview","children"),
+    [
+        Output("report-preview","children"),
+        Output("patient-data-store","data",allow_duplicate=True)
+    ],
     Input("preview-button","n_clicks"),
     [
         State("top-slider","value"),
@@ -1943,12 +1948,23 @@ def preview_report(n_clicks,top_slider_value,slider_value,data,patient_sno,page_
         raise PreventUpdate
     if n_clicks:
         filename = create_pdf(patient_sno,top_slider_value,slider_value,page_size,data)
+        data[str(patient_sno)]["filename"] = data[str(patient_sno)].get("filename",[])
+        data[str(patient_sno)]["filename"].append("filename")
         cache_buster = f"?v={int(time.time())}"
         return html.Iframe(
             src=f"{filename}{cache_buster}",
             style=dict(width="100%",height="1650px")
-        )
+        ),data
 
+
+@callback(
+    Output("patient-data-store","data"),
+    Input("print-button","n_clicks"),
+    State("patient-data-store","data")
+)
+def print_report(n_clicks,data):
+    if n_clicks:
+        pass
 
 register_page(
     "Reports",
