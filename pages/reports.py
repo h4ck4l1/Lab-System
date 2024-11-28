@@ -812,11 +812,16 @@ def patient_details_canvas(
         mod_pt_name = f"Pt. Name : Ms. {patient_name.upper()}"
     if (patient_age >= 22) & (patient_gender == "Female"):
         mod_pt_name = f"Pt. Name : Mrs. {patient_name.upper()}"
+    small_doc_dict = {"S. Prasad".upper():"SP","Babu garu".upper():"B"}
+    if (doctor_name == "S. Prasad".upper()) | (doctor_name == "Babu garu".upper()):
+        c.drawString(left_extreme,page_height-drop_height,small_doc_dict[doctor_name])
+        page_height -= 20
     c.drawString(left_extreme,page_height-drop_height,mod_pt_name)
     c.drawString(left_extreme,page_height-(drop_height + patient_details_space),f"Age : {patient_age} {patient_age_group}")
     gender_string = f"Gender : {patient_gender}"
     c.drawString(right_extreme-cal_string_width(c,gender_string,font_name,font_size),page_height-(drop_height + patient_details_space),gender_string)     # s
-    c.drawString(left_extreme,page_height-(drop_height + 2*patient_details_space),f"Ref.Dr.By. : {doctor_name}")                                                # 99 + 24
+    if (doctor_name != "S. Prasad".upper()) & (doctor_name != "Babu garu".upper()):
+        c.drawString(left_extreme,page_height-(drop_height + 2*patient_details_space),f"Ref.Dr.By. : {doctor_name}")                                                # 99 + 24
     if patient_serial_no < 10:
         patient_serial_no = f"000{patient_serial_no}"
     else:
