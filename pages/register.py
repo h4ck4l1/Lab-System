@@ -1,28 +1,29 @@
 import os,time
 from datetime import datetime,date
 from glob import glob
+from io import StringIO
 import numpy as np
 import pandas as pd
 import json
 from dash import dcc,html,register_page,dash_table,callback,Input,Output,ctx,State
+from dash.exceptions import PreventUpdate
 
 
 
-df = pd.DataFrame(
-    {
-        "S.No.":pd.Series(dtype="int32"),
-        "Date":pd.Series(dtype="str"),
-        "Patient Name":pd.Series(dtype="str"),
-        "Reference By":pd.Series(dtype="str"),
-        "Patient Age":pd.Series(dtype="int64"),
-        "Age Group":pd.Series(dtype="str"),
-        "Gender":pd.Series(dtype="str"),
-        "Amount":pd.Series(dtype="int64"),
-        "Phone No":pd.Series(dtype="int64"),
-        "Paid":pd.Series(dtype="bool"),
-        "Print":pd.Series(dtype="bool")
-    }
-)
+columns = [
+    "S.No.",
+    "Date",
+    "Patiens Name",
+    "Reference By",
+    "Patient Age",
+    "Age Group",
+    "Gender",
+    "Amount",
+    "Phone No",
+    "Paid",
+    "Due",
+    "Sample",
+]
 
 
 doctor_options = [
@@ -136,8 +137,9 @@ register_layout = html.Div(
         html.Div(
             [
                 html.Div("Paid or Not: ",style=dict(color="cyan",fontSize=30)),
-                html.Div(dcc.Dropdown(["paid".upper(),"not paid".upper(),"due".upper()],"not paid".upper(),id="paid-dropdown"),style=dict(display="inline-block",fontSize=20,width="200px",height="75px",position="absolute",left="350px")),
-                dcc.Input(id="paid-input",type="number",placeholder="Enter Due Amount",value=0,style=dict(display="inline-block",width="200px",fontSize=30,height="50px",position="absolute",left="700px"))
+                html.Div(dcc.Dropdown(["paid".upper(),"not paid".upper(),"due".upper()],"not paid".upper(),id="paid-dropdown"),style=dict(display="inline-block",fontSize=20,width="200px",height="75px",position="relative",left="150px",top="25px")),
+                html.Div("Due Amount : ",style=dict(color="cyan",fontSize=30,position="relative",left="200px")),
+                dcc.Input(id="paid-input",type="number",placeholder="Enter Due Amount",value=0,style=dict(display="inline-block",width="200px",fontSize=30,height="50px",position="relative",left="300px"))
             ],
             style=dict(display="flex",alignItems="center")
         ),
@@ -145,8 +147,8 @@ register_layout = html.Div(
         html.Div(
             [
                 html.Div("Sample Bougth by: ",style=dict(color="cyan",fontSize=30)),
-                html.Div(dcc.Dropdown(["self".upper(),"outside".upper()],"self".upper(),id="sample-source"),style=dict(display="inline-block",fontSize=20,width="200px",height="75px",position="absolute",left="350px")),
-                dcc.Input(id="sample-source-input",type="text",placeholder="Enter Name",style=dict(display="inline-block",width="200px",fontSize=30,height="50px",position="absolute",left="700px"))
+                html.Div(dcc.Dropdown(["self".upper(),"outside".upper()],"self".upper(),id="sample-source-dropdown"),style=dict(display="inline-block",fontSize=20,width="200px",height="75px",position="relative",left="350px",bottom="25px")),
+                dcc.Input(id="sample-source-input",type="text",placeholder="Enter Name",value="Outside",style=dict(display="inline-block",width="200px",fontSize=30,height="50px",position="relative",left="400px",bottom="75px"))
             ]
         ),
         *big_break,
@@ -154,8 +156,7 @@ register_layout = html.Div(
         *big_break,
         dash_table.DataTable(
             id="data-table",
-            data=df.to_dict('records'),
-            columns=[{"name":i,"id":i} for i in df.columns],
+            columns=[{"name":i,"id":i} for i in columns],
             style_table=dict(fontSize=25,backgroundColor="#633fff"),
             style_cell=dict(backgroundColor="#633fff")
         ),
@@ -179,17 +180,15 @@ register_layout = html.Div(
 
 @callback(
     [
-        Output("data-table","data",allow_duplicate=True),
-        Output("data-store","data",allow_duplicate=True)
+        Output("data-table","data"),
+        Output("data-store","data")
     ],
     [
         Input("date-pick-single","date"),
         Input("refresh-button","n_clicks")
     ],
-    prevent_initial_call=True
 )
 def initialize_df(date_value,n_clicks):
-    global df
     date_obj = date.fromisoformat(date_value)
     date_string = date_obj.strftime("%Y_%m_%d")
     file = glob("all_files/"+date_string+".xlsx")
@@ -208,19 +207,20 @@ def initialize_df(date_value,n_clicks):
                 "Gender":pd.Series(dtype="str"),
                 "Amount":pd.Series(dtype="int64"),
                 "Phone No":pd.Series(dtype="int64"),
-                "Paid":pd.Series(dtype="bool"),
-                "Print":pd.Series(dtype="bool")
+                "Paid":pd.Series(dtype="str"),
+                "Due":pd.Series(dtype="int64"),
+                "Sample":pd.Series(dtype="str")
             }
         )
-        df.loc[1,:] = [1,datetime.today().strftime("%d-%m-%y"),"01:11:23 PM","first_name","some_doc",1,"Y","Male",10,20,False,False]
-        df.loc[2,:] = [2,datetime.today().strftime("%d-%m-%y"),"12:10:56 AM","second_name","some_doc",2,"M","Female",20,30,False,False]
+        df.loc[1,:] = [1,datetime.today().strftime("%d-%m-%y"),"01:11:23 PM","first_name","some_doc",1,"Y","Male",10,20,"PAID",0,"SELF"]
+        df.loc[2,:] = [2,datetime.today().strftime("%d-%m-%y"),"12:10:56 AM","second_name","some_doc",2,"M","Female",20,30,"NOT PAID",1000,"OUTSIDE"]
     return df.to_dict('records'),df.to_json(date_format="iso",orient="split")
 
 
 @callback(
     [
-        Output("data-table","data"),
-        Output("data-store","data")
+        Output("data-table","data",allow_duplicate=True),
+        Output("data-store","data",allow_duplicate=True)
     ],
     [
         Input("submit-button","n_clicks")         
@@ -235,12 +235,20 @@ def initialize_df(date_value,n_clicks):
         State("reference-doctor","value"),          # 6
         State("patient_age","value"),               # 7
         State("amount","value"),                    # 8
-        State("phone_number","value")               # 9
-    ]
+        State("phone_number","value"),              # 9
+        State("paid-dropdown","value"),             # 10
+        State("paid-input","value"),                # 11
+        State("sample-source-dropdown","value"),    # 12
+        State("sample-source-input","value"),       # 13
+        State("data-store","data")                  # 14
+    ],
+    prevent_initial_call=True
 )
 def append_name_to_dataframe(n_clicks,*vals):
-    global df
+    if not n_clicks:
+        raise PreventUpdate
     if n_clicks:
+        df = pd.read_json(StringIO(vals[14]),orient="split")
         index_number = df.shape[0]
         index_number += 1
         df.loc[index_number,"S.No."] = vals[4]
@@ -273,20 +281,29 @@ def append_name_to_dataframe(n_clicks,*vals):
         df.loc[index_number,"Gender"] = vals[1]
         df.loc[index_number,"Amount"] = vals[8]
         df.loc[index_number,"Phone No"] = vals[9]
-        df.loc[index_number,"Paid"] = False
+        df.loc[index_number,"Paid"] = vals[10]
+        if vals[10] == "due".upper():
+            df.loc[index_number,"Due"] = vals[11]
+        else:
+            df.loc[index_number,"Due"] = 0
+        df.loc[index_number,"Sample"] = vals[12]
+        if (vals[12] == "outside".upper()) & (vals[13] is not None):
+            df.loc[index_number,"Sample"] = vals[13]
         df.loc[index_number,"Print"] = False
-    return df.to_dict('records'),df.to_json(date_format="iso",orient="split")
+        return df.to_dict('records'),df.to_json(date_format="iso",orient="split")
 
 
 @callback(
     Output("out-message","children"),
+    Input("save-button","n_clicks"),
     [
-        Input("save-button","n_clicks"),
-        Input("date-pick-single","date")
+        State("data-store","data"),
+        State("date-pick-single","date"),
     ]
 )
-def save_to_files(n_clicks,date_value):
+def save_to_files(n_clicks,date_value,data):
     if n_clicks:
+        df = pd.read_json(StringIO(data),orient="split")
         date_obj = date.fromisoformat(date_value)
         date_string = date_obj.strftime("%Y_%m_%d")
         df.to_excel("all_files/"+date_string+".xlsx",index=False)
