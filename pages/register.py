@@ -328,20 +328,20 @@ def save_to_files(n_clicks,date_value,data):
         return "Your File has been saved."
 
 
-# @callback(
-#     [
-#         Output("clear-message","children"),
-#         Output("data-store","data",allow_duplicate=True)
-#     ],
-#     Input("clear-button","n_clicks"),
-#     State("data-store","data"),
-#     prevent_initial_call=True
-# )
-# def clear_everything(n_clicks,data):
-#     if not n_clicks:
-#         raise PreventUpdate
-#     if n_clicks:
-#         return "Data has been cleared",{}
+@callback(
+    [
+        Output("clear-message","children"),
+        Output("data-store","data",allow_duplicate=True)
+    ],
+    Input("clear-button","n_clicks"),
+    State("data-store","data"),
+    prevent_initial_call=True
+)
+def clear_everything(n_clicks,data):
+    if not n_clicks:
+        raise PreventUpdate
+    if n_clicks:
+        return "Data has been cleared",{}
 
 
 register_page(
