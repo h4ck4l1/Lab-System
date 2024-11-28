@@ -32,9 +32,10 @@ doctor_options = [
     "m rama krishna garu, mbbs, dch.,".upper(),
     "Smt. M.N. SRI DEVI GARU, MBBS, DGO.,",
     "akula satyanarayana garu, mbbs, dch.,".upper(),
-    "a. ganga bhavani garu, mbbs, dgo.,".upper(),
+    "Smt. A GANGA BHAVANI GARU, MBBS, DGO.,".upper(),
     "k. rajendra prasad garu, b.m.p.,".upper(),
     "ch. kiran kumar garu, b.m.p.,".upper(),
+    "k. chiranjeevi raju garu, b.m.p.,".upper(),
     "S. Prasad".upper(),
     "Babu garu".upper(),
 ]
@@ -291,7 +292,7 @@ def append_name_to_dataframe(n_clicks,*vals):
         if vals[6] == None:
             df.loc[index_number,"Reference By"] = vals[2]
         else:
-            df.loc[index_number,"Reference By"] = vals[6]
+            df.loc[index_number,"Reference By"] = vals[6].upper()
         df.loc[index_number,"Age Group"] = vals[0]
         df.loc[index_number,"Patient Age",] = vals[7]
         df.loc[index_number,"Gender"] = vals[1]
