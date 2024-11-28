@@ -804,8 +804,10 @@ def patient_details_canvas(
         drop_height
     ):
     c.setFont(font_name,font_size)
-    if patient_age < 18:
+    if (patient_age < 18) & (patient_gender == "Male"):
         mod_pt_name = f"Pt. Name : Chi. {patient_name.upper()}"
+    if (patient_age < 18) & (patient_gender == "Female"):
+        mod_pt_name = f"Pt. Name : Kmr. {patient_name.upper()}"
     if (patient_age >= 18) & (patient_gender == "Male"):
         mod_pt_name = f"Pt. Name : Mr. {patient_name.upper()}"
     if (patient_age >= 18) & (patient_gender == "Female"):
