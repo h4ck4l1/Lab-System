@@ -1977,20 +1977,7 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
     filename = os.path.join(day_dir,f"{patient_name_save}__{"_".join(all_patients_values[str(serial_no)]["tests"])}.pdf")
     if page_size == "SMALL/A5":
         c = canvas.Canvas(filename,pagesize=portrait(A5))
-        small_page_width, small_page_height = A5
-        # c.rect(40,20,page_width - 2 * 40, page_height - 2 * 40)
-        # grid
-        # c.setDash(6,3)
-        # c.setFont(font_name,5)
-        # for x in range(0,int(page_width),10):
-        #     if x % 20 == 0:
-        #         c.line(x,page_height,x,0)
-        #         c.drawString(x+2,page_height-30,str(x))
-        # for x in range(0,int(page_height),10):
-        #     if x % 20 == 0:
-        #         c.line(0,x,page_width,x)
-        #         c.drawString(30,x+2,str(x))
-
+        _, small_page_height = A5
         c = patient_details_canvas(
             c,
             small_font_name,
@@ -2019,22 +2006,7 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
         c.save()
     else:
         c = canvas.Canvas(filename,pagesize=portrait(A4))
-        big_page_width,big_page_height = A4
-
-        # grid
-
-        c.rect(40,72,big_page_width - 2 * 40, big_page_height - 2 * 80)
-        # c.setDash(6,3)
-        # c.setFont(small_font_name,5)
-        # for x in range(0,int(big_page_width),10):
-        #     if x % 20 == 0:
-        #         c.line(x,big_page_height,x,0)
-        #         c.drawString(x+2,big_page_height-30,str(x))
-        # for x in range(0,int(big_page_height),10):
-        #     if x % 20 == 0:
-        #         c.line(0,x,big_page_width,x)
-        #         c.drawString(30,x+2,str(x))
-        
+        _,big_page_height = A4    
         c = patient_details_canvas(
             c,
             big_font_name,
