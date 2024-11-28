@@ -1,4 +1,4 @@
-import json,os,flask,datetime,time,win32api,win32print,pywintypes
+import json,os,flask,datetime,time
 import pandas as pd
 from io import StringIO
 from glob import glob
@@ -57,6 +57,8 @@ all_options = [
     "Blood for AEC Count",
     "RA Factor",
     "ASO Titre",
+    "B.T",
+    "C.T",
     "PT APTT",
     "Serum Amylase",
     "Serum Lipase",
@@ -95,6 +97,9 @@ templates_dropdown = dcc.Dropdown(
         {"label":"HB, TC, PLATELET, DC","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)"])},
         {"label":"HB, TC, PLATELET, DC, CRP","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","CRP"])},
         {"label":"HB, TC, DC","value":json.dumps(["Hb","Total Count (TC)","Differential Count (DC)"])},
+        {"label":"BLOOD GROUP, CRP, TOTAL BILIRUBIN, DIRECT & INDIRECT BILIRUBIN","value":json.dumps(["Blood Group","CRP","Total Bilirubin","Direct & Indirect Bilirubin"])},
+        {"label":"SRI DEVI GARU CBP","value":json.dumps(["Full CBP","Blood Group","V.R.D.L","HBsAg","HIV I & II Antibodies Test","HCV I & II Antibodies Test","Random Sugar","Serum Creatinine","Total Bilirubin","Urine Analysis"])},
+        {"label":"SRI DEVI GARU HIV HB URINE","value":json.dumps(["Blood Group","Hb","B.T","C.T","V.R.D.L","HBsAg","HIV I & II Antibodies Test","HCV I & II Antibodies Test","Random Sugar","Serum Creatinine","Total Bilirubin","Urine Analysis"])},
         {"label":"HB, TC, PLATELET, DC, URINE","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","Urine Analysis"])},
         {"label":"HB, TC, PLATELET, DC, RBS","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","Random Sugar"])},
         {"label":"HB, TC, PLATELET, DC, WIDAL","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","Widal"])},
@@ -132,7 +137,7 @@ layout = html.Div(
         html.Button("preview".upper(),id="preview-button",style=dict(width="200px",height="100px",position="relative",left="600px",top="75px",fontSize=25,borderRadius="20px",backgroundColor="cyan")),
         html.Div(["top space slider  ".upper(),dcc.Slider(min=0,max=200,step=20,value=0,id="top-slider")],style=dict(left="50px",position="relative",width="550px",fontSize=15)),
         html.Div(["between space slider  ".upper(),dcc.Slider(min=10,max=80,step=5,value=24,id="slider")],style=dict(left="50px",position="relative",width="550px",top="20px",fontSize=15)),
-        html.Div("type report to preview".upper(),id="report-preview",style=dict(color="cyan",border="10px solid #4b70f5",padding="50px",position="relative",width="52%",height="1300px",top="100px"),className="wrap"),
+        html.Div("type report to preview".upper(),id="report-preview",style=dict(color="cyan",border="10px solid #4b70f5",padding="50px",position="relative",width="60%",height="1300px",top="100px"),className="wrap"),
         html.Div([dcc.Dropdown(id="patients-files")],style=dict(width="600px",height="50px",position="relative",left="200px",top="150px")),
         *large_break,
         *large_break
@@ -353,6 +358,32 @@ serum_creatinine_list = [
     html.Div("( 2.5 - 7.5 IU/L )",style=limits_style)
 ]
 
+bt_list = [
+    html.Div("B.T : ",style=text_style),
+    html.Div(
+        [
+            dcc.Input(id={'type':'dynamic-input','name':'bt_min'},type="number",placeholder="1",value=1),
+            " : ",
+            dcc.Input(id={'type':'dynamic-input','name':'bt_sec'},type="number",placeholder="35 sec.",value=35),
+            "  Sec."
+        ],
+        style=input_style
+    )
+]
+
+ct_list = [
+    html.Div("C.T : ",style=text_style),
+    html.Div(
+        [
+            dcc.Input(id={'type':'dynamic-input','name':'ct_min'},type="number",placeholder="3",value=3),
+            " : ",
+            dcc.Input(id={'type':'dynamic-input','name':'ct_sec'},type="number",placeholder="05 sec.",value=5),
+            "  Sec."
+        ],
+        style=input_style
+    )
+]
+
 uric_acid_list = [
     html.Div("Uric Acid : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'uric-acid'},type="number",placeholder="Enter Uric Acid",style=input_style),
@@ -362,6 +393,7 @@ uric_acid_list = [
 urine_analysis_list = [
     html.Div("Urine analysis :",style=text_style),
     *small_break,
+    html.Div(dcc.Dropdown(["short".upper(),"long".upper()],"long".upper(),id={'type':'dynamic-input','name':'urine-drop'}),style={**input_style,"bottom":"50px"}),
     html.Div("Sugar : ",style=text_style),
     html.Div([dcc.Dropdown(["NIL","+","++","+++"],"NIL",id={'type':'dynamic-input','name':'urine_sugar'})],style=input_style),
     html.Div("Albumin : ",style=text_style),
@@ -372,33 +404,33 @@ urine_analysis_list = [
     html.Div([dcc.Dropdown(["negative".upper(),"positive".upper()],"negative".upper(),id={'type':'dynamic-input','name':'urine_bp'})],style=input_style),
     html.Div("Micro : ",style=text_style),
     html.Div([
-        dcc.Input(id={'type':'dynamic-input','name':'urine_first_pus'},type="number",style=dict(width="100px")),
+        dcc.Input(id={'type':'dynamic-input','name':'urine_first_pus'},type="number",value=1,style=dict(width="100px")),
         "-",
-        dcc.Input(id={'type':'dynamic-input','name':'urine_second_pus'},type="number",style=dict(width="100px",marginRight="20px")),
+        dcc.Input(id={'type':'dynamic-input','name':'urine_second_pus'},type="number",value=3,style=dict(width="100px",marginRight="20px")),
         "Pus Cells"
     ],style=dict(position="relative",left="300px",margin="10px",wordSpacing="10px")),
     html.Div([
-        dcc.Input(id={'type':'dyanmic-input','name':'urine_first_rbc'},type="number",placeholder="No..",style=dict(width="100px")),
+        dcc.Input(id={'type':'dynamic-input','name':'urine_first_rbc'},type="number",placeholder="No..",value=0,style=dict(width="100px")),
         "-",
-        dcc.Input(id={'type':'dynamic-input','name':'urine_second_rbc'},type="number",placeholder="No..",style=dict(width="100px",marginRight="20px")),
+        dcc.Input(id={'type':'dynamic-input','name':'urine_second_rbc'},type="number",placeholder="No..",value=0,style=dict(width="100px",marginRight="20px")),
         "RBC  *(leaving blank means No RBC)"
     ],style=dict(position="relative",left="300px",margin="10px",wordSpacing="10px")),
     html.Div([
-        dcc.Input(id={'type':'dyanmic-input','name':'urine_first_casts'},type="number",placeholder="No..",style=dict(width="100px")),
+        dcc.Input(id={'type':'dynamic-input','name':'urine_first_casts'},type="number",placeholder="No..",value=0,style=dict(width="100px")),
         "-",
-        dcc.Input(id={'type':'dynamic-input','name':'urine_second_casts'},type="number",placeholder="No..",style=dict(width="100px",marginRight="20px")),
+        dcc.Input(id={'type':'dynamic-input','name':'urine_second_casts'},type="number",placeholder="No..",value=0,style=dict(width="100px",marginRight="20px")),
         "Casts  *(leaving blank means No Casts)"
     ],style=dict(position="relative",left="300px",margin="10px",wordSpacing="10px")),
     html.Div([
-        dcc.Input(id={'type':'dyanmic-input','name':'urine_first_crystals'},type="number",placeholder="No..",style=dict(width="100px")),
+        dcc.Input(id={'type':'dynamic-input','name':'urine_first_crystals'},type="number",placeholder="No..",value=0,style=dict(width="100px")),
         "-",
-        dcc.Input(id={'type':'dynamic-input','name':'urine_second_crystals'},type="number",placeholder="No..",style=dict(width="100px",marginRight="20px")),
+        dcc.Input(id={'type':'dynamic-input','name':'urine_second_crystals'},type="number",placeholder="No..",value=0,style=dict(width="100px",marginRight="20px")),
         "Crystals  *(leaving blank means No Crystals)"
     ],style=dict(position="relative",left="300px",margin="10px",wordSpacing="10px")),
     html.Div([
-        dcc.Input(id={'type':'dynamic-input','name':'urine_first_ep'},type="number",style=dict(width="100px")),
+        dcc.Input(id={'type':'dynamic-input','name':'urine_first_ep'},type="number",value=2,style=dict(width="100px")),
         "-",
-        dcc.Input(id={'type':'dynamic-input','name':'urine_second_ep'},type="number",style=dict(width="100px",marginRight="20px")),
+        dcc.Input(id={'type':'dynamic-input','name':'urine_second_ep'},type="number",value=4,style=dict(width="100px",marginRight="20px")),
         "Epithelial Cells Present"
     ],style=dict(position="relative",left="300px",margin="10px",wordSpacing="10px"))
 ]
@@ -594,6 +626,8 @@ reports_original_dict = {
     "Urine Analysis": urine_analysis_list,
     "Urine Pregnancy": urine_pregnency_list,
     "Mantaoux": mantaoux_list,
+    "B.T":bt_list,
+    "C.T":ct_list,
     "Random Sugar": sugar_random_list,
     "Fasting Sugar": sugar_fasting_list,
     "Blood for AEC Count": blood_for_aec_list,
@@ -627,9 +661,7 @@ def get_all_files(s_no):
     pt_name = get_df_item(s_no,"Patient Name")
     options = []
     if os.path.exists("assets/" + datetime.date.today().strftime("%Y/%m/%d")):
-        print("path does exists")
         all_files = glob("assets/"+datetime.date.today().strftime("%Y/%m/%d/*.pdf"))
-        print("all files are ",all_files)
         for file in all_files:
             all_strings = os.path.basename(file).split("__")
             file_name = os.path.basename(file).replace(".pdf","").replace("_"," ")
@@ -846,6 +878,7 @@ def tc_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_height = 18):
     c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
     return c,h-entity_height
 
+# done
 def plt_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height = 18):
     limits_string = "( 1.5 - 4.0 Lakhs/cumm )"
     text_string = "Platelet Count : "
@@ -863,6 +896,7 @@ def plt_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height = 1
     c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
     return c,h-entity_height
 
+# done
 def dc_canvas(
         c:canvas.Canvas,
         dc_count:list,
@@ -922,9 +956,10 @@ def dc_canvas(
         c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(2.2 * entity_height),"( 20 - 40 %)")
         c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(3.2 * entity_height),"( 02 - 06 %)")
         c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(4.2 * entity_height),"( 01 - 04 %)")
-        h -= (entity_height * 4.5)
+        h -= (entity_height * 6.5)
     return c,h
 
+# done
 def crp_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
     limits_string = " ( < 6 ) "
     text_string = "CRP"
@@ -943,6 +978,7 @@ def crp_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18)
     c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
     return c, h - entity_height - 5
 
+# done
 def widal_canvas(c:canvas.Canvas,widal_values,page_size:str,h:int,entity_height=18):
     widal_value,widal_form,ot_value,ht_value = widal_values
     widal_string = "Blood for Widal"
@@ -1248,13 +1284,58 @@ def dengue_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=
     c.drawString(size_dict["left_extreme"][x],h,"( Rapid Strip Method )")
     return c,h-entity_height
 
-
-def urine_analysis_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+# done
+def urine_analysis_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
+    drop,sugar,alb,bs,bp,fpus,spus,frbc,srbc,fcast,scast,fcryst,scryst,fep,sep = values
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
+    c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
+    c.drawString(size_dict["left_extreme"][x],h,"urine examination".upper())
+    c.rect(size_dict["left_extreme"][x]-5,h-5,cal_string_width(c,"urine examination".upper(),size_dict["font_name"][x],size_dict["font_size"][x])+10,size_dict["font_size"][x]+5)
+    h -= entity_height
+    c.drawString(size_dict["left_extreme"][x],h,"Sugar")
+    c.drawString((size_dict["value_point"][x]//1.5),h,f":  {sugar}")
+    if drop == "long".upper(): 
+        h -= (entity_height * 0.6)
+        c.drawString(size_dict["left_extreme"][x],h,"Albumin")
+        c.drawString((size_dict["value_point"][x]//1.5),h,f":  {alb}")
+        h -= (entity_height * 0.6) 
+        c.drawString(size_dict["left_extreme"][x],h,"Bile Salts")
+        c.drawString((size_dict["value_point"][x]//1.5),h,f":  {bs}")
+        h -= (entity_height * 0.6)
+        c.drawString(size_dict["left_extreme"][x],h,"Bile Pigment")
+        c.drawString((size_dict["value_point"][x]//1.5),h,f":  {bp}")
+    else:
+        c.drawString(size_dict["value_point"][x]//1.5 + cal_string_width(c,f":  {sugar}",size_dict["font_name"][x],size_dict["font_size"][x])+5,h,f", Albumin     :  {alb}")
+        h -= (entity_height * 0.6)
+        c.drawString(size_dict["left_extreme"][x],h,f"B.S,B.P")
+        c.drawString(size_dict["value_point"][x]//1.5,h,f":  {bs}")
+    h -= (entity_height * 0.6)
+    c.drawString(size_dict["left_extreme"][x],h,"Micro")
+    c.drawString((size_dict["value_point"][x]//1.5),h,f":  {fpus} - {spus} Pus Cells Present")
+    h -= (entity_height * 0.6)
+    if frbc == 0:
+        c.drawString((size_dict["value_point"][x]//1.5),h,"  No RBC,")
+        prev_string = "  No RBC,"
+    else:
+        c.drawString((size_dict["value_point"][x]//1.5),h,f": {frbc} - {srbc} RBC,")
+        prev_string = f": {frbc} - {srbc} RBC,"
+    if fcast == 0:
+        c.drawString((size_dict["value_point"][x]//1.5)+cal_string_width(c,prev_string,size_dict["font_name"][x],size_dict["font_size"][x]),h,"  No Casts,")
+        prev_string += "  No Casts,"
+    else:
+        c.drawString((size_dict["value_point"][x]//1.5)+cal_string_width(c,prev_string,size_dict["font_name"][x],size_dict["font_size"][x]),h,f": {fcast} - {scast} Casts,")
+        prev_string += f": {fcast} - {scast} Casts,"
+    if fcryst == 0:
+        c.drawString((size_dict["value_point"][x]//1.5)+cal_string_width(c,prev_string,size_dict["font_name"][x],size_dict["font_size"][x]),h,"  No Crystals")
+    else:
+        c.drawString((size_dict["value_point"][x]//1.5)+cal_string_width(c,prev_string,size_dict["font_name"][x],size_dict["font_size"][x]),h,f": {fcryst} - {scryst} Casts,")
+    h -= (entity_height * 0.6)
+    c.drawString(size_dict["value_point"][x]//1.5,h,f"  {fep} - {sep} Epitheleal Cells Present")
+    
     return c,h-entity_height
 
 # done
@@ -1281,7 +1362,7 @@ def urine_preg_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_heigh
     h -= (entity_height * 5)
     c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
     c.drawString(size_dict["left_extreme"][x],h,"Urine Test Report")
-    c.rect(size_dict["left_extreme"][x]-5,h-5,cal_string_width(c,"Urine Test Report",size_dict["font_name"][x],size_dict["font_size"][x])+10,15)
+    c.rect(size_dict["left_extreme"][x]-5,h-5,cal_string_width(c,"Urine Test Report",size_dict["font_name"][x],size_dict["font_size"][x])+10,size_dict["font_size"][x]+5)
     h -= (entity_height * 3)
     text_string = "Urine Pregnancy Test: "
     c = mundane_things(c,x,text_string,value,value,"","","",h,if_limits=False,left_offset=10)
@@ -1331,13 +1412,32 @@ def aso_titre_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_heig
         c.drawString(size_dict["right_extreme"][x] - cal_string_width(c,limits_string,size_dict["font_name"][x],size_dict["font_size"][x]),h,limits_string)
     return c,h-entity_height
 
-
-def pt_aptt_canvas(c:canvas.Canvas,page_size:str,h:int,entity_height=18):
+# done
+def pt_aptt_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
+    pt_control,pt_inr,aptt_control = values
     if page_size == "SMALL/A5":
         x = 0
     else:
         x = 1
         entity_height += 5
+    c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
+    h -= (entity_height * 2)
+    c.drawString(size_dict["value_point"][x]//1.2,h,"Prothrombin Time Test")
+    c.rect((size_dict["value_point"][x]//1.2)-5,h-5,cal_string_width(c,"Prothrombin Time Test",size_dict["font_name"][x],size_dict["font_size"][x])+10,size_dict["font_size"][x]+5)
+    h -= (entity_height * 1.5)
+    c = mundane_things(c,x,"P.T. Test",14.9,"14.9 seconds","","","",h,if_limits=False)
+    h -= (entity_height * 1.5)
+    c = mundane_things(c,x,"P.T. Control",pt_control,f"{pt_control} seconds","","","",h,if_limits=False)
+    h -= (entity_height * 1.5)
+    c = mundane_things(c,x,"I N R",pt_inr,f"{pt_inr}","","","",h,if_limits=False)
+    h -= (entity_height * 2.5)
+    c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
+    c.drawString(size_dict["value_point"][x]//1.5,h,"Activate Partial Thromboplastin Time")
+    c.rect((size_dict["value_point"][x]//1.5)-5,h-5,cal_string_width(c,"Activate Partial Thromboplastin Time",size_dict["font_name"][x],size_dict["font_size"][x])+10,size_dict["font_size"][x]+5)
+    h -= (entity_height * 2.5)
+    c = mundane_things(c,x,"APTT Test",36.9,"36.9 seconds","( Normal: 26 - 38 seconds )",26,38,h)
+    h -= (entity_height * 2)
+    c = mundane_things(c,x,"APTT Control",aptt_control,f"{aptt_control} seconds","( Normal 26 - 38 seconds )",26,38,h)
     return c,h-entity_height
 
 # done
@@ -1733,6 +1833,23 @@ def hcv_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
     c = mundane_things(c,x,text_string,value,value_string,"","","",h,if_limits=False,left_offset=25)
     return c,h-entity_height
 
+def bt_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
+    bt_min,bt_sec = values
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    c = mundane_things(c,x,"B.T",bt_min,f"{bt_min} : {bt_sec} sec","","","",h,if_limits=False)
+
+def ct_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
+    ct_min,ct_sec = values
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    c = mundane_things(c,x,"B.T",ct_min,f"{ct_min} : {ct_sec} sec","","","",h,if_limits=False)
 
 reports_canvas_dict = {
     "Hb":hb_canvas,
@@ -1763,6 +1880,8 @@ reports_canvas_dict = {
     "Lipid Profile":lipid_profile_canvas,
     "Mantaoux":mantaux_canvas,
     "Blood for AEC Count":blood_for_aec_canvas,
+    "B.T":bt_canvas,
+    "C.T":ct_canvas,
     "RA Factor":ra_factor_canvas,
     "ASO Titre":aso_titre_canvas,
     "PT APTT":pt_aptt_canvas,
@@ -1812,6 +1931,8 @@ report_canvas_values_dict = {
     "Lipid Profile":"full-lipid",
     "Mantaoux":"mantoux_test",
     "Blood for AEC Count":"aec-count",
+    "B.T":"full-bt",
+    "C.T":"full-ct",
     "RA Factor":"full-ra-factor",
     "ASO Titre":"full-aso-titre",
     "PT APTT":"full-pt-aptt",
@@ -1893,7 +2014,6 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
         h = 410-top_space
         serial_no = str(serial_no)
         tests_list = all_patients_values[serial_no]["tests"]
-        # print(all_patients_values)
         for t in tests_list:
             c,h = reports_canvas_dict[t](c,all_patients_values[serial_no][report_canvas_values_dict[t]],page_size,h,report_details_space)
         c.save()
@@ -1938,7 +2058,6 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
         h = 600 - top_space
         serial_no = str(serial_no)
         tests_list = all_patients_values[serial_no]["tests"]
-        # print(all_patients_values)
         for t in tests_list:
             c,h = reports_canvas_dict[t](c,all_patients_values[serial_no][report_canvas_values_dict[t]],page_size,h,report_details_space)
         c.save()
@@ -1969,6 +2088,7 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
             all_patients_values[patients_sno]["tests"] += reports_dropdown_list
         temp_dict = {}
         for id,value in zip(input_ids,input_values):
+            print(f"\n name is {id['name']} \n")
             if id['name'] in ['polymo','lympho','esino']:
                 temp_dict["dc_count"] = temp_dict.get("dc_count",[])
                 temp_dict["dc_count"].append(value)
@@ -2002,6 +2122,18 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
             if ("ASO Titre" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['aso_titre','aso_titre_dilutions']):
                 temp_dict["full-aso-titre"] = temp_dict.get("full-aso-titre",[])
                 temp_dict["full-aso-titre"].append(value)
+            if ("Urine Analysis" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['urine-drop','urine_sugar','urine_albumin','urine_bs','urine_bp','urine_first_pus','urine_second_pus','urine_first_rbc','urine_second_rbc','urine_first_casts','urine_second_casts','urine_first_crystals','urine_second_crystals','urine_first_ep','urine_second_ep']):
+                temp_dict["full-urine"] = temp_dict.get("full-urine",[])
+                temp_dict["full-urine"].append(value)
+            if ("PT APTT" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['pt_control','pt_inr','aptt_control']):
+                temp_dict["full-pt-aptt"] = temp_dict.get("full-pt-aptt",[])
+                temp_dict["full-pt-aptt"].append(value)
+            if ("B.T" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['bt_min','bt_sec']):
+                temp_dict["full-bt"] = temp_dict.get("full-bt",[])
+                temp_dict["full-bt"].append(value)
+            if ("C.T" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['ct_min','ct_sec']):
+                temp_dict["full-ct"] = temp_dict.get("full-ct",[])
+                temp_dict["full-ct"].append(value)
             temp_dict[id['name']] = value
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],**temp_dict}
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],'page_size':page_size_value}
@@ -2049,7 +2181,6 @@ def preview_report(n_clicks,drop_value,top_slider_value,slider_value,all_patient
         ),get_all_files(patient_sno)
     if drop_value:
         cache_buster = f"?v={int(time.time())}"
-        print("drop value\n",drop_value)
         return html.Iframe(
             src=f"{drop_value}{cache_buster}",
             style={

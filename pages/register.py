@@ -195,28 +195,28 @@ def initialize_df(date_value,n_clicks,data):
     file = glob("assets/all_files/"+date_string+".xlsx")
     if file:
         df = pd.read_excel(file[0])
-    elif data is not None:
-        return pd.read_json(StringIO(data),orient="split").to_dict("records"),data
+        return df.to_dict('records'),df.to_json(date_format="iso",orient="split")
+    elif data != {}:
+        df = pd.read_json(StringIO(data),orient="split")
+        return df.to_dict("records"),data
     else:
         df = pd.DataFrame(
             {
-                "S.No.":pd.Series(dtype="int32"),
+                "S.No.":pd.Series(dtype="int16"),
                 "Date":pd.Series(dtype="str"),
                 "Time":pd.Series(dtype="str"),
                 "Patient Name":pd.Series(dtype="str"),
                 "Reference By":pd.Series(dtype="str"),
-                "Patient Age":pd.Series(dtype="int64"),
+                "Patient Age":pd.Series(dtype="int16"),
                 "Age Group":pd.Series(dtype="str"),
                 "Gender":pd.Series(dtype="str"),
-                "Amount":pd.Series(dtype="int64"),
+                "Amount":pd.Series(dtype="int32"),
                 "Phone No":pd.Series(dtype="int64"),
                 "Paid":pd.Series(dtype="str"),
                 "Due":pd.Series(dtype="int64"),
                 "Sample":pd.Series(dtype="str")
             }
         )
-        # df.loc[1,:] = [1,datetime.today().strftime("%d-%m-%y"),"01:11:23 PM","first_name","some_doc",1,"Y","Male",10,20,"PAID",0,"SELF"]
-        # df.loc[2,:] = [2,datetime.today().strftime("%d-%m-%y"),"12:10:56 AM","second_name","some_doc",2,"M","Female",20,30,"NOT PAID",1000,"OUTSIDE"]
     return df.to_dict('records'),df.to_json(date_format="iso",orient="split")
 
 
@@ -259,17 +259,17 @@ def append_name_to_dataframe(n_clicks,*vals):
         df["Time"] = df["Time"].astype("str")
         df["Patient Name"] = df["Patient Name"].astype("str")
         df["Reference By"] = df["Reference By"].astype("str")
-        df["Patient Age"] = df["Patient Age"].astype("str")
+        df["Patient Age"] = df["Patient Age"].astype("int16")
         df["Age Group"] = df["Age Group"].astype("str")
         df["Gender"] = df["Gender"].astype("str")
-        df["Amount"] = df["Amount"].astype("str")
+        df["Amount"] = df["Amount"].astype("int32")
         df["Phone No"] = df["Phone No"].astype("int64")
         df["Paid"] = df["Paid"].astype("str")
-        df["Due"] = df["Due"].astype("int32")
+        df["Due"] = df["Due"].astype("int64")
         df["Sample"] = df["Sample"].astype("str")
         df.loc[index_number,"S.No."] = vals[4]
         date_obj = date.fromisoformat(vals[3])
-        df.loc[index_number,"Date"] = date_obj.strftime("%d-%m-%y")
+        df.loc[index_number,"Date"] = date_obj.strftime("%d-%m-%Y")
         t = time.localtime()
         t_hour,t_min,t_sec = t.tm_hour,t.tm_min,t.tm_sec
         if t_sec <= 9:
@@ -307,7 +307,6 @@ def append_name_to_dataframe(n_clicks,*vals):
         df.loc[index_number,"Sample"] = vals[12]
         if (vals[12] == "outside".upper()) & (vals[13] is not None):
             df.loc[index_number,"Sample"] = vals[13]
-        df.loc[index_number,"Print"] = False
         return df.to_dict('records'),df.to_json(date_format="iso",orient="split")
 
 

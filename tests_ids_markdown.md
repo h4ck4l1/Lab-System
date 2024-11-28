@@ -131,6 +131,7 @@
 'uric-acid'
 
 # URINE ANALYSIS
+'urine-drop'
 'urine_sugar'
 'urine_albumin'
 'urine_bs'
@@ -209,4 +210,53 @@
 "Paid":pd.Series(dtype="str"),
 "Due":pd.Series(dtype="int64"),
 "Sample":pd.Series(dtype="str")
-            
+
+
+"Hb",
+"Total Count (TC)",
+"Platelet Count",
+"Differential Count (DC)",
+"CRP",
+"Blood Group",
+"DENGUE",
+"Widal",
+"Full CBP",
+"PCV(HCT)",
+"ESR",
+"Malaria",
+"Total Bilirubin",
+"Direct & Indirect Bilirubin",
+"SGOT",
+"SGPT",
+"ALKP",
+"Heamogram",
+"HBA1C",
+"Fasting Sugar",      
+"Random Sugar",
+"Blood Urea",
+"Serum Creatinine",
+"Uric Acid",
+"Urine Analysis",
+"Urine Pregnancy",
+"Lipid Profile",
+"Mantaoux",
+"Heamogram",
+"Blood for AEC Count",
+"RA Factor",
+"ASO Titre",
+"PT APTT",
+"Serum Amylase",
+"Serum Lipase",
+"Serum Protein",
+"Serum Albumin",
+"Serum Globulin",
+"Serum A/G Ratio",
+"Serum Sodium",
+"Serum Potassium",
+"Serum Chloride",
+"Serum Calcium",
+"Electrolytes",
+"V.D.R.L",
+"HBsAg",
+"HIV I & II Antibodies Test",
+"HCV I & II Antibodies Test",
