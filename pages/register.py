@@ -38,11 +38,12 @@ doctor_options = [
     "Babu garu".upper(),
 ]
 
+big_break = [html.Br()] * 5
 
 register_layout = html.Div(
     [
         html.Div(html.H1("patient registraton",className="page-heading",style=dict(color="cyan")),className="heading-divs"),
-        *[html.Br()]*5,
+        *big_break,
         html.Div(
             [
                 html.Div("Select Date: ",style=dict(color="cyan",fontSize=30)),
@@ -57,7 +58,7 @@ register_layout = html.Div(
             ],
             style=dict(display="flex",alignItems="center")
         ),
-        *[html.Br()]*5,
+        *big_break,
         html.Div(
             [
                 html.Div("S. No. : ",style=dict(color="cyan",fontSize=30)),
@@ -65,7 +66,7 @@ register_layout = html.Div(
             ],
             style=dict(display="flex",alignItems="center")
         ),
-        *[html.Br()]*5,
+        *big_break,
         html.Div(
             [
                 html.Div("Patient Name: ",style=dict(color="cyan",fontSize=30)),
@@ -73,7 +74,7 @@ register_layout = html.Div(
             ],
             style=dict(display="flex",alignItems="center")
         ),
-        *[html.Br()]*5,
+        *big_break,
         html.Div(
             [
                 html.Div("Reference Doctor: ",style=dict(color="cyan",fontSize=30))
@@ -92,7 +93,7 @@ register_layout = html.Div(
             ],
             style=dict(display="flex",alignItems="center",position="relative",left="300px")
         ),
-        *[html.Br()]*5,
+        *big_break,
         html.Div(
             [
                 html.Div("Patient Age: ",style=dict(color="cyan",fontSize=30)),
@@ -104,7 +105,7 @@ register_layout = html.Div(
             dcc.Dropdown(["Y","M","D"],"Y",id="age-group-dropdown"),
             style=dict(display="inline-block",alignItems="center",position="relative",left="530px",bottom="35px")
         ),
-        *[html.Br()]*5,
+        *big_break,
         html.Div(
             [
                 html.Div("Gender : ",style=dict(color="cyan",fontSize=30))
@@ -115,7 +116,7 @@ register_layout = html.Div(
             dcc.Dropdown(["Male","Female"],"Male",id="gender-dropdown"),
             style=dict(display="inline-block",alignItems="center",position="relative",width="150px",left="350px",bottom="30px")
         ),
-        *[html.Br()]*5,
+        *big_break,
         html.Div(
             [
                 html.Div("Amount : ",style=dict(color="cyan",fontSize=30)),
@@ -123,17 +124,34 @@ register_layout = html.Div(
             ],
             style=dict(display="flex",alignItems="center")
         ),
-        *[html.Br()]*5,
+        *big_break,
         html.Div(
             [
                 html.Div("Phone No: ",style=dict(color="cyan",fontSize=30)),
-                dcc.Input(id="phone_number",type="number",placeholder="Enter Phone Paid ...",style=dict(display="inline-block",position="absolute",left="350px",fontSize=30))
+                dcc.Input(id="phone_number",type="number",placeholder="Enter Phone Number...",style=dict(display="inline-block",position="absolute",left="350px",fontSize=30))
             ],
             style=dict(display="flex",alignItems="center")
         ),
-        *[html.Br()]*5,
+        *big_break,
+        html.Div(
+            [
+                html.Div("Paid or Not: ",style=dict(color="cyan",fontSize=30)),
+                html.Div(dcc.Dropdown(["paid".upper(),"not paid".upper(),"due".upper()],"not paid".upper(),id="paid-dropdown"),style=dict(display="inline-block",fontSize=20,width="200px",height="75px",position="absolute",left="350px")),
+                dcc.Input(id="paid-input",type="number",placeholder="Enter Due Amount",value=0,style=dict(display="inline-block",width="200px",fontSize=30,height="50px",position="absolute",left="700px"))
+            ],
+            style=dict(display="flex",alignItems="center")
+        ),
+        *big_break,
+        html.Div(
+            [
+                html.Div("Sample Bougth by: ",style=dict(color="cyan",fontSize=30)),
+                html.Div(dcc.Dropdown(["self".upper(),"outside".upper()],"self".upper(),id="sample-source"),style=dict(display="inline-block",fontSize=20,width="200px",height="75px",position="absolute",left="350px")),
+                dcc.Input(id="sample-source-input",type="text",placeholder="Enter Name",style=dict(display="inline-block",width="200px",fontSize=30,height="50px",position="absolute",left="700px"))
+            ]
+        ),
+        *big_break,
         html.Button("Submit",id="submit-button",style=dict(fontSize=30,borderRadius="5px",height="100px",width="250px")),
-        *[html.Br()]*5,
+        *big_break,
         dash_table.DataTable(
             id="data-table",
             data=df.to_dict('records'),
@@ -141,11 +159,17 @@ register_layout = html.Div(
             style_table=dict(fontSize=25,backgroundColor="#633fff"),
             style_cell=dict(backgroundColor="#633fff")
         ),
-        *[html.Br()]*5,
+        *big_break,
         html.Div(
             [
                 html.Button("Save to Files",id="save-button",style=dict(fontSize=30,borderRadius="5px",height="100px",width="250px")),
                 html.Div(id="out-message",style=dict(fontSize=30,color="cyan",position="absolute",left="350px"))
+            ]
+        ),
+        html.Div(
+            [
+                html.Button("clear everything".upper(),id="clear-button",style=dict(color="cyan",backgroundColor="red",fontWeight=700,fontSize=30,borderRadius="5px",position="relative",left="80vw",height="100px",width="250px")),
+                html.Div(children="Storage",id="out-message",style=dict(fontSize=30,color="cyan",position="absolute"))
             ]
         )
     ],
@@ -224,11 +248,19 @@ def append_name_to_dataframe(n_clicks,*vals):
         df.loc[index_number,"Date"] = date_obj.strftime("%d-%m-%y")
         t = time.localtime()
         t_hour,t_min,t_sec = t.tm_hour,t.tm_min,t.tm_sec
+        if t_sec <= 9:
+            t_sec = f"0{t_sec}"
+        if t_min <= 9:
+            t_min = f"0{t_min}"
         if t_hour > 11:
             if t_hour != 12:
                 t_hour -= 12
+            if t_hour <= 9:
+                t_hour = f"0{t_hour}"
             t_time = f"{t_hour}:{t_min}:{t_sec} PM"
         else:
+            if t_hour <= 9:
+                t_hour = f"0{t_hour}"
             t_time = f"{t_hour}:{t_min}:{t_sec} AM"
         df.loc[index_number,"Time"] = t_time
         df.loc[index_number,"Patient Name"] = vals[5]

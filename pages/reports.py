@@ -8,7 +8,7 @@ from reportlab.lib.units import inch
 from reportlab.lib import colors               
 from reportlab.pdfbase.pdfmetrics import registerFont
 from reportlab.pdfbase.ttfonts import TTFont
-from dash import html,dcc,Input,Output,callback,register_page,State,ALL
+from dash import html,dcc,Input,Output,callback,register_page,State,ALL,ctx
 from dash.exceptions import PreventUpdate
 
 registerFont(TTFont("CenturySchoolBook-BoldItalic","assets/schlbkbi.ttf"))
@@ -132,7 +132,7 @@ layout = html.Div(
         html.Button("preview".upper(),id="preview-button",style=dict(width="200px",height="100px",position="relative",left="600px",top="75px",fontSize=25,borderRadius="20px",backgroundColor="cyan")),
         html.Div(["top space slider  ".upper(),dcc.Slider(min=0,max=200,step=20,value=0,id="top-slider")],style=dict(left="50px",position="relative",width="550px",fontSize=15)),
         html.Div(["between space slider  ".upper(),dcc.Slider(min=10,max=80,step=5,value=24,id="slider")],style=dict(left="50px",position="relative",width="550px",top="20px",fontSize=15)),
-        html.Div("type report to preview".upper(),id="report-preview",style=dict(color="cyan",border="10px solid #4b70f5",padding="50px",position="relative",height="1750px",top="100px")),
+        html.Div("type report to preview".upper(),id="report-preview",style=dict(color="cyan",border="10px solid #4b70f5",padding="50px",position="relative",width="52%",height="1300px",top="100px"),className="wrap"),
         html.Div([dcc.Dropdown(id="patients-files")],style=dict(width="600px",height="50px",position="relative",left="200px",top="150px")),
         *large_break,
         *large_break
@@ -625,15 +625,17 @@ def get_df_item(p_sn:int,item_name:str):
 
 def get_all_files(s_no):
     pt_name = get_df_item(s_no,"Patient Name")
-    options = {}
+    options = []
     if os.path.exists("assets/" + datetime.date.today().strftime("%Y/%m/%d")):
-        all_files = glob("assets/"+datetime.date.today().strftime("%Y/%m/%d/"))
+        print("path does exists")
+        all_files = glob("assets/"+datetime.date.today().strftime("%Y/%m/%d/*.pdf"))
+        print("all files are ",all_files)
         for file in all_files:
             all_strings = os.path.basename(file).split("__")
+            file_name = os.path.basename(file).replace(".pdf","").replace("_"," ")
             if all_strings[0] == pt_name:
-                options["label"] = os.path.basename(file).replace("_"," ")
-                options["value"] = file
-        return [options]
+                options.append({"label":file_name,"value":file})
+        return options
     return []
 
 
@@ -1851,8 +1853,7 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
     month_dir = os.path.join(year_dir,month_extract)
     day_dir = os.path.join(month_dir,day_extract)
     os.makedirs(day_dir,exist_ok=True)
-    # print("\nall pat val",all_patients_values[str(serial_no)]["tests"][0])
-    filename = os.path.join(day_dir,f"{patient_name_save}_{all_patients_values[str(serial_no)]["tests"][0]}.pdf")
+    filename = os.path.join(day_dir,f"{patient_name_save}__{"_".join(all_patients_values[str(serial_no)]["tests"])}.pdf")
     if page_size == "SMALL/A5":
         c = canvas.Canvas(filename,pagesize=portrait(A5))
         small_page_width, small_page_height = A5
@@ -1902,7 +1903,7 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
 
         # grid
 
-        c.rect(40,65,big_page_width - 2 * 40, big_page_height - 2 * 80)
+        c.rect(40,72,big_page_width - 2 * 40, big_page_height - 2 * 80)
         # c.setDash(6,3)
         # c.setFont(small_font_name,5)
         # for x in range(0,int(big_page_width),10):
@@ -2011,8 +2012,7 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
 @callback(
     [
         Output("report-preview","children"),
-        Output("patients-files","options",allow_duplicate=True),
-        Output("patient-data-store","data",allow_duplicate=True)
+        Output("patients-files","options",allow_duplicate=True)
     ],
     [
         Input("preview-button","n_clicks"),
@@ -2028,22 +2028,37 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
     prevent_initial_call=True
 )
 def preview_report(n_clicks,drop_value,top_slider_value,slider_value,all_patients_values,patient_sno,page_size):
-    cache_buster = f"?v={int(time.time())}"
     if (not n_clicks) & (not drop_value):
         raise PreventUpdate
-    if n_clicks:
+    zoom_levels = {
+        "BIG/A4": 1.0,
+        "SMALL/A5": 1.0
+    }
+    zoom_level = zoom_levels.get(all_patients_values[str(patient_sno)]["page_size"],1.0)
+    if ctx.triggered_id == 'preview-button':
+        cache_buster = f"?v={int(time.time())}"
         filename = create_pdf(patient_sno,top_slider_value,slider_value,page_size,all_patients_values)
-        if filename not in all_patients_values[str(patient_sno)]["filenames"]:
-            all_patients_values[str(patient_sno)]["filenames"].append(filename)
         return html.Iframe(
             src=f"{filename}{cache_buster}",
-            style=dict(width="100%",height="1650px")
-        ),get_all_files(patient_sno),all_patients_values
+            style={
+                "width":"100%",
+                "height":"1150px",
+                "transform": f"scale({zoom_level})",
+                "transform-origin":"0 0"
+            }
+        ),get_all_files(patient_sno)
     if drop_value:
+        cache_buster = f"?v={int(time.time())}"
+        print("drop value\n",drop_value)
         return html.Iframe(
             src=f"{drop_value}{cache_buster}",
-            style=dict(width="100%",height="1650px")
-        ),get_all_files(patient_sno),all_patients_values
+            style={
+                "width":"100%",
+                "height":"1150px",
+                "transform": f"scale({zoom_level})",
+                "transform-origin":"0 0"
+            }
+        ),get_all_files(patient_sno)
 
 
 
