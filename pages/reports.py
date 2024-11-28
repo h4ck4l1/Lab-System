@@ -822,6 +822,8 @@ def patient_details_canvas(
     c.drawString(right_extreme-cal_string_width(c,gender_string,font_name,font_size),page_height-(drop_height + patient_details_space),gender_string)     # s
     if (doctor_name != "S. Prasad".upper()) & (doctor_name != "Babu garu".upper()):
         c.drawString(left_extreme,page_height-(drop_height + 2*patient_details_space),f"Ref.Dr.By. : {doctor_name}")                                                # 99 + 24
+    else:
+        c.drawString(left_extreme,page_height-(drop_height + 2*patient_details_space),f"Ref.Dr.By. : ")
     if patient_serial_no < 10:
         patient_serial_no = f"000{patient_serial_no}"
     else:
@@ -969,7 +971,7 @@ def dc_canvas(
         c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(2.2 * entity_height),"( 20 - 40 %)")
         c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(3.2 * entity_height),"( 02 - 06 %)")
         c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(4.2 * entity_height),"( 01 - 04 %)")
-        h -= (entity_height * 6.5)
+        h -= (entity_height * 4)
     return c,h
 
 # done
@@ -1846,6 +1848,7 @@ def hcv_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
     c = mundane_things(c,x,text_string,value,value_string,"","","",h,if_limits=False,left_offset=25)
     return c,h-entity_height
 
+# done
 def bt_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
     bt_min,bt_sec = values
     if page_size == "SMALL/A5":
@@ -1855,6 +1858,7 @@ def bt_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
         entity_height += 5
     c = mundane_things(c,x,"B.T",bt_min,f"{bt_min} : {bt_sec} sec","","","",h,if_limits=False)
 
+# done
 def ct_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
     ct_min,ct_sec = values
     if page_size == "SMALL/A5":
@@ -1975,7 +1979,12 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
     patient_age = get_df_item(serial_no,"Patient Age")
     patient_age_group = get_df_item(serial_no,"Age Group")
     patient_gender = get_df_item(serial_no,"Gender")
-    patient_specimen = "Blood & Urine" if (any(["Urine Analysis","Urine Pregnancy"]) in all_patients_values[str(serial_no)]["tests"]) else "Blood"
+    if (all_patients_values[str(serial_no)]["tests"][0] == "Urine Analysis") | (all_patients_values[str(serial_no)]["tests"][0] == "Urine Pregnancy"):
+        patient_specimen = "Urine"
+    if any(item in all_patients_values[str(serial_no)]["tests"] for item in ["Urine Analysis","Urine Pregnancy"]):
+        patient_specimen = "Blood & Urine"
+    else:
+        patient_specimen = "Blood"
     doctor_name = get_df_item(serial_no,"Reference By")
     patient_details_space = 18
     time_obj = datetime.datetime.strptime(collection_date,"%Y-%m-%d %H:%M:%S")
@@ -2040,7 +2049,10 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
             big_right_extreme+12,
             drop_height = 116
         )
-        h = 600 - top_space
+        if (doctor_name != "S. Prasad".upper()) & (doctor_name != "Babu garu".upper()):
+            h = 600 - top_space
+        else:
+            h = 600 - (top_space + 20)
         serial_no = str(serial_no)
         tests_list = all_patients_values[serial_no]["tests"]
         for t in tests_list:
