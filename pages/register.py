@@ -53,9 +53,9 @@ register_layout = html.Div(
                     min_date_allowed=date(1995,8,5),
                     max_date_allowed=date.today(),
                     date=date.today(),
-                    style=dict(color="cyan",position="absolute",left="350px")
+                    style=dict(position="absolute",left="350px")
                 ),
-                html.Button("REFRESH",id="refresh-button",style=dict(position="absolute",height="100px",width="100px",left="600px",color="cyan"))
+                html.Button("REFRESH",id="refresh-button",style=dict(position="absolute",height="100px",width="100px",left="600px",color="red",fontSize=20,borderRadius="20px",backgroundColor="#4b70f5"))
             ],
             style=dict(display="flex",alignItems="center")
         ),
@@ -152,7 +152,7 @@ register_layout = html.Div(
             ]
         ),
         *big_break,
-        html.Button("Submit",id="submit-button",style=dict(fontSize=30,borderRadius="5px",height="100px",width="250px")),
+        html.Button("Submit".upper(),id="submit-button",style=dict(fontSize=30,borderRadius="20px",height="100px",width="250px",backgroundColor="#4b70f5",color="cyan")),
         *big_break,
         dash_table.DataTable(
             id="data-table",
@@ -163,7 +163,7 @@ register_layout = html.Div(
         *big_break,
         html.Div(
             [
-                html.Button("Save to Files",id="save-button",style=dict(fontSize=30,borderRadius="5px",height="100px",width="250px")),
+                html.Button("Save to Files",id="save-button",style=dict(fontSize=30,borderRadius="20px",height="100px",width="250px",backgroundColor="#4b70f5",color="cyan")),
                 html.Div(id="out-message",style=dict(fontSize=30,color="cyan",position="absolute",left="350px"))
             ]
         ),
@@ -284,6 +284,8 @@ def append_name_to_dataframe(n_clicks,*vals):
         df.loc[index_number,"Paid"] = vals[10]
         if vals[10] == "due".upper():
             df.loc[index_number,"Due"] = vals[11]
+        elif vals[10] == "not paid".upper():
+            df.loc[index_number,"Due"] = vals[8]
         else:
             df.loc[index_number,"Due"] = 0
         df.loc[index_number,"Sample"] = vals[12]
@@ -306,8 +308,24 @@ def save_to_files(n_clicks,date_value,data):
         df = pd.read_json(StringIO(data),orient="split")
         date_obj = date.fromisoformat(date_value)
         date_string = date_obj.strftime("%Y_%m_%d")
-        df.to_excel("all_files/"+date_string+".xlsx",index=False)
+        df.to_excel("assets/all_files/"+date_string+".xlsx",index=False)
         return "Your File has been saved."
+
+
+@callback(
+    [
+        Output("out-message","children"),
+        Output("data-store","data",allow_duplicate=True)
+    ],
+    Input("clear-button","n_clicks"),
+    State("data-store","data"),
+    prevent_initial_call=True
+)
+def clear_everything(n_clicks,data):
+    if not n_clicks:
+        raise PreventUpdate
+    if n_clicks:
+        return "Data has been cleared",{}
 
 
 register_page(
