@@ -804,7 +804,15 @@ def patient_details_canvas(
         drop_height
     ):
     c.setFont(font_name,font_size)
-    c.drawString(left_extreme,page_height-drop_height,f"Pt. Name : {patient_name.upper()}")
+    if patient_age < 18:
+        mod_pt_name = f"Pt. Name : Chi. {patient_name.upper()}"
+    if (patient_age >= 18) & (patient_gender == "Male"):
+        mod_pt_name = f"Pt. Name : Mr. {patient_name.upper()}"
+    if (patient_age >= 18) & (patient_gender == "Female"):
+        mod_pt_name = f"Pt. Name : Ms. {patient_name.upper()}"
+    if (patient_age >= 22) & (patient_gender == "Female"):
+        mod_pt_name = f"Pt. Name : Mrs. {patient_name.upper()}"
+    c.drawString(left_extreme,page_height-drop_height,mod_pt_name)
     c.drawString(left_extreme,page_height-(drop_height + patient_details_space),f"Age : {patient_age} {patient_age_group}")
     gender_string = f"Gender : {patient_gender}"
     c.drawString(right_extreme-cal_string_width(c,gender_string,font_name,font_size),page_height-(drop_height + patient_details_space),gender_string)     # s
