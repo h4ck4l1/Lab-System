@@ -193,3 +193,20 @@
 
 # HCV
 'hcv_ant'
+
+
+
+"S.No.":pd.Series(dtype="int32"),
+"Date":pd.Series(dtype="str"),
+"Time":pd.Series(dtype="str"),
+"Patient Name":pd.Series(dtype="str"),
+"Reference By":pd.Series(dtype="str"),
+"Patient Age":pd.Series(dtype="int64"),
+"Age Group":pd.Series(dtype="str"),
+"Gender":pd.Series(dtype="str"),
+"Amount":pd.Series(dtype="int64"),
+"Phone No":pd.Series(dtype="int64"),
+"Paid":pd.Series(dtype="str"),
+"Due":pd.Series(dtype="int64"),
+"Sample":pd.Series(dtype="str")
+            

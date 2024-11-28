@@ -13,13 +13,13 @@ from dash.exceptions import PreventUpdate
 columns = [
     "S.No.",
     "Date",
-    "Patiens Name",
+    "Patient Name",
     "Reference By",
     "Patient Age",
     "Age Group",
     "Gender",
-    "Amount",
     "Phone No",
+    "Amount",
     "Paid",
     "Due",
     "Sample",
@@ -170,7 +170,7 @@ register_layout = html.Div(
         html.Div(
             [
                 html.Button("clear everything".upper(),id="clear-button",style=dict(color="cyan",backgroundColor="red",fontWeight=700,fontSize=30,borderRadius="5px",position="relative",left="80vw",height="100px",width="250px")),
-                html.Div(children="Storage",id="out-message",style=dict(fontSize=30,color="cyan",position="absolute"))
+                html.Div(id="clear-message",style=dict(fontSize=30,color="cyan",position="absolute"))
             ]
         )
     ],
@@ -187,13 +187,16 @@ register_layout = html.Div(
         Input("date-pick-single","date"),
         Input("refresh-button","n_clicks")
     ],
+    State("data-store","data")
 )
-def initialize_df(date_value,n_clicks):
+def initialize_df(date_value,n_clicks,data):
     date_obj = date.fromisoformat(date_value)
     date_string = date_obj.strftime("%Y_%m_%d")
-    file = glob("all_files/"+date_string+".xlsx")
+    file = glob("assets/all_files/"+date_string+".xlsx")
     if file:
         df = pd.read_excel(file[0])
+    elif data is not None:
+        return pd.read_json(StringIO(data),orient="split").to_dict("records"),data
     else:
         df = pd.DataFrame(
             {
@@ -212,8 +215,8 @@ def initialize_df(date_value,n_clicks):
                 "Sample":pd.Series(dtype="str")
             }
         )
-        df.loc[1,:] = [1,datetime.today().strftime("%d-%m-%y"),"01:11:23 PM","first_name","some_doc",1,"Y","Male",10,20,"PAID",0,"SELF"]
-        df.loc[2,:] = [2,datetime.today().strftime("%d-%m-%y"),"12:10:56 AM","second_name","some_doc",2,"M","Female",20,30,"NOT PAID",1000,"OUTSIDE"]
+        # df.loc[1,:] = [1,datetime.today().strftime("%d-%m-%y"),"01:11:23 PM","first_name","some_doc",1,"Y","Male",10,20,"PAID",0,"SELF"]
+        # df.loc[2,:] = [2,datetime.today().strftime("%d-%m-%y"),"12:10:56 AM","second_name","some_doc",2,"M","Female",20,30,"NOT PAID",1000,"OUTSIDE"]
     return df.to_dict('records'),df.to_json(date_format="iso",orient="split")
 
 
@@ -251,6 +254,19 @@ def append_name_to_dataframe(n_clicks,*vals):
         df = pd.read_json(StringIO(vals[14]),orient="split")
         index_number = df.shape[0]
         index_number += 1
+        df["S.No."] = df["S.No."].astype("int16")
+        df["Date"] = df["Date"].astype("str")
+        df["Time"] = df["Time"].astype("str")
+        df["Patient Name"] = df["Patient Name"].astype("str")
+        df["Reference By"] = df["Reference By"].astype("str")
+        df["Patient Age"] = df["Patient Age"].astype("str")
+        df["Age Group"] = df["Age Group"].astype("str")
+        df["Gender"] = df["Gender"].astype("str")
+        df["Amount"] = df["Amount"].astype("str")
+        df["Phone No"] = df["Phone No"].astype("int64")
+        df["Paid"] = df["Paid"].astype("str")
+        df["Due"] = df["Due"].astype("int32")
+        df["Sample"] = df["Sample"].astype("str")
         df.loc[index_number,"S.No."] = vals[4]
         date_obj = date.fromisoformat(vals[3])
         df.loc[index_number,"Date"] = date_obj.strftime("%d-%m-%y")
@@ -312,20 +328,20 @@ def save_to_files(n_clicks,date_value,data):
         return "Your File has been saved."
 
 
-@callback(
-    [
-        Output("out-message","children"),
-        Output("data-store","data",allow_duplicate=True)
-    ],
-    Input("clear-button","n_clicks"),
-    State("data-store","data"),
-    prevent_initial_call=True
-)
-def clear_everything(n_clicks,data):
-    if not n_clicks:
-        raise PreventUpdate
-    if n_clicks:
-        return "Data has been cleared",{}
+# @callback(
+#     [
+#         Output("clear-message","children"),
+#         Output("data-store","data",allow_duplicate=True)
+#     ],
+#     Input("clear-button","n_clicks"),
+#     State("data-store","data"),
+#     prevent_initial_call=True
+# )
+# def clear_everything(n_clicks,data):
+#     if not n_clicks:
+#         raise PreventUpdate
+#     if n_clicks:
+#         return "Data has been cleared",{}
 
 
 register_page(
