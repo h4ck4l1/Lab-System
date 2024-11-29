@@ -75,6 +75,7 @@ all_options = [
     "HBsAg",
     "HIV I & II Antibodies Test",
     "HCV I & II Antibodies Test",
+    "Semen Analysis"
 ]
 
 reports_dropdown = dcc.Dropdown(
@@ -118,13 +119,13 @@ layout = html.Div(
     [
         html.Div(html.H1("Patients report",className="page-heading"),className="heading-divs"),
         *big_break,
-        html.Div(patients_dropdown,style=dict(width="400px",alignItems="center")),
+        html.Div(patients_dropdown,style=dict(width="400px",fontWeight=700,alignItems="center")),
         html.Div(id="data-present",style=dict(position="relative",left="100px",top="50px",color="red")),
-        html.Button("Storage Clear",id="clear-storage",style=dict(position="relative",backgroundColor="red",left="500px",bottom="50px",width="100px",height="50px")),
+        html.Button("clear data".upper(),id="clear-storage",style=dict(position="relative",backgroundColor="red",left="500px",bottom="50px",width="100px",height="50px",fontWeight=700)),
         *big_break,
-        html.Div(reports_dropdown,style=dict(width="400px",alignItems="center")),
-        html.Div(page_size_dropdown,style=dict(width="400px",alignItems="center",position="relative",left="420px",bottom="36px")),
-        html.Div(templates_dropdown,style=dict(width="400px",alignItems="center",position="relative",left="840px",bottom="73px")),
+        html.Div(reports_dropdown,style=dict(width="400px",fontWeight=700,alignItems="center")),
+        html.Div(page_size_dropdown,style=dict(width="400px",fontWeight=700,alignItems="center",position="relative",left="420px",bottom="36px")),
+        html.Div(templates_dropdown,style=dict(width="400px",fontWeight=700,alignItems="center",position="relative",left="840px",bottom="73px")),
         *large_break,
         html.Div(id="output-report",style=dict(border="2px solid rgba(0,255,255,0.7)",borderBottom=None,padding="20px",position="relative",left="100px",width="900px",fontSize=18)),
         html.Hr(style=dict(position="relative",left="100px",width="900px",border="1px solid cyan")),
@@ -140,7 +141,10 @@ layout = html.Div(
         html.Div("type report to preview".upper(),id="report-preview",style=dict(color="cyan",border="10px solid #4b70f5",padding="50px",position="relative",width="60%",height="1300px",top="100px"),className="wrap"),
         html.Div([dcc.Dropdown(id="patients-files")],style=dict(width="600px",height="50px",position="relative",left="200px",top="150px")),
         *large_break,
-        *large_break
+        *large_break,
+        html.Button("clear everything".upper(),id="clear-everything",style=dict(position="relative",left="90vw",width="100px",height="100px",borderRadius="20px",backgroundColor="red",color="cyan",fontWeight=700)),
+        html.Div(id="clear-everything-message",style=dict(position="relative",left="30vw",width="500px",fontSize=30,color="cyan")),
+        *small_break
     ],
     className="subpage-content"
 )
@@ -593,6 +597,49 @@ hcv_list = [
     html.Div([dcc.Dropdown(["reactive".upper(),"non-reactive".upper()],"non-reactive".upper(),id={'type':'dynamic-input','name':'hcv_ant'})],style=input_style)
 ]
 
+semen_list = [
+    html.Div("Volume : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'semen-volume'},type="number",placeholder="3.0 ml",value=3.0,style=input_style),
+    html.Div("( 1.5 - 5.0 ml )",style=limits_style),
+    html.Div("Liquefaction : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'semen-liq'},type="number",placeholder="5 mts",value=5,style=input_style),
+    html.Div(" with in 20 mts",style=limits_style),
+    html.Div("PH : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'semen-ph'},type="number",placeholder="8.0",value=8.0,style=input_style),
+    html.Div("Spermatozoa Count : ",style=limits_style),
+    dcc.Input(id={'type':'dynamic-input','name':'semen-count'},type="number",placeholder="78 millions",value=78,style=input_style),
+    html.Div("( 60 - 150 millions/ml )",style=limits_style),
+    html.Div("Sperm motility : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'semen-mot'},type="number",placeholder="70%",value=70,style=input_style),
+    html.Div(" > 60% motile forms",style=limits_style),
+    html.Div("Sperm mrophology : ",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'semen-morph'},type="number",placeholder="55%",value=55,style=input_style),
+    html.Div(" > 70% normal",style=limits_style),
+    html.Div("other finding : ".upper(),style=text_style),
+    *small_break,
+    html.Div("W.B.C/h.p.t : ",style=text_style),
+    html.Div(
+        [
+            dcc.Input(id={'type':'dynamic-input','name':'semen-wbc-first'},type="number",placeholder="1",value=1),
+            " - ",
+            dcc.Input(id={'type':'dynamic-input','name':'semen-wbc-second'},type="number",placeholder="2",value=2),
+        ],
+        style={**input_style,"display":"flex"}
+    ),
+    html.Div("R.B.C/h.p.t : ",style=text_style),
+    html.Div(
+        [
+            dcc.Input(id={'type':'dynamic-input','name':'semen-rbc-first'},type="number",placeholder="NIL",value=0),
+            " - ",
+            dcc.Input(id={'type':'dynamic-input','name':'semen-rbc-second'},type="number",placeholder="NIL",value=0),
+        ],
+        style={**input_style,"display":"flex"}
+    ),
+    html.Div("Comments : Suggestive of ",style=text_style),
+    *small_break,
+    dcc.Input(id={'type':'dynamic-input','name':'semen-comments'},type="text",placeholder="* normo seprmia *, oligozoo spermia",style={**input_style,"width":"500px"})
+]
+
 electrolytes_list = [
     *serum_sodium_list,
     *serum_potassium_list,
@@ -650,6 +697,7 @@ reports_original_dict = {
     "HBsAg":hbsag_list,
     "HIV I & II Antibodies Test":hiv_list,
     "HCV I & II Antibodies Test":hcv_list,
+    "Semen Analysis":semen_list
 }
 
 
@@ -804,9 +852,9 @@ def patient_details_canvas(
         drop_height
     ):
     c.setFont(font_name,font_size)
-    if (patient_age < 18) & (patient_gender == "Male"):
+    if (patient_age < 18):
         mod_pt_name = f"Pt. Name : Chi. {patient_name.upper()}"
-    if (patient_age < 18) & (patient_gender == "Female"):
+    if (patient_age > 13) & (patient_gender == "Female"):
         mod_pt_name = f"Pt. Name : Kmr. {patient_name.upper()}"
     if (patient_age >= 18) & (patient_gender == "Male"):
         mod_pt_name = f"Pt. Name : Mr. {patient_name.upper()}"
@@ -1334,19 +1382,19 @@ def urine_analysis_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity
     c.drawString(size_dict["left_extreme"][x],h,"Micro")
     c.drawString((size_dict["value_point"][x]//1.5),h,f":  {fpus} - {spus} Pus Cells Present")
     h -= (entity_height * 0.6)
-    if frbc == 0:
+    if srbc == 0:
         c.drawString((size_dict["value_point"][x]//1.5),h,"  No RBC,")
         prev_string = "  No RBC,"
     else:
         c.drawString((size_dict["value_point"][x]//1.5),h,f": {frbc} - {srbc} RBC,")
         prev_string = f": {frbc} - {srbc} RBC,"
-    if fcast == 0:
+    if scast == 0:
         c.drawString((size_dict["value_point"][x]//1.5)+cal_string_width(c,prev_string,size_dict["font_name"][x],size_dict["font_size"][x]),h,"  No Casts,")
         prev_string += "  No Casts,"
     else:
         c.drawString((size_dict["value_point"][x]//1.5)+cal_string_width(c,prev_string,size_dict["font_name"][x],size_dict["font_size"][x]),h,f": {fcast} - {scast} Casts,")
         prev_string += f": {fcast} - {scast} Casts,"
-    if fcryst == 0:
+    if scryst == 0:
         c.drawString((size_dict["value_point"][x]//1.5)+cal_string_width(c,prev_string,size_dict["font_name"][x],size_dict["font_size"][x]),h,"  No Crystals")
     else:
         c.drawString((size_dict["value_point"][x]//1.5)+cal_string_width(c,prev_string,size_dict["font_name"][x],size_dict["font_size"][x]),h,f": {fcryst} - {scryst} Casts,")
@@ -1870,6 +1918,52 @@ def ct_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
         entity_height += 5
     c = mundane_things(c,x,"B.T",ct_min,f"{ct_min} : {ct_sec} sec","","","",h,if_limits=False)
 
+# done
+def semen_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
+    val,lig,ph,count,mot,morph,fwbc,swbc,frbc,srbc,comments = values
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
+    c.drawString(size_dict["value_point"][x]-20,h,"semen analysis".upper())
+    c.rect(size_dict["value_point"][x] - 25,h-5,cal_string_width(c,"semen analysis".upper(),size_dict["font_name"][x],size_dict["font_size"][x])+10,size_dict["font_size"]+5)
+    h -= entity_height
+    c = mundane_things(c,x,"Volume",float(val),float(val),"( 1.5 - 5.0 ml )",1.5,5.0,h)
+    h -= entity_height
+    c = mundane_things(c,x,"Liquefaction time",lig,lig,"( with in 20 mts )",0,20,h)
+    h -= entity_height
+    c = mundane_things(c,x,"PH",float(ph),float(ph),"( > 7.0 )",7,14,h)
+    h -= entity_height
+    c = mundane_things(c,x,"Spermatozoa Count",count,count,"(60-150 millions/ml)",60,150,h)
+    h -= entity_height
+    c = mundane_things(c,x,"Sperm motility",mot,mot,"( > 60% motile forms)",60,100,h)
+    h -= entity_height
+    c = mundane_things(c,x,"Sperm morphology",morph,morph,"( > 70% normal sperms)",70,100)
+    h -= entity_height
+    c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
+    c.drawString(size_dict["left_extreme"][x],h,"other findings".upper())
+    h -= entity_height
+    c.drawString(size_dict["left_extreme"][x],h,"W.B.C/h.p.t")
+    if swbc == 0:
+        c.drawString(size_dict["value_point"][x],h,f":  NIL")
+    else:
+        c.drawString(size_dict["value_point"][x],h,f":  {fwbc} - {swbc}")
+    h -= entity_height
+    c.drawString(size_dict["left_extreme"][x],h,"R.B.C/h.p.t")
+    if srbc == 0:
+        c.drawString(size_dict["value_point"][x],h,f":  NIL")
+    else:
+        c.drawString(size_dict["value_point"][x],h,f":  {frbc} - {srbc}")
+    h -= entity_height
+    c.drawString(size_dict["left_extreme"][x],h,"Comments")
+    c.drawString(size_dict["value_point"][x],h,f"Suggestive of ")
+    h -= entity_height
+    c.drawString(size_dict["left_extreme"][x],h,comments)
+    return c,h-entity_height
+
+
 reports_canvas_dict = {
     "Hb":hb_canvas,
     "Total Count (TC)":tc_canvas,
@@ -1919,6 +2013,7 @@ reports_canvas_dict = {
     "HBsAg":hbsag_canvas,
     "HIV I & II Antibodies Test":hiv_canvas,
     "HCV I & II Antibodies Test":hcv_canvas,
+    "Semen Analysis":semen_canvas
 }
 
 report_canvas_values_dict = {
@@ -1970,6 +2065,7 @@ report_canvas_values_dict = {
     "HBsAg":"hbsag",
     "HIV I & II Antibodies Test":"hiv_ant",
     "HCV I & II Antibodies Test":"hcv_ant",
+    "Semen Analysis":"full-semen",
 }
 
 def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_values):
@@ -2133,6 +2229,9 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
             if ("C.T" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['ct_min','ct_sec']):
                 temp_dict["full-ct"] = temp_dict.get("full-ct",[])
                 temp_dict["full-ct"].append(value)
+            if ("Semen Analysis" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['semen-volume','semen-liq','semen-ph','semen-count','semen-mot','semen-morph','semen-wbc-first','semen-wbc-second','semen-rbc-first','semen-rbc-second','semen-comments']):
+                temp_dict["full-semen"] = temp_dict.get("full-semen",[])
+                temp_dict["full-semen"].append(value)
             temp_dict[id['name']] = value
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],**temp_dict}
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],'page_size':page_size_value}
@@ -2190,6 +2289,21 @@ def preview_report(n_clicks,drop_value,top_slider_value,slider_value,all_patient
             }
         ),get_all_files(patient_sno)
 
+
+@callback(
+    [
+        Output("clear-everything-message","children"),
+        Output("patient-data-store","data",allow_duplicate=True)
+    ],
+    Input("clear-everything","n_clicks"),
+    State("patient-data-store","data"),
+    prevent_initial_call=True
+)
+def clear_everything_function(n_clicks,data):
+    if not n_clicks:
+        raise PreventUpdate
+    if n_clicks:
+        return "data of every patient is cleared".upper(),{}
 
 
 register_page(

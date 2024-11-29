@@ -195,6 +195,20 @@
 # HCV
 'hcv_ant'
 
+# SEMEN ANALYSES
+'semen-volume'
+'semen-liq'
+'semen-ph'
+'semen-count'
+'semen-mot'
+'semen-morph'
+'semen-wbc-first'
+'semen-wbc-second'
+'semen-rbc-first'
+'semen-rbc-second'
+'semen-comments'
+
+
 
 
 "S.No.":pd.Series(dtype="int32"),

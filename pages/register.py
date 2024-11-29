@@ -159,8 +159,11 @@ register_layout = html.Div(
             id="data-table",
             columns=[{"name":i,"id":i} for i in columns],
             style_table=dict(fontSize=25,backgroundColor="#633fff"),
-            style_cell=dict(backgroundColor="#633fff")
+            style_cell=dict(backgroundColor="#633fff"),
+            editable=True
         ),
+        *big_break,
+        html.Button("Save Changes",id="save-changes-button",style=dict(position="relative",left="90vw",fontSize=30,borderRadius="20px",height="100px",width="250px",backgroundColor="#4b70f5",color="cyan")),
         *big_break,
         html.Div(
             [
@@ -312,6 +315,24 @@ def append_name_to_dataframe(n_clicks,*vals):
 
 
 @callback(
+    [
+        Output("data-table","data",allow_duplicate=True),
+        Output("data-store","data",allow_duplicate=True)
+    ],
+    Input("save-changes-button","n_clicks"),
+    State("data-table","data"),
+    prevent_initial_call=True
+)
+def save_table_changes(n_clicks,data):
+    if not n_clicks:
+        raise PreventUpdate
+    if n_clicks:
+        return data,pd.DataFrame(data).to_json(date_format="iso",orient="split")
+
+
+
+
+@callback(
     Output("out-message","children"),
     Input("save-button","n_clicks"),
     [
@@ -319,11 +340,14 @@ def append_name_to_dataframe(n_clicks,*vals):
         State("date-pick-single","date"),
     ]
 )
-def save_to_files(n_clicks,date_value,data):
+def save_to_files(n_clicks,data,date_value):
     if n_clicks:
         df = pd.read_json(StringIO(data),orient="split")
         date_obj = date.fromisoformat(date_value)
         date_string = date_obj.strftime("%Y_%m_%d")
+        df.loc[df.shape[0]+1,:] = [np.nan] * df.shape[1]
+        df.loc[df.shape[0],"Amount"] = df.loc[:,"Amount"].sum()
+        df.loc[df.shape[0],"Due"] = df.loc[:,"Due"].sum()
         df.to_excel("assets/all_files/"+date_string+".xlsx",index=False)
         return "Your File has been saved."
 
