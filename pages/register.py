@@ -20,14 +20,32 @@ columns = [
     "Gender",
     "Phone No",
     "Amount",
+    "Method",
     "Paid",
     "Due",
     "Sample",
 ]
 
+dtype_map = {
+    "S.No.": str,         # Ensure "S.No." remains a string
+    "Date": str,          # Keep date as string if not datetime
+    "Time": str,          # Time as string
+    "Patient Name": str,  # Patient Name as string
+    "Reference By": str,  # Reference as string
+    "Patient Age": "Int8",  # Use Int16 for compactness and allow NaNs
+    "Age Group": str,     # Age Group as string
+    "Gender": str,        # Gender as string
+    "Amount": "Int32",    # Amount as integer
+    "Method": str,        # Method as str
+    "Phone No": "Int64",      # Phone number as string to avoid floats
+    "Paid": str,          # Paid as string
+    "Due": "Int16",       # Due as integer
+    "Sample": str         # Sample as string
+}
+
 
 doctor_options = [
-    "self".capitalize(),
+    "self".upper(),
     "NEELIMA AGARWAL GARU, MD(Homeo).,",
     "m rama krishna garu, mbbs, dch.,".upper(),
     "Smt. M.N. SRI DEVI GARU, MBBS, DGO.,",
@@ -36,8 +54,23 @@ doctor_options = [
     "k. rajendra prasad garu, b.m.p.,".upper(),
     "ch. kiran kumar garu, b.m.p.,".upper(),
     "k. chiranjeevi raju garu, b.m.p.,".upper(),
-    "S. Prasad".upper(),
-    "Babu garu".upper(),
+    "S. Prasad garu, b.m.p".upper(),
+    "a. satti babu garu, md, pgdm".upper(),
+    "v ramakrishna garu, b.m.p".upper(),
+    "ch. raghunadha rao garu, b.m.p".upper(),
+    "c.v.s.s. sharma garu, bams".upper(),
+    "b. suribabu garu, b.m.p".upper(),
+    "addanki surya garu, b.m.p".upper(),
+    "ajay kumar garu, p.m.p".upper(),
+    "a. chandrasekhar garu, bsc, dph&s".upper(),
+    "durga prasad garu, b.m.p".upper(),
+    "jagadeesh garu, p.m.p".upper(),
+    "r. rama chandra rao garu, p.m.p".upper(),
+    "g. bhanuprakash garu, p.m.p".upper(),
+    "pv. venkateswara rao garu, p.m.p".upper(),
+    "a. gowrish babu garu, b.m.p".upper(),
+    "v.v.v prasad garu, p.m.p".upper(),
+    "dileep kumar garu, mbbs, medical officer".upper(),
 ]
 
 big_break = [html.Br()] * 5
@@ -64,7 +97,7 @@ register_layout = html.Div(
         html.Div(
             [
                 html.Div("S. No. : ",style=dict(color="cyan",fontSize=30)),
-                dcc.Input(id="serial_number",type="number",placeholder="Enter Serial Number... ",style=dict(display="inline-block",position="absolute",left="350px",fontSize=30))
+                dcc.Input(id="serial_number",type="text",placeholder="Enter Serial Number... ",style=dict(display="inline-block",position="absolute",left="350px",fontSize=30))
             ],
             style=dict(display="flex",alignItems="center")
         ),
@@ -89,9 +122,9 @@ register_layout = html.Div(
                     [
                         dcc.Dropdown(doctor_options,"SELF",id="doctor-dropdown")
                     ],
-                    style=dict(width="400px",position="relative",left="50px",bottom="25px")
+                    style=dict(width="600px",position="relative",left="50px",fontSize=20,bottom="25px")
                 ),
-                dcc.Input(id="reference-doctor",type="text",placeholder="Enter Doctors Name...",style=dict(position="relative",left="100px",width="500px",bottom="25px",fontSize=30))
+                dcc.Input(id="reference-doctor",type="text",placeholder="Enter Doctors Name...",style=dict(position="relative",left="150px",width="500px",bottom="25px",fontSize=30))
             ],
             style=dict(display="flex",alignItems="center",position="relative",left="300px")
         ),
@@ -105,7 +138,7 @@ register_layout = html.Div(
         ),
         html.Div(
             dcc.Dropdown(["Y","M","D"],"Y",id="age-group-dropdown"),
-            style=dict(display="inline-block",alignItems="center",position="relative",left="530px",bottom="35px")
+            style=dict(display="inline-block",alignItems="center",position="relative",left="530px",bottom="35px",fontSize=20,width="100px")
         ),
         *big_break,
         html.Div(
@@ -116,13 +149,15 @@ register_layout = html.Div(
         ),
         html.Div(
             dcc.Dropdown(["Male","Female"],"Male",id="gender-dropdown"),
-            style=dict(display="inline-block",alignItems="center",position="relative",width="150px",left="350px",bottom="30px")
+            style=dict(display="inline-block",alignItems="center",position="relative",width="150px",fontSize=20,left="350px",bottom="30px")
         ),
         *big_break,
         html.Div(
             [
                 html.Div("Amount : ",style=dict(color="cyan",fontSize=30)),
-                dcc.Input(id="amount",type="number",placeholder="Enter Amount To be Paid...",style=dict(display="inline-block",position="absolute",left="350px",fontSize=30))
+                dcc.Input(id="amount",type="number",placeholder="Amount...",style=dict(display="inline-block",position="absolute",left="350px",fontSize=30,width="150px")),
+                html.Div("Method of Payment : ",style=dict(color="cyan",fontSize=30,position="absolute",left="600px")),
+                html.Div(dcc.Dropdown(["cash".upper(),"phone pay".upper()],"cash".upper(),id="pay-method"),style=dict(display="inline-block",position="absolute",left="950px",fontSize=20,width="300px"))
             ],
             style=dict(display="flex",alignItems="center")
         ),
@@ -139,8 +174,8 @@ register_layout = html.Div(
             [
                 html.Div("Paid or Not: ",style=dict(color="cyan",fontSize=30)),
                 html.Div(dcc.Dropdown(["paid".upper(),"not paid".upper(),"due".upper()],"not paid".upper(),id="paid-dropdown"),style=dict(display="inline-block",fontSize=20,width="200px",height="75px",position="relative",left="150px",top="25px")),
-                html.Div("Due Amount : ",style=dict(color="cyan",fontSize=30,position="relative",left="200px")),
-                dcc.Input(id="paid-input",type="number",placeholder="Enter Due Amount",value=0,style=dict(display="inline-block",width="200px",fontSize=30,height="50px",position="relative",left="300px"))
+                html.Div("Paid Amount : ",style=dict(color="cyan",fontSize=30,position="relative",left="200px")),
+                dcc.Input(id="paid-input",type="number",placeholder="Enter Paid Amount",value=0,style=dict(display="inline-block",width="200px",fontSize=30,height="50px",position="relative",left="300px"))
             ],
             style=dict(display="flex",alignItems="center")
         ),
@@ -149,37 +184,34 @@ register_layout = html.Div(
             [
                 html.Div("Sample Bougth by: ",style=dict(color="cyan",fontSize=30)),
                 html.Div(dcc.Dropdown(["self".upper(),"outside".upper()],"self".upper(),id="sample-source-dropdown"),style=dict(display="inline-block",fontSize=20,width="200px",height="75px",position="relative",left="350px",bottom="25px")),
-                dcc.Input(id="sample-source-input",type="text",placeholder="Enter Name",value="Outside",style=dict(display="inline-block",width="200px",fontSize=30,height="50px",position="relative",left="400px",bottom="75px"))
+                dcc.Input(id="sample-source-input",type="text",placeholder="Enter Name",value="Outside".upper(),style=dict(display="inline-block",width="200px",fontSize=30,height="50px",position="relative",left="400px",bottom="75px"))
             ]
         ),
         *big_break,
         html.Button("Submit".upper(),id="submit-button",style=dict(fontSize=30,borderRadius="20px",height="100px",width="250px",backgroundColor="#4b70f5",color="cyan")),
+        html.Div(id="inputs-warning",style=dict(position="relative",color="red",fontSize=40,left="500px",bottom="100px")),
         *big_break,
         dash_table.DataTable(
             id="data-table",
             columns=[{"name":i,"id":i} for i in columns],
             style_table=dict(fontSize=25,backgroundColor="#633fff"),
             style_cell=dict(backgroundColor="#633fff"),
-            editable=True
+            editable=True,
         ),
         *big_break,
         html.Button("Save Changes",id="save-changes-button",style=dict(position="relative",left="90vw",fontSize=30,borderRadius="20px",height="100px",width="250px",backgroundColor="#4b70f5",color="cyan")),
-        *big_break,
-        html.Div(
-            [
-                html.Button("Save to Files",id="save-button",style=dict(fontSize=30,borderRadius="20px",height="100px",width="250px",backgroundColor="#4b70f5",color="cyan")),
-                html.Div(id="out-message",style=dict(fontSize=30,color="cyan",position="absolute",left="350px"))
-            ]
-        ),
-        html.Div(
-            [
-                html.Button("clear everything".upper(),id="clear-button",style=dict(color="cyan",backgroundColor="red",fontWeight=700,fontSize=30,borderRadius="5px",position="relative",left="80vw",height="100px",width="250px")),
-                html.Div(id="clear-message",style=dict(fontSize=30,color="cyan",position="absolute"))
-            ]
-        )
+        *big_break
     ],
     className="subpage-content"
 )
+
+def save_df(df,date_value:str):
+    date_value = date_value.replace("-","_")
+    df.loc[df.shape[0]+1,:] = [np.nan] * df.shape[1]
+    df.loc[df.shape[0],"Amount"] = df.loc[:,"Amount"].sum()
+    df.loc[df.shape[0],"Due"] = df.loc[:,"Due"].sum()
+    df.to_excel(f"assets/all_files/{date_value}.xlsx",index=False)
+
 
 
 @callback(
@@ -187,51 +219,61 @@ register_layout = html.Div(
         Output("data-table","data"),
         Output("data-store","data")
     ],
-    [
-        Input("date-pick-single","date"),
-        Input("refresh-button","n_clicks")
-    ],
-    State("data-store","data")
+    Input("refresh-button","n_clicks"),
+    State("date-pick-single","date")
 )
-def initialize_df(date_value,n_clicks,data):
-    date_obj = date.fromisoformat(date_value)
-    date_string = date_obj.strftime("%Y_%m_%d")
-    file = glob("assets/all_files/"+date_string+".xlsx")
-    if file:
-        df = pd.read_excel(file[0])
-        return df.to_dict('records'),df.to_json(date_format="iso",orient="split")
-    elif data != {}:
-        df = pd.read_json(StringIO(data),orient="split")
-        return df.to_dict("records"),data
-    else:
-        df = pd.DataFrame(
-            {
-                "S.No.":pd.Series(dtype="int16"),
-                "Date":pd.Series(dtype="str"),
-                "Time":pd.Series(dtype="str"),
-                "Patient Name":pd.Series(dtype="str"),
-                "Reference By":pd.Series(dtype="str"),
-                "Patient Age":pd.Series(dtype="int16"),
-                "Age Group":pd.Series(dtype="str"),
-                "Gender":pd.Series(dtype="str"),
-                "Amount":pd.Series(dtype="int32"),
-                "Phone No":pd.Series(dtype="int64"),
-                "Paid":pd.Series(dtype="str"),
-                "Due":pd.Series(dtype="int64"),
-                "Sample":pd.Series(dtype="str")
-            }
-        )
-    return df.to_dict('records'),df.to_json(date_format="iso",orient="split")
+def initialize_df(n_clicks,date_value:str):
+    if not n_clicks:
+        raise PreventUpdate
+    if ctx.triggered_id == 'refresh-button':
+        file = glob(f"assets/all_files/{date_value.replace("-","_")}.xlsx")
+        if file != []:
+            df = pd.read_excel(file[0],dtype=dtype_map)
+            df = df.iloc[:-1,:]
+            df.loc[df.shape[0]+1,:] = [np.nan] * df.shape[1]
+            df.loc[df.shape[0],"Amount"] = df.loc[:,"Amount"].sum()
+            df.loc[df.shape[0],"Due"] = df.loc[:,"Due"].sum()
+        else:
+            df = pd.DataFrame(
+                {
+                    "S.No.":pd.Series(dtype="str"),
+                    "Date":pd.Series(dtype="str"),
+                    "Time":pd.Series(dtype="str"),
+                    "Patient Name":pd.Series(dtype="str"),
+                    "Reference By":pd.Series(dtype="str"),
+                    "Patient Age":pd.Series(dtype="int8"),
+                    "Age Group":pd.Series(dtype="str"),
+                    "Gender":pd.Series(dtype="str"),
+                    "Amount":pd.Series(dtype="int32"),
+                    "Method":pd.Series(dtype="str"),
+                    "Phone No":pd.Series(dtype="int64"),
+                    "Paid":pd.Series(dtype="str"),
+                    "Due":pd.Series(dtype="int16"),
+                    "Sample":pd.Series(dtype="str")
+                }
+            )
+            save_df(df,date_value)
+        return df.to_dict('records'),{"date":date_value.replace("-","_")}
+
+
+input_vals_dict = {
+    0:"age group",
+    1:"gender",
+    2:"doctor",
+    3:"serial number",
+    4:"patient name",
+    5:"patient age",
+    6:"amount",
+    7:"phone number",
+}
 
 
 @callback(
     [
         Output("data-table","data",allow_duplicate=True),
-        Output("data-store","data",allow_duplicate=True)
+        Output("inputs-warning","children")
     ],
-    [
-        Input("submit-button","n_clicks")         
-    ],
+    Input("submit-button","n_clicks"),
     [
         State("age-group-dropdown","value"),        # 0
         State("gender-dropdown","value"),           # 1
@@ -247,33 +289,40 @@ def initialize_df(date_value,n_clicks,data):
         State("paid-input","value"),                # 11
         State("sample-source-dropdown","value"),    # 12
         State("sample-source-input","value"),       # 13
-        State("data-store","data")                  # 14
+        State("pay-method","value")                 # 14
     ],
     prevent_initial_call=True
 )
 def append_name_to_dataframe(n_clicks,*vals):
+    global doctor_options
     if not n_clicks:
         raise PreventUpdate
-    if n_clicks:
-        df = pd.read_json(StringIO(vals[14]),orient="split")
+    if ctx.triggered_id == "submit-button":
+        date_value = vals[3].replace("-","_")
+        file = glob(f"assets/all_files/{date_value}.xlsx")
+        df = pd.read_excel(file[0])
+        vals_list = [vals[0],vals[1],(vals[2] or vals[6]),vals[4],vals[5],vals[7],vals[8],vals[9]]
+        if any([val is None for val in vals_list]):
+            return df.to_dict("records"),f"Input for {input_vals_dict[vals_list.index(None)]} is not entered".upper()
+        df = df.iloc[:-1,:]
         index_number = df.shape[0]
         index_number += 1
-        df["S.No."] = df["S.No."].astype("int16")
+        df["S.No."] = df["S.No."].astype("str")
         df["Date"] = df["Date"].astype("str")
         df["Time"] = df["Time"].astype("str")
         df["Patient Name"] = df["Patient Name"].astype("str")
         df["Reference By"] = df["Reference By"].astype("str")
-        df["Patient Age"] = df["Patient Age"].astype("int16")
+        df["Patient Age"] = df["Patient Age"].astype("int8")
         df["Age Group"] = df["Age Group"].astype("str")
         df["Gender"] = df["Gender"].astype("str")
         df["Amount"] = df["Amount"].astype("int32")
+        df["Method"] = df["Method"].astype("str")
         df["Phone No"] = df["Phone No"].astype("int64")
         df["Paid"] = df["Paid"].astype("str")
-        df["Due"] = df["Due"].astype("int64")
+        df["Due"] = df["Due"].astype("int16")
         df["Sample"] = df["Sample"].astype("str")
         df.loc[index_number,"S.No."] = vals[4]
-        date_obj = date.fromisoformat(vals[3])
-        df.loc[index_number,"Date"] = date_obj.strftime("%d-%m-%Y")
+        df.loc[index_number,"Date"] = vals[3]
         t = time.localtime()
         t_hour,t_min,t_sec = t.tm_hour,t.tm_min,t.tm_sec
         if t_sec <= 9:
@@ -292,18 +341,21 @@ def append_name_to_dataframe(n_clicks,*vals):
             t_time = f"{t_hour}:{t_min}:{t_sec} AM"
         df.loc[index_number,"Time"] = t_time
         df.loc[index_number,"Patient Name"] = vals[5]
-        if vals[6] == None:
+        if vals[6] is None:
             df.loc[index_number,"Reference By"] = vals[2]
         else:
             df.loc[index_number,"Reference By"] = vals[6].upper()
+            if vals[6] not in doctor_options:
+                doctor_options.append(vals[6].upper())
         df.loc[index_number,"Age Group"] = vals[0]
         df.loc[index_number,"Patient Age",] = vals[7]
         df.loc[index_number,"Gender"] = vals[1]
         df.loc[index_number,"Amount"] = vals[8]
+        df.loc[index_number,"Method"] = vals[14]
         df.loc[index_number,"Phone No"] = vals[9]
         df.loc[index_number,"Paid"] = vals[10]
         if vals[10] == "due".upper():
-            df.loc[index_number,"Due"] = vals[11]
+            df.loc[index_number,"Due"] = vals[8] - vals[11]
         elif vals[10] == "not paid".upper():
             df.loc[index_number,"Due"] = vals[8]
         else:
@@ -311,61 +363,28 @@ def append_name_to_dataframe(n_clicks,*vals):
         df.loc[index_number,"Sample"] = vals[12]
         if (vals[12] == "outside".upper()) & (vals[13] is not None):
             df.loc[index_number,"Sample"] = vals[13]
-        return df.to_dict('records'),df.to_json(date_format="iso",orient="split")
+        save_df(df,vals[3])
+        return df.to_dict('records'),""
 
 
 @callback(
-    [
-        Output("data-table","data",allow_duplicate=True),
-        Output("data-store","data",allow_duplicate=True)
-    ],
+    Output("data-table","data",allow_duplicate=True),
     Input("save-changes-button","n_clicks"),
-    State("data-table","data"),
-    prevent_initial_call=True
-)
-def save_table_changes(n_clicks,data):
-    if not n_clicks:
-        raise PreventUpdate
-    if n_clicks:
-        return data,pd.DataFrame(data).to_json(date_format="iso",orient="split")
-
-
-
-
-@callback(
-    Output("out-message","children"),
-    Input("save-button","n_clicks"),
     [
-        State("data-store","data"),
-        State("date-pick-single","date"),
-    ]
-)
-def save_to_files(n_clicks,data,date_value):
-    if n_clicks:
-        df = pd.read_json(StringIO(data),orient="split")
-        date_obj = date.fromisoformat(date_value)
-        date_string = date_obj.strftime("%Y_%m_%d")
-        df.loc[df.shape[0]+1,:] = [np.nan] * df.shape[1]
-        df.loc[df.shape[0],"Amount"] = df.loc[:,"Amount"].sum()
-        df.loc[df.shape[0],"Due"] = df.loc[:,"Due"].sum()
-        df.to_excel("assets/all_files/"+date_string+".xlsx",index=False)
-        return "Your File has been saved."
-
-
-@callback(
-    [
-        Output("clear-message","children"),
-        Output("data-store","data",allow_duplicate=True)
+        State("data-table","data"),
+        State("data-store","data")
     ],
-    Input("clear-button","n_clicks"),
-    State("data-store","data"),
     prevent_initial_call=True
 )
-def clear_everything(n_clicks,data):
+def save_table_changes(n_clicks,data,date_value:dict):
     if not n_clicks:
         raise PreventUpdate
     if n_clicks:
-        return "Data has been cleared",{}
+        file = glob(f"assets/all_files/{date_value["date"]}.xlsx")
+        df = pd.read_excel(file[0])
+        df = df.iloc[:-1,:]
+        save_df(df,date_value["date"])
+        return data
 
 
 register_page(

@@ -1,4 +1,5 @@
 import json,os,flask,datetime,time
+from datetime import date
 import pandas as pd
 from io import StringIO
 from glob import glob
@@ -14,14 +15,34 @@ from dash.exceptions import PreventUpdate
 registerFont(TTFont("CenturySchoolBook-BoldItalic","assets/schlbkbi.ttf"))
 
 all_reports_dict = {}
-copy_df = None
 big_break = [html.Br()] * 5
 large_break = [html.Br()] * 10
 small_break = [html.Br()] * 2
 
+import pandas as pd
+
+
+dtype_map = {
+    "S.No.": str,         # Ensure "S.No." remains a string
+    "Date": str,          # Keep date as string if not datetime
+    "Time": str,          # Time as string
+    "Patient Name": str,  # Patient Name as string
+    "Reference By": str,  # Reference as string
+    "Patient Age": "Int8",  # Use Int16 for compactness and allow NaNs
+    "Age Group": str,     # Age Group as string
+    "Gender": str,        # Gender as string
+    "Amount": "Int32",    # Amount as integer
+    "Phone No": "Int64",      # Phone number as string to avoid floats
+    "Paid": str,          # Paid as string
+    "Due": "Int16",       # Due as integer
+    "Sample": str         # Sample as string
+}
+
+
 patients_dropdown = dcc.Dropdown(
     placeholder="Select Serial Number..,",
-    id="patients-dropdown"
+    id="patients-dropdown",
+    style=dict(height="50px")
 )
 
 all_options = [
@@ -75,13 +96,15 @@ all_options = [
     "HBsAg",
     "HIV I & II Antibodies Test",
     "HCV I & II Antibodies Test",
-    "Semen Analysis"
+    "Semen Analysis",
+    "XRAY Opinion"
 ]
 
 reports_dropdown = dcc.Dropdown(
     all_options,
     id="reports-dropdown",
-    multi=True
+    multi=True,
+    style=dict(height="100px",width="600px")
 )
 
 page_size_dropdown = dcc.Dropdown(
@@ -98,6 +121,7 @@ templates_dropdown = dcc.Dropdown(
         {"label":"HB, TC, PLATELET, DC","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)"])},
         {"label":"HB, TC, PLATELET, DC, CRP","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","CRP"])},
         {"label":"HB, TC, DC","value":json.dumps(["Hb","Total Count (TC)","Differential Count (DC)"])},
+        {"label":"TOTAL BILIRUBIN, INDIRECT AND DIRECT BILIRUBIN","value":json.dumps(["Total Bilirubin","Direct & Indirect Bilirubin"])},
         {"label":"BLOOD GROUP, CRP, TOTAL BILIRUBIN, DIRECT & INDIRECT BILIRUBIN","value":json.dumps(["Blood Group","CRP","Total Bilirubin","Direct & Indirect Bilirubin"])},
         {"label":"SRI DEVI GARU CBP","value":json.dumps(["Full CBP","Blood Group","V.R.D.L","HBsAg","HIV I & II Antibodies Test","HCV I & II Antibodies Test","Random Sugar","Serum Creatinine","Total Bilirubin","Urine Analysis"])},
         {"label":"SRI DEVI GARU HIV HB URINE","value":json.dumps(["Blood Group","Hb","B.T","C.T","V.R.D.L","HBsAg","HIV I & II Antibodies Test","HCV I & II Antibodies Test","Random Sugar","Serum Creatinine","Total Bilirubin","Urine Analysis"])},
@@ -119,13 +143,14 @@ layout = html.Div(
     [
         html.Div(html.H1("Patients report",className="page-heading"),className="heading-divs"),
         *big_break,
-        html.Div(patients_dropdown,style=dict(width="400px",fontWeight=700,alignItems="center")),
+        html.Div(patients_dropdown,style=dict(width="400px",fontSize=20,fontWeight=700,alignItems="center")),
+        html.Button("REFRESH",id="ref-button",style=dict(position="relative",height="100px",width="100px",left="600px",color="red",fontSize=20,borderRadius="20px",backgroundColor="#4b70f5")),
         html.Div(id="data-present",style=dict(position="relative",left="100px",top="50px",color="red")),
-        html.Button("clear data".upper(),id="clear-storage",style=dict(position="relative",backgroundColor="red",left="500px",bottom="50px",width="100px",height="50px",fontWeight=700)),
+        html.Button("clear data".upper(),id="clear-storage",style=dict(position="relative",backgroundColor="red",left="900px",bottom="50px",width="100px",height="50px",fontWeight=700)),
         *big_break,
-        html.Div(reports_dropdown,style=dict(width="400px",fontWeight=700,alignItems="center")),
-        html.Div(page_size_dropdown,style=dict(width="400px",fontWeight=700,alignItems="center",position="relative",left="420px",bottom="36px")),
-        html.Div(templates_dropdown,style=dict(width="400px",fontWeight=700,alignItems="center",position="relative",left="840px",bottom="73px")),
+        html.Div(reports_dropdown,style=dict(width="650px",fontWeight=700,alignItems="center")),
+        html.Div(page_size_dropdown,style=dict(width="200px",fontWeight=700,alignItems="center",position="relative",left="650px",bottom="50px")),
+        html.Div(templates_dropdown,style=dict(width="800px",fontWeight=700,alignItems="center",position="relative",left="900px",bottom="100px")),
         *large_break,
         html.Div(id="output-report",style=dict(border="2px solid rgba(0,255,255,0.7)",borderBottom=None,padding="20px",position="relative",left="100px",width="900px",fontSize=18)),
         html.Hr(style=dict(position="relative",left="100px",width="900px",border="1px solid cyan")),
@@ -151,15 +176,21 @@ layout = html.Div(
 
 @callback(
     Output("patients-dropdown","options"),
-    Input("data-store","data")
+    Input("ref-button","n_clicks"),
+    State("data-store","data")
 )
-def patients_drpodown_update(data):
-    global copy_df
-    if data:
-        df = pd.read_json(StringIO(data),orient="split")
-        copy_df = df.copy().iloc[::-1].reset_index(drop=True)
-        return copy_df["S.No."].tolist()
-    return []
+def patients_drpodown_update(n_clicks,date_value):
+    if not n_clicks:
+        raise PreventUpdate
+    if ctx.triggered_id == 'ref-button':
+        file = glob(f"assets/all_files/{date_value["date"]}.xlsx")
+        if file == []:
+            return []
+        else:
+            df = pd.read_excel(file[0],dtype=dtype_map)
+            df = df.iloc[:-1,:]
+            return df.loc[:,"S.No."].to_list()
+
 
 
 limits_style = dict(position="relative",left="550px",bottom="45px",fontSize=18)
@@ -271,6 +302,23 @@ alkp_list = [
     html.Div("Alkaline Phosphatase (ALKP): ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'alkp'},type="number",placeholder="29 (normal)",style={**input_style,"left":"500px"}),
     html.Div("( 37 - 147 )",style={**limits_style,"left":"700px"})
+]
+
+x_ray_list = [
+    html.P("""Rest of lung fields  are normal .
+
+             Both hila normal in density .
+
+           Cardiac shape are normal .
+
+          Both CP angles are clear .
+    
+         Bony cage and soft tissues are normal .
+
+         Opinion : NORMAL 
+           
+         For clinical correlation .
+""",id={'type':'dynamic-input','name':'x-ray-opinion'})
 ]
 
 esr_list = [
@@ -697,19 +745,22 @@ reports_original_dict = {
     "HBsAg":hbsag_list,
     "HIV I & II Antibodies Test":hiv_list,
     "HCV I & II Antibodies Test":hcv_list,
-    "Semen Analysis":semen_list
+    "Semen Analysis":semen_list,
+    "XRAY Opinion":x_ray_list
 }
 
 
 
-def get_df_item(p_sn:int,item_name:str):
+def get_df_item(p_sn:str,item_name:str,copy_df:pd.DataFrame):
     return copy_df.loc[copy_df.loc[:,"S.No."] == p_sn,item_name].item()
 
-def get_all_files(s_no):
-    pt_name = get_df_item(s_no,"Patient Name")
+def get_all_files(s_no,df):
+    pt_name = get_df_item(s_no,"Patient Name",copy_df=df)
+    pt_date = get_df_item(s_no,"Date",copy_df=df)
+    pt_year,pt_month,pt_day = pt_date.split("-")
     options = []
-    if os.path.exists("assets/" + datetime.date.today().strftime("%Y/%m/%d")):
-        all_files = glob("assets/"+datetime.date.today().strftime("%Y/%m/%d/*.pdf"))
+    if os.path.exists(f"assets/{pt_year}/{pt_month}/{pt_day}"):
+        all_files = glob(f"assets/{pt_year}/{pt_month}/{pt_day}/*.pdf")
         for file in all_files:
             all_strings = os.path.basename(file).split("__")
             file_name = os.path.basename(file).replace(".pdf","").replace("_"," ")
@@ -734,24 +785,31 @@ def get_all_files(s_no):
         Input("reports-dropdown","value"),
         Input("template-dropdown","value")
     ],
-    State("patient-data-store","data"),
+    [
+        State("patient-data-store","data"),
+        State("data-store","data")
+    ]
+    
 )
-def submit_report(patients_sno,reports_value,template_value,all_patients_values):
+def submit_report(patients_sno,reports_value,template_value,all_patients_values,date_value):
     is_present = False
     s = ""
     if patients_sno:
         if all_patients_values is None:
             all_patients_values = {}
-        if all_patients_values.get(str(patients_sno),{}) == {}:
-            all_patients_values[str(patients_sno)] = {"tests":[]}
-        if len(all_patients_values[str(patients_sno)]) > 1:
+        if all_patients_values.get(patients_sno,{}) == {}:
+            all_patients_values[patients_sno] = {"tests":[]}
+        if len(all_patients_values[patients_sno]) > 1:
             is_present = True
+        file = glob(f"assets/all_files/{date_value["date"]}.xlsx")
+        df = pd.read_excel(file[0],dtype=dtype_map)
+        df = df.iloc[:-1,:]
         report_details = []
         patients_details = [
-                html.Div(f"Patient Name: {get_df_item(patients_sno,item_name='Patient Name')}"),
-                html.Div(f"Age: {get_df_item(patients_sno,item_name='Patient Age')}"),
-                html.Div(f"Reference By: {get_df_item(patients_sno,item_name='Reference By')}"),
-                html.Div(f"Date: {get_df_item(patients_sno,item_name="Date")}")
+                html.Div(f"Patient Name: {get_df_item(patients_sno,item_name='Patient Name',copy_df=df)}"),
+                html.Div(f"Age: {get_df_item(patients_sno,item_name='Patient Age',copy_df=df)}"),
+                html.Div(f"Reference By: {get_df_item(patients_sno,item_name='Reference By',copy_df=df)}"),
+                html.Div(f"Date: {get_df_item(patients_sno,item_name="Date",copy_df=df)}")
             ]
         if reports_value:
             for x in reports_value:
@@ -764,7 +822,7 @@ def submit_report(patients_sno,reports_value,template_value,all_patients_values)
             s = "*Data is present, Please Preview to see old values or Storage Clear to enter new values"
         else:
             s = ""
-        return patients_details,report_details,s,get_all_files(patients_sno),all_patients_values
+        return patients_details,report_details,s,get_all_files(patients_sno,df),all_patients_values
     return "Select a Serial Number to Display....","Select a Test to Display....",s,[],all_patients_values
 
 
@@ -784,8 +842,8 @@ def submit_report(patients_sno,reports_value,template_value,all_patients_values)
 def clear_storage_data(n_clicks,patients_sno,all_patients_values):
     if not n_clicks:
         raise PreventUpdate
-    if n_clicks:
-        all_patients_values[str(patients_sno)] = {"tests":[]}
+    if ctx.triggered_id == "clear-storage":
+        all_patients_values[patients_sno] = {"tests":[]}
         return all_patients_values,f"Storage Cleared for Serial No. {patients_sno}"
 
 def cal_string_width(c:canvas.Canvas,total_string,font_name,font_size):
@@ -852,33 +910,29 @@ def patient_details_canvas(
         drop_height
     ):
     c.setFont(font_name,font_size)
-    if (patient_age < 18):
-        mod_pt_name = f"Pt. Name : Chi. {patient_name.upper()}"
-    if (patient_age > 13) & (patient_gender == "Female"):
-        mod_pt_name = f"Pt. Name : Kmr. {patient_name.upper()}"
-    if (patient_age >= 18) & (patient_gender == "Male"):
-        mod_pt_name = f"Pt. Name : Mr. {patient_name.upper()}"
-    if (patient_age >= 18) & (patient_gender == "Female"):
-        mod_pt_name = f"Pt. Name : Ms. {patient_name.upper()}"
-    if (patient_age >= 22) & (patient_gender == "Female"):
-        mod_pt_name = f"Pt. Name : Mrs. {patient_name.upper()}"
-    small_doc_dict = {"S. Prasad".upper():"SP","Babu garu".upper():"B"}
-    if (doctor_name == "S. Prasad".upper()) | (doctor_name == "Babu garu".upper()):
-        c.drawString(left_extreme,page_height-drop_height,small_doc_dict[doctor_name])
-        page_height -= 20
-    c.drawString(left_extreme,page_height-drop_height,mod_pt_name)
+
+    if (patient_age_group == "M") | (patient_age_group == "D"):
+        patient_title = "Chi" 
+    else:
+        if (patient_age < 18):
+            patient_title = "Chi."
+        if (patient_age > 13) & (patient_gender == "Female"):
+            patient_title = "Kmr."
+        if (patient_age >= 18) & (patient_gender == "Male"):
+            patient_title = "Mr."
+        if (patient_age >= 18) & (patient_gender == "Female"):
+            patient_title = "Ms."
+        if (patient_age >= 22) & (patient_gender == "Female"):
+            patient_title = "Mrs."
+    c.drawString(left_extreme,page_height-drop_height,f"Pt. Name : {patient_title} {patient_name.upper()}")
     c.drawString(left_extreme,page_height-(drop_height + patient_details_space),f"Age : {patient_age} {patient_age_group}")
     gender_string = f"Gender : {patient_gender}"
     c.drawString(right_extreme-cal_string_width(c,gender_string,font_name,font_size),page_height-(drop_height + patient_details_space),gender_string)     # s
-    if (doctor_name != "S. Prasad".upper()) & (doctor_name != "Babu garu".upper()):
-        c.drawString(left_extreme,page_height-(drop_height + 2*patient_details_space),f"Ref.Dr.By. : {doctor_name}")                                                # 99 + 24
-    else:
+    if doctor_name == "self".upper():
         c.drawString(left_extreme,page_height-(drop_height + 2*patient_details_space),f"Ref.Dr.By. : ")
-    if patient_serial_no < 10:
-        patient_serial_no = f"000{patient_serial_no}"
     else:
-        patient_serial_no = f"00{patient_serial_no}"
-    c.drawString(left_extreme,page_height-(drop_height + 3*patient_details_space),f"Serial No: {patient_serial_no}")
+        c.drawString(left_extreme,page_height-(drop_height + 2*patient_details_space),f"Ref.Dr.By. : {doctor_name}")
+    c.drawString(left_extreme,page_height-(drop_height + 3*patient_details_space),f"Serial No: {patient_serial_no:0>4}")
     time_string = f"Collection Time: {collection_time}"
     c.drawString(right_extreme-cal_string_width(c,time_string,font_name,font_size),page_height-(drop_height + 3*patient_details_space),time_string)        # s
     c.drawString(left_extreme,page_height-(drop_height + 4*patient_details_space),f"Specimen: {patient_specimen}")
@@ -932,7 +986,7 @@ def hb_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height = 18
 def tc_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_height = 18):
     limits_string = "( 5,000 - 10,000 Cells/cumm )"
     text_string = "Total WBC Count"
-    value_string = f"{value//1000},000"
+    value_string = f"{str(value/1000).replace(".",",")}00"
     limit_a = 5000
     limit_b = 10000
     if page_size == "SMALL/A5":
@@ -989,7 +1043,7 @@ def dc_canvas(
     if page_size == "SMALL/A5":
         c.setFont(small_font_name,small_font_size)
         c.drawString(small_left_extreme,h,dc_string)
-        c.line(small_left_extreme,h-(0.2 * entity_height),small_left_extreme+cal_string_width(c,dc_string,small_font_name,small_font_size),h-5)
+        c.line(small_left_extreme,h-5,small_left_extreme+cal_string_width(c,dc_string,small_font_name,small_font_size),h-5)
         c.drawString(142,h-(1.2 * entity_height),poly_string)
         c.drawString(142,h-(2.2 * entity_height),lympho_string)
         c.drawString(142,h-(3.2 * entity_height),eosino_string)
@@ -1613,7 +1667,7 @@ def serum_creat_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_he
     return c,h-entity_height
 
 # done
-def random_sugar_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_height=18):
+def fasting_sugar_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_height=18):
     text_string = "Blood Sugar ( Fasting )"
     value_string = value
     limits_string = "( 70 - 110 mg/dl )"
@@ -1628,7 +1682,7 @@ def random_sugar_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_hei
     return c,h-entity_height
 
 # done
-def fasting_sugar_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_height=18):
+def random_sugar_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_height=18):
     text_string = "Blood Sugar ( Random )"
     value_string = value
     limits_string = "( 70 - 140 mg/dl )"
@@ -1963,6 +2017,32 @@ def semen_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=1
     c.drawString(size_dict["left_extreme"][x],h,comments)
     return c,h-entity_height
 
+def x_ray_canvas(c:canvas.Canvas,value,page_size:str,h:int,entity_height=18):
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
+    c.drawString(size_dict["value_point"][x]//1.5,h,"x-ray chest pa-view".upper())
+    h -= (entity_height * 2)
+    c.drawString(size_dict["value_point"][x]//2,h,"Rest of lung fields are normal.")
+    h -= entity_height
+    c.drawString(size_dict["value_point"][x]//2,h,"Both hila normal in density.")
+    h -= entity_height
+    c.drawString(size_dict["value_point"][x]//2,h,"Cardiac shape are normal.")
+    h -= entity_height
+    c.drawString(size_dict["value_point"][x]//2,h,"Both CP angles are clear.")
+    h -= entity_height
+    c.drawString(size_dict["value_point"][x]//2,h,"Bony cage and soft tissues are normal.")
+    h -= entity_height
+    c.drawString(size_dict["value_point"][x]//2,h,"Opinion: NORMAL")
+    h -= entity_height
+    c.drawString(size_dict["value_point"][x]//2,h,"For clinical correlation.")
+    h -= entity_height
+    return c, h - entity_height
+
+
 
 reports_canvas_dict = {
     "Hb":hb_canvas,
@@ -2013,7 +2093,8 @@ reports_canvas_dict = {
     "HBsAg":hbsag_canvas,
     "HIV I & II Antibodies Test":hiv_canvas,
     "HCV I & II Antibodies Test":hcv_canvas,
-    "Semen Analysis":semen_canvas
+    "Semen Analysis":semen_canvas,
+    "XRAY Opinion":x_ray_canvas
 }
 
 report_canvas_values_dict = {
@@ -2066,35 +2147,33 @@ report_canvas_values_dict = {
     "HIV I & II Antibodies Test":"hiv_ant",
     "HCV I & II Antibodies Test":"hcv_ant",
     "Semen Analysis":"full-semen",
+    "XRAY Opinion":"x-ray-opinion"
 }
 
-def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_values):
-
-    global copy_df
-    collection_date = str(get_df_item(serial_no,"Date"))
-    collection_time = get_df_item(serial_no,"Time")
-    patient_name = get_df_item(serial_no,"Patient Name")
-    patient_age = get_df_item(serial_no,"Patient Age")
-    patient_age_group = get_df_item(serial_no,"Age Group")
-    patient_gender = get_df_item(serial_no,"Gender")
+def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_values,df):
+    collection_date = get_df_item(serial_no,"Date",copy_df=df)
+    collection_time = get_df_item(serial_no,"Time",copy_df=df)
+    patient_name = get_df_item(serial_no,"Patient Name",copy_df=df)
+    patient_age = get_df_item(serial_no,"Patient Age",copy_df=df)
+    patient_age_group = get_df_item(serial_no,"Age Group",copy_df=df)
+    patient_gender = get_df_item(serial_no,"Gender",copy_df=df)
     if (all_patients_values[str(serial_no)]["tests"][0] == "Urine Analysis") | (all_patients_values[str(serial_no)]["tests"][0] == "Urine Pregnancy"):
         patient_specimen = "Urine"
     if any(item in all_patients_values[str(serial_no)]["tests"] for item in ["Urine Analysis","Urine Pregnancy"]):
         patient_specimen = "Blood & Urine"
     else:
         patient_specimen = "Blood"
-    doctor_name = get_df_item(serial_no,"Reference By")
+    doctor_name = get_df_item(serial_no,"Reference By",copy_df=df)
     patient_details_space = 18
-    time_obj = datetime.datetime.strptime(collection_date,"%Y-%m-%d %H:%M:%S")
-    frmt_time = time_obj.strftime("%d-%m-%y")
+    frmt_time = "-".join(collection_date.split("-")[::-1])
     patient_name_save = patient_name.replace(".","_")
-    year_extract,month_extract,day_extract = time_obj.strftime("%Y"),time_obj.strftime("%m"),time_obj.strftime("%d")
+    year_extract,month_extract,day_extract = collection_date.split("-")
     base_dir = "assets"
     year_dir = os.path.join(base_dir,year_extract)
     month_dir = os.path.join(year_dir,month_extract)
     day_dir = os.path.join(month_dir,day_extract)
     os.makedirs(day_dir,exist_ok=True)
-    filename = os.path.join(day_dir,f"{patient_name_save}__{"_".join(all_patients_values[str(serial_no)]["tests"])}.pdf")
+    filename = os.path.join(day_dir,f"{patient_name_save}__{" ".join(all_patients_values[serial_no]["tests"])}.pdf")
     if page_size == "SMALL/A5":
         c = canvas.Canvas(filename,pagesize=portrait(A5))
         _, small_page_height = A5
@@ -2116,10 +2195,9 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
             small_left_extreme,
             small_value_point+8,
             small_right_extreme,
-            drop_height=75
+            drop_height=85
         )
-        h = 410-top_space
-        serial_no = str(serial_no)
+        h = 400-top_space
         tests_list = all_patients_values[serial_no]["tests"]
         for t in tests_list:
             c,h = reports_canvas_dict[t](c,all_patients_values[serial_no][report_canvas_values_dict[t]],page_size,h,report_details_space)
@@ -2145,13 +2223,9 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
             big_left_extreme,
             big_value_point+30,
             big_right_extreme+12,
-            drop_height = 116
+            drop_height = 135
         )
-        if (doctor_name != "S. Prasad".upper()) & (doctor_name != "Babu garu".upper()):
-            h = 600 - top_space
-        else:
-            h = 600 - (top_space + 20)
-        serial_no = str(serial_no)
+        h = 600 - 19 - top_space
         tests_list = all_patients_values[serial_no]["tests"]
         for t in tests_list:
             c,h = reports_canvas_dict[t](c,all_patients_values[serial_no][report_canvas_values_dict[t]],page_size,h,report_details_space)
@@ -2175,15 +2249,13 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
 def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,input_ids,all_patients_values,reports_dropdown_list,templates_dropdown_list):
     if not input_values:
         raise PreventUpdate
-    if n_clicks:
-        patients_sno = str(patients_sno)
+    if ctx.triggered_id == "submit-report-button":
         if templates_dropdown_list:
             all_patients_values[patients_sno]["tests"] += json.loads(templates_dropdown_list)
         if reports_dropdown_list:
             all_patients_values[patients_sno]["tests"] += reports_dropdown_list
         temp_dict = {}
         for id,value in zip(input_ids,input_values):
-            print(f"\n name is {id['name']} \n")
             if id['name'] in ['polymo','lympho','esino']:
                 temp_dict["dc_count"] = temp_dict.get("dc_count",[])
                 temp_dict["dc_count"].append(value)
@@ -2253,21 +2325,25 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
         State("slider","value"),
         State("patient-data-store","data"),
         State("patients-dropdown","value"),
-        State("page-size-dropdown","value")
+        State("page-size-dropdown","value"),
+        State("data-store","data")
     ],
     prevent_initial_call=True
 )
-def preview_report(n_clicks,drop_value,top_slider_value,slider_value,all_patients_values,patient_sno,page_size):
+def preview_report(n_clicks,drop_value,top_slider_value,slider_value,all_patients_values,patient_sno,page_size,date_value):
     if (not n_clicks) & (not drop_value):
         raise PreventUpdate
     zoom_levels = {
         "BIG/A4": 1.0,
         "SMALL/A5": 1.0
     }
-    zoom_level = zoom_levels.get(all_patients_values[str(patient_sno)]["page_size"],1.0)
+    file = glob(f"assets/all_files/{date_value["date"]}.xlsx")
+    df = pd.read_excel(file[0],dtype=dtype_map)
+    df = df.iloc[:-1,:]
+    zoom_level = zoom_levels.get(all_patients_values[patient_sno]["page_size"],1.0)
     if ctx.triggered_id == 'preview-button':
         cache_buster = f"?v={int(time.time())}"
-        filename = create_pdf(patient_sno,top_slider_value,slider_value,page_size,all_patients_values)
+        filename = create_pdf(patient_sno,top_slider_value,slider_value,page_size,all_patients_values,df)
         return html.Iframe(
             src=f"{filename}{cache_buster}",
             style={
@@ -2276,7 +2352,7 @@ def preview_report(n_clicks,drop_value,top_slider_value,slider_value,all_patient
                 "transform": f"scale({zoom_level})",
                 "transform-origin":"0 0"
             }
-        ),get_all_files(patient_sno)
+        ),get_all_files(patient_sno,df)
     if drop_value:
         cache_buster = f"?v={int(time.time())}"
         return html.Iframe(
@@ -2287,7 +2363,7 @@ def preview_report(n_clicks,drop_value,top_slider_value,slider_value,all_patient
                 "transform": f"scale({zoom_level})",
                 "transform-origin":"0 0"
             }
-        ),get_all_files(patient_sno)
+        ),get_all_files(patient_sno,df)
 
 
 @callback(

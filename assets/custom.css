@@ -118,6 +118,7 @@
 .Select-control {
   background-color: #4b70f5 !important;
   color: cyan !important;
+  height: 50px;
 }
 
 input::placeholder {
@@ -127,7 +128,7 @@ input::placeholder {
 
 input {
   background-color: #4b70f5;
-  color: cyan;
+  color: rgb(255, 99, 99);
 }
 
 
