@@ -183,11 +183,11 @@ def patients_drpodown_update(n_clicks,date_value):
     if not n_clicks:
         raise PreventUpdate
     if ctx.triggered_id == 'ref-button':
-        file = glob(f"assets/all_files/{date_value["date"]}.xlsx")
+        file = glob(f"assets/all_files/{date_value["date"]}.csv")
         if file == []:
             return []
         else:
-            df = pd.read_excel(file[0],dtype=dtype_map)
+            df = pd.read_csv(file[0],dtype=dtype_map)
             df = df.iloc[:-1,:]
             return df.loc[:,"S.No."].to_list()
 
@@ -801,8 +801,8 @@ def submit_report(patients_sno,reports_value,template_value,all_patients_values,
             all_patients_values[patients_sno] = {"tests":[]}
         if len(all_patients_values[patients_sno]) > 1:
             is_present = True
-        file = glob(f"assets/all_files/{date_value["date"]}.xlsx")
-        df = pd.read_excel(file[0],dtype=dtype_map)
+        file = glob(f"assets/all_files/{date_value["date"]}.csv")
+        df = pd.read_csv(file[0],dtype=dtype_map)
         df = df.iloc[:-1,:]
         report_details = []
         patients_details = [
@@ -973,7 +973,7 @@ def hb_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height = 18
     text_string = "Heamoglobin"
     limit_a = 11.0
     limit_b = 16.8
-    value_string = float(value)
+    value_string = f"{value:.2f}"
     if page_size == "SMALL/A5":
         x = 0
     else:
@@ -1003,10 +1003,10 @@ def plt_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height = 1
     text_string = "Platelet Count : "
     limit_a = 1.5
     limit_b = 4.0
-    if value < 1:
-        value_string = f"{int(value * 100)},000"
+    if value > 1000:
+        value_string = f"{value//1000},000"
     else:
-        value_string = str(value)
+        value_string = f"{value:.2f}"
     if page_size == "SMALL/A5":
         x = 0
     else:
@@ -1075,7 +1075,7 @@ def dc_canvas(
         c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(2.2 * entity_height),"( 20 - 40 %)")
         c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(3.2 * entity_height),"( 02 - 06 %)")
         c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(4.2 * entity_height),"( 01 - 04 %)")
-        h -= (entity_height * 4)
+        h -= (entity_height * 6)
     return c,h
 
 # done
@@ -1284,7 +1284,7 @@ def heamogram_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_heig
         c.drawString(size_dict["left_extreme"][1],h,f"Heamoparasites:  {heamoparisites}")
         h -= entity_height
         c.drawString(size_dict["left_extreme"][1],h,f"Impression:  “ {total_opinion} ”")
-    return c, h - entity_height
+    return c, h - (entity_height * 1.5)
 
     
 
@@ -2157,9 +2157,9 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
     patient_age = get_df_item(serial_no,"Patient Age",copy_df=df)
     patient_age_group = get_df_item(serial_no,"Age Group",copy_df=df)
     patient_gender = get_df_item(serial_no,"Gender",copy_df=df)
-    if (all_patients_values[str(serial_no)]["tests"][0] == "Urine Analysis") | (all_patients_values[str(serial_no)]["tests"][0] == "Urine Pregnancy"):
+    if (all_patients_values[serial_no]["tests"][0] == "Urine Analysis") | (all_patients_values[serial_no]["tests"][0] == "Urine Pregnancy"):
         patient_specimen = "Urine"
-    if any(item in all_patients_values[str(serial_no)]["tests"] for item in ["Urine Analysis","Urine Pregnancy"]):
+    if any(item in all_patients_values[serial_no]["tests"] for item in ["Urine Analysis","Urine Pregnancy"]):
         patient_specimen = "Blood & Urine"
     else:
         patient_specimen = "Blood"
@@ -2337,8 +2337,8 @@ def preview_report(n_clicks,drop_value,top_slider_value,slider_value,all_patient
         "BIG/A4": 1.0,
         "SMALL/A5": 1.0
     }
-    file = glob(f"assets/all_files/{date_value["date"]}.xlsx")
-    df = pd.read_excel(file[0],dtype=dtype_map)
+    file = glob(f"assets/all_files/{date_value["date"]}.csv")
+    df = pd.read_csv(file[0],dtype=dtype_map)
     df = df.iloc[:-1,:]
     zoom_level = zoom_levels.get(all_patients_values[patient_sno]["page_size"],1.0)
     if ctx.triggered_id == 'preview-button':

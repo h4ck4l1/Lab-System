@@ -210,7 +210,7 @@ def save_df(df,date_value:str):
     df.loc[df.shape[0]+1,:] = [np.nan] * df.shape[1]
     df.loc[df.shape[0],"Amount"] = df.loc[:,"Amount"].sum()
     df.loc[df.shape[0],"Due"] = df.loc[:,"Due"].sum()
-    df.to_excel(f"assets/all_files/{date_value}.xlsx",index=False)
+    df.to_csv(f"assets/all_files/{date_value}.csv",index=False)
 
 
 
@@ -226,9 +226,9 @@ def initialize_df(n_clicks,date_value:str):
     if not n_clicks:
         raise PreventUpdate
     if ctx.triggered_id == 'refresh-button':
-        file = glob(f"assets/all_files/{date_value.replace("-","_")}.xlsx")
+        file = glob(f"assets/all_files/{date_value.replace("-","_")}.csv")
         if file != []:
-            df = pd.read_excel(file[0],dtype=dtype_map)
+            df = pd.read_csv(file[0],dtype=dtype_map)
             df = df.iloc[:-1,:]
             df.loc[df.shape[0]+1,:] = [np.nan] * df.shape[1]
             df.loc[df.shape[0],"Amount"] = df.loc[:,"Amount"].sum()
@@ -299,8 +299,8 @@ def append_name_to_dataframe(n_clicks,*vals):
         raise PreventUpdate
     if ctx.triggered_id == "submit-button":
         date_value = vals[3].replace("-","_")
-        file = glob(f"assets/all_files/{date_value}.xlsx")
-        df = pd.read_excel(file[0])
+        file = glob(f"assets/all_files/{date_value}.csv")
+        df = pd.read_csv(file[0],dtype=dtype_map)
         vals_list = [vals[0],vals[1],(vals[2] or vals[6]),vals[4],vals[5],vals[7],vals[8],vals[9]]
         if any([val is None for val in vals_list]):
             return df.to_dict("records"),f"Input for {input_vals_dict[vals_list.index(None)]} is not entered".upper()
@@ -380,8 +380,8 @@ def save_table_changes(n_clicks,data,date_value:dict):
     if not n_clicks:
         raise PreventUpdate
     if n_clicks:
-        file = glob(f"assets/all_files/{date_value["date"]}.xlsx")
-        df = pd.read_excel(file[0])
+        file = glob(f"assets/all_files/{date_value["date"]}.csv")
+        df = pd.read_csv(file[0],dtype=dtype_map)
         df = df.iloc[:-1,:]
         save_df(df,date_value["date"])
         return data
