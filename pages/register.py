@@ -1,10 +1,11 @@
-import os,time
-from datetime import datetime,date
+import time
+from datetime import date
 from glob import glob
-from io import StringIO
 import numpy as np
 import pandas as pd
-import json
+from reportlab.platypus import SimpleDocTemplate,Table,TableStyle
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import portrait,A4
 from dash import dcc,html,register_page,dash_table,callback,Input,Output,ctx,State
 from dash.exceptions import PreventUpdate
 
@@ -28,19 +29,19 @@ columns = [
 
 dtype_map = {
     "S.No.": str,         # Ensure "S.No." remains a string
-    "Date": str,          # Keep date as string if not datetime
-    "Time": str,          # Time as string
+    "Date": str,          # string in format "YYYY-MM-DD"
+    "Time": str,          # string in format "HH:MM:SS AM/PM"
     "Patient Name": str,  # Patient Name as string
-    "Reference By": str,  # Reference as string
+    "Reference By": str,  # string with options as given below
     "Patient Age": "Int8",  # Use Int16 for compactness and allow NaNs
-    "Age Group": str,     # Age Group as string
-    "Gender": str,        # Gender as string
+    "Age Group": str,     # string with options as ["Y","M","D"]
+    "Gender": str,        # string with options as ["Male","Female"]
     "Amount": "Int32",    # Amount as integer
-    "Method": str,        # Method as str
-    "Phone No": "Int64",      # Phone number as string to avoid floats
-    "Paid": str,          # Paid as string
-    "Due": "Int16",       # Due as integer
-    "Sample": str         # Sample as string
+    "Method": str,        # string with options as ["CASH","PHONE PAY"]
+    "Phone No": "Int64",  # Phone number as integer
+    "Paid": str,          # string with options ["PAID","NOT PAID","DUE"]
+    "Due": "Int16",       # Due as integer as the due amount if due/not paid and full amount will be reflected as due if not paid
+    "Sample": str         # string with options as ["SELF","RAJU","RAJESH","RAM"]
 }
 
 
@@ -200,7 +201,10 @@ register_layout = html.Div(
         ),
         *big_break,
         html.Button("Save Changes",id="save-changes-button",style=dict(position="relative",left="90vw",fontSize=30,borderRadius="20px",height="100px",width="250px",backgroundColor="#4b70f5",color="cyan")),
-        *big_break
+        *big_break,
+        html.Button("show file".upper(),id="show-file-button",style=dict(position="relative",left="500px",width="200px",height="100px",fontSize=30,borderRadius="20px",color="cyan",backgroundColor="#4b70f5")),
+        *big_break,
+        html.Div(id="show-file",style=dict(position="relative",left="500px",width="1200px",height="1200px"))
     ],
     className="subpage-content"
 )
@@ -299,8 +303,7 @@ def append_name_to_dataframe(n_clicks,*vals):
         raise PreventUpdate
     if ctx.triggered_id == "submit-button":
         date_value = vals[3].replace("-","_")
-        file = glob(f"assets/all_files/{date_value}.csv")
-        df = pd.read_csv(file[0],dtype=dtype_map)
+        df = pd.read_csv(f"assets/all_files/{date_value}.csv",dtype=dtype_map)
         vals_list = [vals[0],vals[1],(vals[2] or vals[6]),vals[4],vals[5],vals[7],vals[8],vals[9]]
         if any([val is None for val in vals_list]):
             return df.to_dict("records"),f"Input for {input_vals_dict[vals_list.index(None)]} is not entered".upper()
@@ -380,12 +383,46 @@ def save_table_changes(n_clicks,data,date_value:dict):
     if not n_clicks:
         raise PreventUpdate
     if n_clicks:
-        file = glob(f"assets/all_files/{date_value["date"]}.csv")
-        df = pd.read_csv(file[0],dtype=dtype_map)
+        df = pd.read_csv(f"assets/all_files/{date_value["date"]}.csv",dtype=dtype_map)
         df = df.iloc[:-1,:]
         save_df(df,date_value["date"])
         return data
 
+def convert_to_pdf(date_value):
+    df = pd.read_csv(f"assets/all_files/{date_value}.csv",dtype=dtype_map)
+    df = df.loc[:,["S.No.","Time","Amount","Method","Phone No","Paid","Due","Sample"]]
+    indexes_at_cash = df[df["Method"] == "cash".upper()].index
+    df.iloc[-1,3] = df.loc[indexes_at_cash,"Amount"].sum()
+    filename=f"assets/all_files/{date_value}.pdf"
+    doc = SimpleDocTemplate(filename)
+    doc.pagesize = portrait(A4)
+    data = [df.columns.to_list()] + df.values.tolist()
+    table = Table(data)
+    indexes_at_cash = df[df["Method"] == "phone pay".upper()].index
+    all_elements = [("grid".upper(),(0,0),(-1,-1),1,colors.black)]
+    for ind in indexes_at_cash:
+        all_elements.append(("background".upper(),(0,ind+1),(-1,ind+1),colors.lightgrey))
+        all_elements.append(("textcolor".upper(),(0,ind+1),(-1,ind+1),colors.red))
+    table.setStyle(TableStyle(all_elements))
+    doc.build([table])
+    return filename
+
+
+@callback(
+    Output("show-file","children"),
+    Input("show-file-button","n_clicks"),
+    State("date-pick-single","date")
+)
+def show_pdf_out(n_clicks,date_value:str):
+    if not n_clicks:
+        raise PreventUpdate
+    if ctx.triggered_id == "show-file-button":
+        filename = convert_to_pdf(date_value.replace("-","_"))
+        cache_buster = f"?v={int(time.time())}"
+        return html.Iframe(
+            src=f"{filename}{cache_buster}",
+            style=dict(width="1000px",height="1000px")
+        )
 
 register_page(
     "Register",

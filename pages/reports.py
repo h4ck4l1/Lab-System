@@ -187,7 +187,7 @@ def patients_drpodown_update(n_clicks,date_value):
         if file == []:
             return []
         else:
-            df = pd.read_csv(file[0],dtype=dtype_map)
+            df = pd.read_csv(f"assets/all_files/{date_value["date"]}.csv",dtype=dtype_map)
             df = df.iloc[:-1,:]
             return df.loc[:,"S.No."].to_list()
 
@@ -2337,8 +2337,7 @@ def preview_report(n_clicks,drop_value,top_slider_value,slider_value,all_patient
         "BIG/A4": 1.0,
         "SMALL/A5": 1.0
     }
-    file = glob(f"assets/all_files/{date_value["date"]}.csv")
-    df = pd.read_csv(file[0],dtype=dtype_map)
+    df = pd.read_csv(f"assets/all_files/{date_value["date"]}.csv",dtype=dtype_map)
     df = df.iloc[:-1,:]
     zoom_level = zoom_levels.get(all_patients_values[patient_sno]["page_size"],1.0)
     if ctx.triggered_id == 'preview-button':
