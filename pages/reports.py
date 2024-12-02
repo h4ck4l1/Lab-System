@@ -2043,7 +2043,6 @@ def x_ray_canvas(c:canvas.Canvas,value,page_size:str,h:int,entity_height=18):
     return c, h - entity_height
 
 
-
 reports_canvas_dict = {
     "Hb":hb_canvas,
     "Total Count (TC)":tc_canvas,

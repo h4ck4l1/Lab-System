@@ -211,6 +211,8 @@ register_layout = html.Div(
 
 def save_df(df,date_value:str):
     date_value = date_value.replace("-","_")
+    df["Amount"] = df["Amount"].astype("Int32")
+    df["Due"] = df["Due"].astype("Int16")
     df.loc[df.shape[0]+1,:] = [np.nan] * df.shape[1]
     df.loc[df.shape[0],"Amount"] = df.loc[:,"Amount"].sum()
     df.loc[df.shape[0],"Due"] = df.loc[:,"Due"].sum()
@@ -383,7 +385,7 @@ def save_table_changes(n_clicks,data,date_value:dict):
     if not n_clicks:
         raise PreventUpdate
     if n_clicks:
-        pd.read_csv(f"assets/all_files/{date_value["date"]}.csv").to_csv(f"assets/pre_change_folder/{date_value["date"]}.csv",index=False)
+        pd.read_csv(f"assets/all_files/{date_value["date"]}.csv",dtype=dtype_map).to_csv(f"assets/pre_change_folder/{date_value["date"]}_{time.asctime().split(" ")[4].replace(":","_")}.csv",index=False)
         print(f"\nChanges have been made\n")
         df = pd.DataFrame(data=data)
         df = df.iloc[:-1,:]
