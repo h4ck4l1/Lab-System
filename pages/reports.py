@@ -2079,16 +2079,22 @@ def bill_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18
     else:
         x = 1
         entity_height += 5
+    h -= (entity_height * 3)
     c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
-    c.drawString(size_dict["left_extreme"][x]//1.5,h,"blood test bill".upper())
-    c.rect((size_dict["left_extreme"][x]//1.5)-5,h-5,cal_string_width(c,"blood test bill".upper(),size_dict["font_name"][x],size_dict["font_size"][x])+10,size_dict["font_size"][x]+5)
+    c.drawString(size_dict["value_point"][x]//1.2,h,"blood test bill".upper())
+    c.rect((size_dict["value_point"][x]//1.2)-5,h-5,cal_string_width(c,"blood test bill".upper(),size_dict["font_name"][x],size_dict["font_size"][x])+10,size_dict["font_size"][x]+5)
     h -= (entity_height * 2)
-    count = 0
-    for test,price in zip(test_names,test_prices):
-        c.drawString(size_dict["left_extreme"][x],h,f"{count + 1}")
+    for i,(test,price) in enumerate(zip(test_names,test_prices)):
+        c.drawString(size_dict["left_extreme"][x],h,f"{i+1}")
         c.drawString(size_dict["value_point"][x],h,test.upper())
         c.drawString(size_dict["right_extreme"][x]-50,h,f":  {price} /-")
         h -= entity_height
+    total_sum = 0
+    for i in test_prices:
+        total_sum += int(i)
+    c.line(size_dict["right_extreme"][x]-120,h,size_dict["right_extreme"][x],h)
+    h -= entity_height
+    c.drawString(size_dict["right_extreme"][x]-120,h,f"Total Amount:  {total_sum}")
     return c,h-entity_height
 
 reports_canvas_dict = {
