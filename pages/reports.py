@@ -1,4 +1,4 @@
-import json,os,flask,datetime,time
+import json,os,flask,datetime,time,re
 from datetime import date
 import pandas as pd
 from io import StringIO
@@ -97,7 +97,8 @@ all_options = [
     "HIV I & II Antibodies Test",
     "HCV I & II Antibodies Test",
     "Semen Analysis",
-    "XRAY Opinion"
+    "XRAY Opinion",
+    "BILL"
 ]
 
 reports_dropdown = dcc.Dropdown(
@@ -695,6 +696,34 @@ electrolytes_list = [
     *serum_calcium_list
 ]
 
+
+bill_list = [
+    html.Button("ADD LINE",id="bill-add-line",style={**text_style,"width":"150px","height":"100px","borderRadius":"20px","backgroundColor":"cyan","font-weight":700}),
+    *big_break,
+    html.Div(id="bill-inputs")
+]
+
+@callback(
+    Output("bill-inputs","children"),
+    Input("bill-add-line","n_clicks")
+)
+def add_bill_inputs(n_clicks):
+    if not n_clicks:
+        raise PreventUpdate
+    if ctx.triggered_id == "bill-add-line":
+        return [
+            html.Div(
+                [
+                    f"{i}.  ",
+                    dcc.Input(id={"type":"dynamic-input","name":f"bill-{i}-name"},type="text",placeholder="Test Name..",style=dict(fontSize=25,height="50px")),
+                    "  -  ",
+                    dcc.Input(id={"type":"dynamic-input","name":f"bill-{i}-value"},type="number",placeholder="Price..",style=dict(fontSize=25,height="50px")),
+                    "  /-  "
+                ],
+                style=dict(fontSize=25,position="relative",left="100px")
+            )
+        for i in range(n_clicks)]
+
 reports_original_dict = {
     "Hb": hb_list,
     "Total Count (TC)": tc_list,
@@ -746,7 +775,8 @@ reports_original_dict = {
     "HIV I & II Antibodies Test":hiv_list,
     "HCV I & II Antibodies Test":hcv_list,
     "Semen Analysis":semen_list,
-    "XRAY Opinion":x_ray_list
+    "XRAY Opinion":x_ray_list,
+    "BILL":bill_list,
 }
 
 
@@ -2042,6 +2072,24 @@ def x_ray_canvas(c:canvas.Canvas,value,page_size:str,h:int,entity_height=18):
     h -= entity_height
     return c, h - entity_height
 
+def bill_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
+    test_names,test_prices = values
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
+    c.drawString(size_dict["left_extreme"][x]//1.5,h,"blood test bill".upper())
+    c.rect((size_dict["left_extreme"][x]//1.5)-5,h-5,cal_string_width(c,"blood test bill".upper(),size_dict["font_name"][x],size_dict["font_size"][x])+10,size_dict["font_size"][x]+5)
+    h -= (entity_height * 2)
+    count = 0
+    for test,price in zip(test_names,test_prices):
+        c.drawString(size_dict["left_extreme"][x],h,f"{count + 1}")
+        c.drawString(size_dict["value_point"][x],h,test.upper())
+        c.drawString(size_dict["right_extreme"][x]-50,h,f":  {price} /-")
+        h -= entity_height
+    return c,h-entity_height
 
 reports_canvas_dict = {
     "Hb":hb_canvas,
@@ -2093,7 +2141,8 @@ reports_canvas_dict = {
     "HIV I & II Antibodies Test":hiv_canvas,
     "HCV I & II Antibodies Test":hcv_canvas,
     "Semen Analysis":semen_canvas,
-    "XRAY Opinion":x_ray_canvas
+    "XRAY Opinion":x_ray_canvas,
+    "BILL":bill_canvas
 }
 
 report_canvas_values_dict = {
@@ -2146,7 +2195,8 @@ report_canvas_values_dict = {
     "HIV I & II Antibodies Test":"hiv_ant",
     "HCV I & II Antibodies Test":"hcv_ant",
     "Semen Analysis":"full-semen",
-    "XRAY Opinion":"x-ray-opinion"
+    "XRAY Opinion":"x-ray-opinion",
+    "BILL":"total-bill"
 }
 
 def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_values,df):
@@ -2254,6 +2304,10 @@ def submit_report(n_clicks,patients_sno,page_size_value,input_values,input_ids,a
         if reports_dropdown_list:
             all_patients_values[patients_sno]["tests"] += reports_dropdown_list
         temp_dict = {}
+        name_pattern = re.compile(r"bill-\d+-name")
+        value_pattern = re.compile(r"bill-\d+-value")
+        bill_names_list = []
+        bill_values_list = []
         for id,value in zip(input_ids,input_values):
             if id['name'] in ['polymo','lympho','esino']:
                 temp_dict["dc_count"] = temp_dict.get("dc_count",[])
@@ -2303,6 +2357,14 @@ def submit_report(n_clicks,patients_sno,page_size_value,input_values,input_ids,a
             if ("Semen Analysis" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['semen-volume','semen-liq','semen-ph','semen-count','semen-mot','semen-morph','semen-wbc-first','semen-wbc-second','semen-rbc-first','semen-rbc-second','semen-comments']):
                 temp_dict["full-semen"] = temp_dict.get("full-semen",[])
                 temp_dict["full-semen"].append(value)
+            if ("BILL" in all_patients_values[patients_sno]["tests"]):
+                temp_dict["total-bill"] = temp_dict.get("total-bill",[])
+                if name_pattern.match(id['name']):
+                    bill_names_list.append(value)
+                if value_pattern.match(id['name']):
+                    bill_values_list.append(value)
+                temp_dict["total-bill"] = [bill_names_list,bill_values_list]
+    
             temp_dict[id['name']] = value
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],**temp_dict}
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],'page_size':page_size_value}
