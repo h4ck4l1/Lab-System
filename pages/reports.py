@@ -1151,7 +1151,7 @@ def widal_canvas(c:canvas.Canvas,widal_values,page_size:str,h:int,entity_height=
 def hct_canvas(c:canvas.Canvas,value,page_size:str,h:int,entity_height=18):
     limits_string = "( 40% - 45% )"
     text_string = "PCV(Heamatocrit)"
-    value_string = value
+    value_string = f"{value:.1f}"
     limit_a = 40
     limit_b = 45
     if page_size == "SMALL/A5":
@@ -1246,7 +1246,7 @@ def heamogram_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_heig
         # mcv
         text_string = "MCV"
         limits_string = "( 78 - 94 fl )"
-        value_string = mcv
+        value_string = f"{mcv:.1f}"
         limit_a = 78
         limit_b = 94
         c = mundane_things(c,1,text_string,mcv,value_string,limits_string,limit_a,limit_b,h)
@@ -1254,7 +1254,7 @@ def heamogram_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_heig
         # mch
         text_string = "MCH"
         limits_string = "( 27 - 32 pg )"
-        value_string = mch
+        value_string = f"{mch:.1f}"
         limit_a = 27
         limit_b = 32
         c = mundane_things(c,1,text_string,mch,value_string,limits_string,limit_a,limit_b,h)
@@ -1262,7 +1262,7 @@ def heamogram_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_heig
         # mchc
         text_string = "MCHC"
         limits_string = "( 32 - 36 g/dl )"
-        value_string = mchc
+        value_string = f"{mchc:.1f}"
         limit_a = 32
         limit_b = 36
         c = mundane_things(c,1,text_string,mchc,value_string,limits_string,limit_a,limit_b,h)

@@ -403,8 +403,8 @@ def convert_to_pdf(date_value):
     indexes_at_cash = df[df["Method"] == "phone pay".upper()].index
     all_elements = [("grid".upper(),(0,0),(-1,-1),1,colors.black)]
     for ind in indexes_at_cash:
-        all_elements.append(("background".upper(),(0,ind+1),(-1,ind+1),colors.lightgrey))
-        all_elements.append(("textcolor".upper(),(0,ind+1),(-1,ind+1),colors.red))
+        all_elements.append(("background".upper(),(0,ind+1),(-1,ind+1),colors.darkgrey))
+        all_elements.append(("textcolor".upper(),(0,ind+1),(-1,ind+1),colors.white))
     table.setStyle(TableStyle(all_elements))
     doc.build([table])
     return filename
