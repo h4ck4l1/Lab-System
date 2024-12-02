@@ -791,7 +791,7 @@ def get_all_files(s_no,df):
     ]
     
 )
-def submit_report(patients_sno,reports_value,template_value,all_patients_values,date_value):
+def preview_report_details(patients_sno,reports_value,template_value,all_patients_values,date_value):
     is_present = False
     s = ""
     if patients_sno:
@@ -973,7 +973,7 @@ def hb_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height = 18
     text_string = "Heamoglobin"
     limit_a = 11.0
     limit_b = 16.8
-    value_string = f"{value:.2f}"
+    value_string = f"{value:.1f}"
     if page_size == "SMALL/A5":
         x = 0
     else:
@@ -1186,7 +1186,7 @@ def full_cbp_canvas(c:canvas.Canvas,cbp_values:list,page_size:str,h:int,entity_h
         x = 1
         text_string = "Total RBC Count"
         limits_string = "( 4.0 - 5.0 millions/cumm)"
-        value_string = rbc_count
+        value_string = f"{rbc_count:.2f}"
         limit_a = 4.0
         limit_b = 5.0
         c = mundane_things(c,x,text_string,rbc_count,value_string,limits_string,limit_a,limit_b,h)
@@ -2246,7 +2246,7 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
     ],
     prevent_initial_call=True
 )
-def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,input_ids,all_patients_values,reports_dropdown_list,templates_dropdown_list):
+def submit_report(n_clicks,patients_sno,page_size_value,input_values,input_ids,all_patients_values,reports_dropdown_list,templates_dropdown_list):
     if not input_values:
         raise PreventUpdate
     if ctx.triggered_id == "submit-report-button":
@@ -2331,7 +2331,7 @@ def lodge_inputs_to_dict(n_clicks,patients_sno,page_size_value,input_values,inpu
     prevent_initial_call=True
 )
 def preview_report(n_clicks,drop_value,top_slider_value,slider_value,all_patients_values,patient_sno,page_size,date_value):
-    if (not n_clicks) & (not drop_value):
+    if (ctx.triggered_id != "preview-button") & (ctx.triggered_id != "patients-files"):
         raise PreventUpdate
     zoom_levels = {
         "BIG/A4": 1.0,
@@ -2339,7 +2339,7 @@ def preview_report(n_clicks,drop_value,top_slider_value,slider_value,all_patient
     }
     df = pd.read_csv(f"assets/all_files/{date_value["date"]}.csv",dtype=dtype_map)
     df = df.iloc[:-1,:]
-    zoom_level = zoom_levels.get(all_patients_values[patient_sno]["page_size"],1.0)
+    zoom_level = zoom_levels.get(page_size,1.0)
     if ctx.triggered_id == 'preview-button':
         cache_buster = f"?v={int(time.time())}"
         filename = create_pdf(patient_sno,top_slider_value,slider_value,page_size,all_patients_values,df)
@@ -2352,7 +2352,7 @@ def preview_report(n_clicks,drop_value,top_slider_value,slider_value,all_patient
                 "transform-origin":"0 0"
             }
         ),get_all_files(patient_sno,df)
-    if drop_value:
+    if ctx.triggered_id == "patients-files":
         cache_buster = f"?v={int(time.time())}"
         return html.Iframe(
             src=f"{drop_value}{cache_buster}",
