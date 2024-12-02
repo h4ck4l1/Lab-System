@@ -24,18 +24,19 @@ import pandas as pd
 
 dtype_map = {
     "S.No.": str,         # Ensure "S.No." remains a string
-    "Date": str,          # Keep date as string if not datetime
-    "Time": str,          # Time as string
+    "Date": str,          # string in format "YYYY-MM-DD"
+    "Time": str,          # string in format "HH:MM:SS AM/PM"
     "Patient Name": str,  # Patient Name as string
-    "Reference By": str,  # Reference as string
+    "Reference By": str,  # string with options as given below
     "Patient Age": "Int8",  # Use Int16 for compactness and allow NaNs
-    "Age Group": str,     # Age Group as string
-    "Gender": str,        # Gender as string
-    "Amount": "Int32",    # Amount as integer
-    "Phone No": "Int64",      # Phone number as string to avoid floats
-    "Paid": str,          # Paid as string
-    "Due": "Int16",       # Due as integer
-    "Sample": str         # Sample as string
+    "Age Group": str,     # string with options as ["Y","M","D"]
+    "Gender": str,        # string with options as ["Male","Female"]
+    "Amount": "Float64",    # Amount as integer
+    "Method": str,        # string with options as ["CASH","PHONE PAY"]
+    "Phone No": "Int64",  # Phone number as integer
+    "Paid": str,          # string with options ["PAID","NOT PAID","DUE"]
+    "Due": "Float64",       # Due as integer as the due amount if due/not paid and full amount will be reflected as due if not paid
+    "Sample": str         # string with options as ["SELF","RAJU","RAJESH","RAM"]
 }
 
 
@@ -81,6 +82,7 @@ all_options = [
     "BT",
     "CT",
     "PT APTT",
+    "Liver Function Test",
     "Serum Amylase",
     "Serum Lipase",
     "Serum Protein",
@@ -124,8 +126,8 @@ templates_dropdown = dcc.Dropdown(
         {"label":"HB, TC, DC","value":json.dumps(["Hb","Total Count (TC)","Differential Count (DC)"])},
         {"label":"TOTAL BILIRUBIN, INDIRECT AND DIRECT BILIRUBIN","value":json.dumps(["Total Bilirubin","Direct & Indirect Bilirubin"])},
         {"label":"BLOOD GROUP, CRP, TOTAL BILIRUBIN, DIRECT & INDIRECT BILIRUBIN","value":json.dumps(["Blood Group","CRP","Total Bilirubin","Direct & Indirect Bilirubin"])},
-        {"label":"SRI DEVI GARU CBP","value":json.dumps(["Full CBP","Blood Group","V.R.D.L","HBsAg","HIV I & II Antibodies Test","HCV I & II Antibodies Test","Random Sugar","Serum Creatinine","Total Bilirubin","Urine Analysis"])},
-        {"label":"SRI DEVI GARU HIV HB URINE","value":json.dumps(["Blood Group","Hb","BT","CT","V.R.D.L","HBsAg","HIV I & II Antibodies Test","HCV I & II Antibodies Test","Random Sugar","Serum Creatinine","Total Bilirubin","Urine Analysis"])},
+        {"label":"SRI DEVI GARU CBP","value":json.dumps(["Full CBP","Blood Group","V.D.R.L","HBsAg","HIV I & II Antibodies Test","HCV I & II Antibodies Test","Random Sugar","Serum Creatinine","Total Bilirubin","Urine Analysis"])},
+        {"label":"SRI DEVI GARU HIV HB URINE","value":json.dumps(["Blood Group","Hb","BT","CT","V.D.R.L","HBsAg","HIV I & II Antibodies Test","HCV I & II Antibodies Test","Random Sugar","Serum Creatinine","Total Bilirubin","Urine Analysis"])},
         {"label":"HB, TC, PLATELET, DC, URINE","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","Urine Analysis"])},
         {"label":"HB, TC, PLATELET, DC, RBS","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","Random Sugar"])},
         {"label":"HB, TC, PLATELET, DC, WIDAL","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","Widal"])},
@@ -200,24 +202,31 @@ text_style = dict(position="relative",left="80px",fontSize=20)
 
 
 hb_list = [
+    *small_break,
     html.Div("Heamoglobin :",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'hb'},type="number",placeholder="Type Hb Value..",style=input_style),
-    html.Div("( 11.0 - 16.8 Grams%)",style=limits_style)
+    html.Div("( 11.0 - 16.8 Grams%)",style=limits_style),
+    *small_break
 ]
 
 tc_list = [
+    *small_break,
     html.Div("Total WBC Count :",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'tc_count'},type="number",placeholder="Type Tc value..",style=input_style),
-    html.Div("( 5,000 - 10,000 Cells/cumm )",style=limits_style)
+    html.Div("( 5,000 - 10,000 Cells/cumm )",style=limits_style),
+    *small_break
 ]
 
 plt_list = [
+    *small_break,
     html.Div("Platelet Count :",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'plt_count'},type="number",placeholder="Type Plt Value..",style=input_style),
-    html.Div("( 1.5 - 4.0 Lakhs/cumm )",style=limits_style)
+    html.Div("( 1.5 - 4.0 Lakhs/cumm )",style=limits_style),
+    *small_break,
 ]
 
 dc_list = [
+    *small_break,
     html.Div("Differential Count :",style=text_style),
     html.Br(),
     html.Br(),
@@ -232,21 +241,25 @@ dc_list = [
     html.Div("( 02 - 06 %)",style=dict(position="relative",left="670px",bottom="40px",fontSize=18)),
     html.Div("Monocytes :",style=dict(position="relative",left="200px",fontSize=18)),
     html.Div("----------------",style=dict(position="relative",left="400px",bottom="20px")),
-    html.Div("( 01 - 04 %)",style=dict(position="relative",left="670px",bottom="40px",fontSize=18))
+    html.Div("( 01 - 04 %)",style=dict(position="relative",left="670px",bottom="40px",fontSize=18)),
+    *small_break,
 ]
 
 crp_list = [
+    *small_break,
     html.Div("CRP :   ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'crp'},type="number",placeholder="Type CRP value..",style=input_style),
     html.Div(" ( < 6 ) ",style=limits_style)
 ]
 
 malaria_list = [
+    *small_break,
     html.Div("Test For Malaria Parasite (M.P): NON-REACTIVE",style=text_style),
     html.Div([dcc.Dropdown(["Long".upper(),"Short".upper()],"Short".upper(),id={'type':'dynamic-input','name':'malaria-test'})],style={**input_style,"left":"700px"})
 ]
 
 widal_list = [
+    *small_break,
     html.Div("Blood for Widal : ",style=text_style),
     html.Div([dcc.Dropdown(["NON-REACTIVE","REACTIVE"],"REACTIVE",id={'type':'dynamic-input','name':'widal'})],style={**input_style,"width":"200px"}),
     html.Div([dcc.Dropdown(["SHORT","LONG"],"LONG",id={'type':'dynamic-input','name':'widal-form'})],style=dict(position="relative",left="600px",bottom="50px",width="100px",height="50px")),
@@ -258,10 +271,10 @@ widal_list = [
     html.Div("AH-1 : 40 dilutions",style=dict(position="relative",left="450px")),
     html.Br(),
     html.Div("BH-1 : 40 dilutions",style=dict(position="relative",left="450px")),
-    *small_break
 ]
 
 blood_group_list = [
+    *small_break,
     html.Div("Blood Group: ",style=text_style),
     html.Div(
         dcc.Dropdown(
@@ -269,43 +282,49 @@ blood_group_list = [
             id={'type':'dynamic-input','name':'blood-group'}    
         ),
         style={**input_style,"width":"200px"}    
-    )
+    ),
 ]
 
 total_bilirubin_list = [
+    *small_break,
     html.Div("Total Bilirubin : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'total-bili'},type="number",placeholder="Enter Total Bilirubin",style=input_style),
-    html.Div(" ( 0.2 - 1.0 mg/dl)",style=limits_style)
+    html.Div(" ( 0.2 - 1.0 mg/dl)",style=limits_style),
 ]
 
 direct_indirect_bilirubin_list = [
+    *small_break,
     html.Div("Direct Bilirubin: ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'direct-bili'},type="number",placeholder="Enter Direct Bilirubin",style=input_style),
     html.Div(" ( 0.2 - 0.4 mg/dl ) ",style=limits_style),
     html.Div("Indirect Bilirubin: ",style=text_style),
     html.Div("-----------",style=limits_style),
-    html.Div(" ( 0.2 - 0.6 mg/dl )",style=limits_style)
+    html.Div(" ( 0.2 - 0.6 mg/dl )",style=limits_style),
 ]
 
 sgot_list = [
+    *small_break,
     html.Div("Aspirate Amino Transferase (SGOT): ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'sgot'},type="number",placeholder="29 (normal)",style={**input_style,"left":"500px"}),
-    html.Div("( < 40 )",style={**limits_style,"left":"700px"})
+    html.Div("( < 40 )",style={**limits_style,"left":"700px"}),
 ]
 
 sgpt_list = [
+    *small_break,
     html.Div("Alinine  Amino Transferase (SGPT): ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'sgpt'},type="number",placeholder="29 (normal)",style={**input_style,"left":"500px"}),
-    html.Div("( < 40 )",style={**limits_style,"left":"700px"})
+    html.Div("( < 40 )",style={**limits_style,"left":"700px"}),
 ]
 
 alkp_list = [
+    *small_break,
     html.Div("Alkaline Phosphatase (ALKP): ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'alkp'},type="number",placeholder="29 (normal)",style={**input_style,"left":"500px"}),
-    html.Div("( 37 - 147 )",style={**limits_style,"left":"700px"})
+    html.Div("( 37 - 147 )",style={**limits_style,"left":"700px"}),
 ]
 
 x_ray_list = [
+    *small_break,
     html.P("""Rest of lung fields  are normal .
 
              Both hila normal in density .
@@ -319,16 +338,18 @@ x_ray_list = [
          Opinion : NORMAL 
            
          For clinical correlation .
-""",id={'type':'dynamic-input','name':'x-ray-opinion'})
+""",id={'type':'dynamic-input','name':'x-ray-opinion'}),
 ]
 
 esr_list = [
+    *small_break,
     html.Div("E.S.R : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'esr'},type="number",placeholder="E.S.R..,",style=input_style),
-    html.Div(" (02 - 10 mm/1 hour) ",style=limits_style)
+    html.Div(" (02 - 10 mm/1 hour) ",style=limits_style),
 ]
 
 hct_list = [
+    *small_break,
     html.Div("PCV (Haematocrit) : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'hct'},type="number",placeholder="HCT..",style=input_style),
     html.Div(" (40% - 45%) ",style=limits_style),
@@ -391,28 +412,32 @@ heamogram_list = [
 ]
 
 hba1c_list = [
+    *small_break,
     html.Div("Glycosylated Hb (HbA1c) Test: ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'hba1c_first'},type="number",placeholder="Type Hba1c %..",style={**input_style,"left":"500px"}),
     html.Div("%",style={**limits_style,"left":"700px"}),
     html.Div("Esitmiated Average Glucose (eAG): ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'hba1c_second'},type="number",placeholder="Type Hba1c mg/dl..",style={**input_style,"left":"500px"}),
     html.Div("mg/dl",style={**limits_style,"left":"700px"}),
-    html.Div([dcc.Dropdown(["SMALL","LONG"],"LONG",id={'type':'dynamic-input','name':'hba1c_dropdown'})],style={**limits_style,"width":"150px","left":"800px","bottom":"25px"})
+    html.Div([dcc.Dropdown(["SMALL","LONG"],"LONG",id={'type':'dynamic-input','name':'hba1c_dropdown'})],style={**limits_style,"width":"150px","left":"800px","bottom":"25px"}),
 ]
 
 blood_urea_list = [
+    *small_break,
     html.Div("Blood Urea : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'blood-urea'},type="number",placeholder="Enter Urea",style=input_style),
-    html.Div(" ( 10 - 40 mg/dl )",style=limits_style)
+    html.Div(" ( 10 - 40 mg/dl )",style=limits_style),
 ]
 
 serum_creatinine_list = [
+    *small_break,
     html.Div("Serum creatinine : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'serum-creat'},type="number",placeholder="Enter creatinine",style=input_style),
-    html.Div("( 2.5 - 7.5 IU/L )",style=limits_style)
+    html.Div("( 2.5 - 7.5 IU/L )",style=limits_style),
 ]
 
 bt_list = [
+    *small_break,
     html.Div("B.T : ",style=text_style),
     html.Div(
         [
@@ -422,10 +447,11 @@ bt_list = [
             "  Sec."
         ],
         style={**input_style,"text-align":"center","align-items":"center","display":"flex","flex-direction":"row"}
-    )
+    ),
 ]
 
 ct_list = [
+    *small_break,
     html.Div("C.T : ",style=text_style),
     html.Div(
         [
@@ -435,17 +461,18 @@ ct_list = [
             "  Sec."
         ],
         style={**input_style,"text-align":"center","align-items":"center","display":"flex","flex-direction":"row"}
-
     )
 ]
 
 uric_acid_list = [
+    *small_break,
     html.Div("Uric Acid : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'uric-acid'},type="number",placeholder="Enter Uric Acid",style=input_style),
     html.Div(" ( 2.5 - 7.5 IU/L ) ",style=limits_style)
 ]
 
 urine_analysis_list = [
+    *small_break,
     html.Div("Urine analysis :",style=text_style),
     *small_break,
     html.Div(dcc.Dropdown(["short".upper(),"long".upper()],"long".upper(),id={'type':'dynamic-input','name':'urine-drop'}),style={**input_style,"bottom":"50px"}),
@@ -491,12 +518,14 @@ urine_analysis_list = [
 ]
 
 urine_pregnency_list = [
+    *small_break,
     html.Div("Urine Test Report : ",style=text_style),
     html.Div("Urine Pregnancy Test : ",style=text_style),
     html.Div([dcc.Dropdown(["negative".upper(),"positive".upper()],"negative".upper(),id={'type':'dynamic-input','name':'preg_test'})],style=input_style)
 ]
 
 pt_aptt_list = [
+    *small_break,
     html.Div("Prothrombin Time Test",style={**text_style,"left":"400px","text-decoration":"underline"}),
     *big_break,
     html.Div("P.T Test:",style=text_style),
@@ -517,42 +546,59 @@ pt_aptt_list = [
 ]
 
 mantaoux_list = [
+    *small_break,
     html.Div("mantoux test :".upper(),style=text_style),
     html.Div([dcc.Dropdown(["positive".upper(),"negative".upper()],"negative".upper(),id={'type':'dynamic-input','name':'mantoux_test'})],style=input_style)
 ]
 
 sugar_random_list = [
+    *small_break,
     html.Div("Blood Sugar (Random):",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'random_sugar'},type="number",placeholder="Type RBS..",style=input_style),
     html.Div(" ( 70 - 140 mg/dl ) ",style=limits_style)
 ]
 
 sugar_fasting_list = [
+    *small_break,
     html.Div("Blood Sugar (Fasting):",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'fasting_sugar'},type="number",placeholder="Type FBS..",style=input_style),
     html.Div(" ( 70 - 110 mg/dl ) ",style=limits_style)
 ]
 
 lipid_profile_list = [
+    *small_break,
     html.Div("Total Cholesterol : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'lipid_tc'},type="number",placeholder="Type Tc..",style={**input_style,"left":"500px"}),
+    html.Div("Low Risk < 220.0 mg/dl",style={**limits_style,"left":"700px"}),
+    html.Div("Border Line - 220 - 239",style={**limits_style,"left":"700px"}),
+    html.Div("High Risk > 250",style={**limits_style,"left":"700px"}),
     html.Div("High Density Lipoprotein ( HDL ) : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'lipid_hdl'},type="number",placeholder="Type HDL...",style={**input_style,"left":"500px"}),
+    html.Div("29.0 - 80 mg/dl",style={**limits_style,"left":"700px"}),
     html.Div("Low Density Lipoprotein : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'lipid_ldl'},type="number",placeholder="Type LDL...",style={**input_style,"left":"500px"}),
+    html.Div("Desirable < 100",style={**limits_style,"left":"700px"}),
+    html.Div("Border Line 110 - 129",style={**limits_style,"left":"700px"}),
+    html.Div("High Risk > 130.0",style={**limits_style,"left":"700px"}),
     html.Div("Very Low Density Lipoprotein : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'lipid_vldl'},type="number",placeholder="Type VLDL",style={**input_style,"left":"500px"}),
+    html.Div("7.0 - 35.0 mg/dl",style={**limits_style,"left":"700px"}),
     html.Div("Triglyceride (F): ",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'lipid_tri'},type="number",placeholder="Type Triglyceride...",style={**input_style,"left":"500px"})
+    dcc.Input(id={'type':'dynamic-input','name':'lipid_tri'},type="number",placeholder="Type Triglyceride...",style={**input_style,"left":"500px"}),
+    html.Div("Normal < 170.0 mg/dl",style={**limits_style,"left":"700px"}),
+    html.Div("BorderLine 200 - 400",style={**limits_style,"left":"700px"}),
+    html.Div("High 400 - 1000",style={**limits_style,"left":"700px"}),
 ]
 
 blood_for_aec_list = [
+    *small_break,
     html.Div("Blood for AEC Count : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'aec-count'},type="number",placeholder="460",style=input_style),
     html.Div(" (50 - 450 cells/cumm ) ",style=limits_style)
 ]
 
 ra_factor_list = [
+    *small_break,
     html.Div("ra-factor :".upper(),style=text_style),
     html.Div(dcc.Dropdown(["positive".upper(),"negative".upper()],"negative".upper(),id={'type':'dynamic-input','name':'ra-factor'}),style=dict(position="relative",width="200px",left="300px",bottom="25px")),
     html.Div(" ( 1 : ",style={**limits_style,"bottom":"50px"}),
@@ -561,6 +607,7 @@ ra_factor_list = [
 ]
 
 aso_titre_list = [
+    *small_break,
     html.Div("ASO TITRE : ",style=text_style),
     html.Div(dcc.Dropdown(["POSITIVE","NEGATIVE"],"NEGATIVE",id={'type':'dynamic-input','name':'aso_titre'}),style=dict(position="relative",width="200px",left="300px",bottom="25px")),
     html.Div("( 1 : ",style={**limits_style,"bottom":"50px"}),
@@ -569,30 +616,35 @@ aso_titre_list = [
 ]
 
 serum_amylase_list = [
+    *small_break,
     html.Div("Serum Amylase : ", style=text_style),
     dcc.Input(id={'type': 'dynamic-input', 'name': 'serum_amylase'}, type="number", placeholder="Type amylase", style=input_style),
     html.Div(" (30 - 110 U/L) ", style=limits_style)
 ]
 
 serum_lipase_list = [
+    *small_break,
     html.Div("Serum Lipase : ", style=text_style),
     dcc.Input(id={'type': 'dynamic-input', 'name': 'serum_lipase'}, type="number", placeholder="Type lipase", style=input_style),
     html.Div(" (23 - 300 U/L) ", style=limits_style)
 ]
 
 serum_protein_list = [
+    *small_break,
     html.Div("Serum Protein : ", style=text_style),
     dcc.Input(id={'type': 'dynamic-input', 'name': 'serum_protein'}, type="number", placeholder="Type protein", style=input_style),
     html.Div(" (6.6 - 8.3 g/dl) ", style=limits_style)
 ]
 
 serum_albumin_list = [
+    *small_break,
     html.Div("Serum Albumin : ", style=text_style),
     dcc.Input(id={'type': 'dynamic-input', 'name': 'serum_albumin'}, type="number", placeholder="Type albumin", style=input_style),
     html.Div(" (3.5 - 5.0 g/dl) ", style=limits_style)
 ]
 
 serum_globulin_list = [
+    *small_break,
     html.Div("Serum Globulin : ", style=text_style),
     dcc.Input(id={'type': 'dynamic-input', 'name': 'serum_globulin'}, type="number", placeholder="Type globulin", style=input_style),
     html.Div(" (2.0 - 3.5 g/dl) ", style=limits_style)
@@ -698,6 +750,14 @@ electrolytes_list = [
     *serum_calcium_list
 ]
 
+liver_function_list = [
+    *total_bilirubin_list,
+    *direct_indirect_bilirubin_list,
+    *sgot_list,
+    *sgpt_list,
+    *alkp_list
+]
+
 
 bill_list = [
     html.Button("ADD LINE",id="bill-add-line",style={**text_style,"width":"150px","height":"100px","borderRadius":"20px","backgroundColor":"cyan","font-weight":700}),
@@ -752,6 +812,7 @@ reports_original_dict = {
     "Urine Analysis": urine_analysis_list,
     "Urine Pregnancy": urine_pregnency_list,
     "Mantaoux": mantaoux_list,
+    "Liver Function Test":liver_function_list,
     "BT":bt_list,
     "CT":ct_list,
     "Random Sugar": sugar_random_list,
@@ -846,10 +907,14 @@ def preview_report_details(patients_sno,reports_value,template_value,all_patient
         if reports_value:
             for x in reports_value:
                 report_details += reports_original_dict[x]
+                if x not in all_patients_values[patients_sno]["tests"]:
+                    all_patients_values[patients_sno]["tests"].append(x)
         if template_value:
             template_value = json.loads(template_value)
             for x in template_value:
                 report_details += reports_original_dict[x]
+                if x not in all_patients_values[patients_sno]["tests"]:
+                    all_patients_values[patients_sno]["tests"].append(x)
         if is_present:
             s = "*Data is present, Please Preview to see old values or Storage Clear to enter new values"
         else:
@@ -1076,45 +1141,59 @@ def dc_canvas(
         c.setFont(small_font_name,small_font_size)
         c.drawString(small_left_extreme,h,dc_string)
         c.line(small_left_extreme,h-5,small_left_extreme+cal_string_width(c,dc_string,small_font_name,small_font_size),h-5)
-        c.drawString(142,h-(1.2 * entity_height),poly_string)
-        c.drawString(142,h-(2.2 * entity_height),lympho_string)
-        c.drawString(142,h-(3.2 * entity_height),eosino_string)
-        c.drawString(142,h-(4.2 * entity_height),mono_string)
-        c = if_draw_bold(c,polymo_value,p(polymo_value),40,70,260,h-(1.2 * entity_height))
-        c = if_draw_bold(c,lympho_value,p(lympho_value),20,40,260,h-(2.2 * entity_height))
-        c = if_draw_bold(c,esino_value,p(esino_value),2,6,260,h-(3.2 * entity_height))
-        c = if_draw_bold(c,mono_value,p(mono_value),1,4,260,h-(4.2 * entity_height))
+        h -= (1.2 * entity_height)
+        c.drawString(142,h,poly_string)
+        c = if_draw_bold(c,polymo_value,p(polymo_value),40,70,260,h)
         c.setFont(small_font_name,small_limits_font_size)
-        c.drawString(small_right_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_limits_font_size),h-(1.2 * entity_height),"( 40 - 70 %)")
-        c.drawString(small_right_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_limits_font_size),h-(2.2 * entity_height),"( 20 - 40 %)")
-        c.drawString(small_right_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_limits_font_size),h-(3.2 * entity_height),"( 02 - 06 %)")
-        c.drawString(small_right_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_limits_font_size),h-(4.2 * entity_height),"( 01 - 04 %)")
-        h -= (entity_height * 5.5)
+        c.drawString(small_right_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_limits_font_size),h,"( 40 - 70 %)")
+        c.setFont(small_font_name,small_font_size)
+        h -= entity_height
+        c.drawString(142,h,lympho_string)
+        c = if_draw_bold(c,lympho_value,p(lympho_value),20,40,260,h)
+        c.setFont(small_font_name,small_limits_font_size)
+        c.drawString(small_right_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_limits_font_size),h,"( 20 - 40 %)")
+        c.setFont(small_font_name,small_font_size)
+        h -= entity_height
+        c.drawString(142,h,eosino_string)
+        c = if_draw_bold(c,esino_value,p(esino_value),2,6,260,h)
+        c.setFont(small_font_name,small_limits_font_size)
+        c.drawString(small_right_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_limits_font_size),h,"( 02 - 06 %)")
+        h -= entity_height
+        c.drawString(142,h,mono_string)
+        c = if_draw_bold(c,mono_value,p(mono_value),1,4,260,h)
+        c.setFont(small_font_name,small_limits_font_size)
+        c.drawString(small_right_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_limits_font_size),h,"( 01 - 04 %)")
     else:
+        entity_height += 5
         c.setFont(big_font_name,big_font_size)
         c.drawString(big_left_extreme,h,dc_string)
         c.line(big_left_extreme,h-5,big_left_extreme+cal_string_width(c,dc_string,big_font_name,big_font_size),h-5)
         c.drawString(182,h-(1.2 * entity_height),poly_string)
-        c.drawString(182,h-(2.2 * entity_height),lympho_string)
-        c.drawString(182,h-(3.2 * entity_height),eosino_string)
-        c.drawString(182,h-(4.2 * entity_height),mono_string)
         c = if_draw_bold(c,polymo_value,p(polymo_value),40,70,300,h-(1.2 * entity_height))
-        c = if_draw_bold(c,lympho_value,p(lympho_value),20,40,300,h-(2.2 * entity_height))
-        c = if_draw_bold(c,esino_value,p(esino_value),2,6,300,h-(3.2 * entity_height))
-        c = if_draw_bold(c,mono_value,p(mono_value),1,4,300,h-(4.2 * entity_height))
         c.setFont(big_font_name,big_limits_font_size)
         c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(1.2 * entity_height),"( 40 - 70 %)")
+        c.setFont(big_font_name,big_font_size)
+        c.drawString(182,h-(2.2 * entity_height),lympho_string)
+        c = if_draw_bold(c,lympho_value,p(lympho_value),20,40,300,h-(2.2 * entity_height))
+        c.setFont(big_font_name,big_limits_font_size)
         c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(2.2 * entity_height),"( 20 - 40 %)")
+        c.setFont(big_font_name,big_font_size)
+        c.drawString(182,h-(3.2 * entity_height),eosino_string)
+        c = if_draw_bold(c,esino_value,p(esino_value),2,6,300,h-(3.2 * entity_height))
+        c.setFont(big_font_name,big_limits_font_size)
         c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(3.2 * entity_height),"( 02 - 06 %)")
+        c.setFont(big_font_name,big_font_size)
+        c.drawString(182,h-(4.2 * entity_height),mono_string)
+        c = if_draw_bold(c,mono_value,p(mono_value),1,4,300,h-(4.2 * entity_height))
+        c.setFont(big_font_name,big_limits_font_size)
         c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(4.2 * entity_height),"( 01 - 04 %)")
-        h -= (entity_height * 6)
-    return c,h
+    return c,h-(entity_height * 1.5)
 
 # done
 def crp_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
     limits_string = " ( < 6 ) "
     text_string = "CRP"
-    value_string = value
+    value_string = f"{value:.1f}"
     limit_a = 0
     limit_b = 6
     if page_size == "SMALL/A5":
@@ -1198,7 +1277,7 @@ def hct_canvas(c:canvas.Canvas,value,page_size:str,h:int,entity_height=18):
 def esr_canvas(c:canvas.Canvas,value,page_size:str,h:int,entity_height=18):
     text_string = "E.S.R"
     limits_string = "( 02 - 10 mm/Hr )"
-    value_string = int(value)
+    value_string = f"{value:0>2}"
     limit_a = 2
     limit_b = 11
     if page_size == "SMALL/A5":
@@ -1318,11 +1397,6 @@ def heamogram_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_heig
         c.drawString(size_dict["left_extreme"][1],h,f"Impression:  “ {total_opinion} ”")
     return c, h - (entity_height * 1.5)
 
-    
-
-
-
-    return c,h
 
 # done
 def direct_and_indirect_bilirubin_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
@@ -1420,8 +1494,8 @@ def dengue_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=
         x = 1
         entity_height += 5
     c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
-    c.drawString(size_dict["value_point"][x],h,heading_string)
-    c.rect(size_dict["value_point"][x]-5,h-5,cal_string_width(c,heading_string,size_dict["font_name"][x],size_dict["font_size"][x])+10,size_dict["font_size"][x]+5)
+    c.drawString(size_dict["value_point"][x]//1.2,h,heading_string)
+    c.rect((size_dict["value_point"][x]//1.2)-5,h-5,cal_string_width(c,heading_string,size_dict["font_name"][x],size_dict["font_size"][x])+10,size_dict["font_size"][x]+5)
     h -= entity_height
     text_string = "IgM antibodies to Dengue Virus"
     c = mundane_things(c,x,text_string,igm,igm,"","","",h,if_limits=False,left_offset=20)
@@ -1512,8 +1586,8 @@ def urine_preg_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_heigh
         entity_height += 5
     h -= (entity_height * 5)
     c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
-    c.drawString(size_dict["left_extreme"][x],h,"Urine Test Report")
-    c.rect(size_dict["left_extreme"][x]-5,h-5,cal_string_width(c,"Urine Test Report",size_dict["font_name"][x],size_dict["font_size"][x])+10,size_dict["font_size"][x]+5)
+    c.drawString(size_dict["left_extreme"][x]//1.2,h,"Urine Test Report")
+    c.rect((size_dict["left_extreme"][x]//1.2)-5,h-5,cal_string_width(c,"Urine Test Report",size_dict["font_name"][x],size_dict["font_size"][x])+10,size_dict["font_size"][x]+5)
     h -= (entity_height * 3)
     text_string = "Urine Pregnancy Test: "
     c = mundane_things(c,x,text_string,value,value,"","","",h,if_limits=False,left_offset=10)
@@ -1737,8 +1811,8 @@ def lipid_profile_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_
         x = 1
         entity_height += 5
     c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
-    c.drawString(size_dict["value_point"][x],h,"total lipid profile".upper())
-    c.rect(size_dict["value_point"][x]-5,h-5,cal_string_width(c,"total lipid profile".upper(),size_dict["font_name"][x],size_dict["font_size"][x])+10,size_dict["font_size"][x]+5)
+    c.drawString(size_dict["value_point"][x]//1.2,h,"total lipid profile".upper())
+    c.rect((size_dict["value_point"][x]//1.2)-5,h-5,cal_string_width(c,"total lipid profile".upper(),size_dict["font_name"][x],size_dict["font_size"][x])+10,size_dict["font_size"][x]+5)
     h -= (entity_height + 10)
     text_string = "Total Cholesterol"
     limits_string = "Low Risk < 220.0 mg/dl"
@@ -1747,11 +1821,11 @@ def lipid_profile_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_
     c.drawString(size_dict["right_extreme"][x]-cal_string_width(c,"BorderLine - 220 - 239 mg/dl",size_dict["font_name"][x],size_dict["limits_font"][x]),h,"BorderLine - 220 - 239 mg/dl")
     h -= 16
     c.drawString(size_dict["right_extreme"][x]-cal_string_width(c,"High Risk > 130.0 mg/dl",size_dict["font_name"][x],size_dict["limits_font"][x]),h,"High Risk > 130.0 mg/dl")
-    h -= (entity_height * 2)
+    h -= (entity_height * 1.2)
     text_string = "High Density Lipoprotein"
     limits_string = "29 - 80 mg/dl"
     c = mundane_things(c,x,text_string,hdl,hdl,limits_string,limit_a=29,limit_b=80,h=h,left_offset=20)
-    h -= (entity_height - 9)
+    h -= 16
     c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
     c.drawString(size_dict["left_extreme"][x]+50,h,"(hdl)".upper())
     h -= (entity_height)
@@ -1762,7 +1836,7 @@ def lipid_profile_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_
     c.drawString(size_dict["right_extreme"][x]-cal_string_width(c,"BorderLine - 110 - 129 mg/dl",size_dict["font_name"][x],size_dict["limits_font"][x]),h,"BorderLine - 220 - 239 mg/dl")
     h -= 16
     c.drawString(size_dict["right_extreme"][x]-cal_string_width(c,"High Risk > 130 mg/dl",size_dict["font_name"][x],size_dict["limits_font"][x]),h,"High Risk > 130 mg/dl")
-    h -= (entity_height * 2)
+    h -= (entity_height * 1.2)
     text_string = "Very Low Density Lipoprotein"
     limits_string = "7.0 - 35.0 mg/dl"
     c = mundane_things(c,x,text_string,vldl,vldl,limits_string,7.0,35.0,h,left_offset=20)
@@ -1771,6 +1845,26 @@ def lipid_profile_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_
     limits_string = "Normal < 170.0 mg/dl"
     c = mundane_things(c,x,text_string,tri,tri,limits_string,0,170.0,h,left_offset=20)
     return c,h-entity_height
+
+
+def liver_function_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
+    tb,db,sgot,sgpt,alkt = values
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
+    c.drawString(size_dict["value_point"][x]//1.2,h,"liver function test".upper())
+    c.rect((size_dict["value_point"][x]//1.2)-5,h-5,cal_string_width(c,"liver function test".upper(),size_dict["font_name"][x],size_dict["font_size"][x])+10,size_dict["font_size"][x]+5)
+    h -= 30
+    c,h = total_bilirubin_canvas(c,tb,page_size,h,entity_height)
+    c,h = direct_and_indirect_bilirubin_canvas(c,[tb,db],page_size,h,entity_height)
+    c,h = sgot_canvas(c,sgot,page_size,h,entity_height)
+    c,h = sgpt_canvas(c,sgpt,page_size,h,entity_height)
+    c,h = alkp_canvas(c,alkt,page_size,h,entity_height)
+    return c,h-entity_height
+
 
 # done
 def serum_amylase_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
@@ -2128,6 +2222,7 @@ reports_canvas_dict = {
     "Urine Analysis":urine_analysis_canvas,
     "Urine Pregnancy":urine_preg_canvas,
     "Lipid Profile":lipid_profile_canvas,
+    "Liver Function Test":liver_function_canvas,
     "Mantaoux":mantaux_canvas,
     "Blood for AEC Count":blood_for_aec_canvas,
     "BT":bt_canvas,
@@ -2182,6 +2277,7 @@ report_canvas_values_dict = {
     "Urine Analysis":"full-urine",
     "Urine Pregnancy":"preg_test",
     "Lipid Profile":"full-lipid",
+    "Liver Function Test":"liver-function-test",
     "Mantaoux":"mantoux_test",
     "Blood for AEC Count":"aec-count",
     "BT":"full-bt",
@@ -2306,13 +2402,15 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,all_patients_v
     prevent_initial_call=True
 )
 def submit_report(n_clicks,patients_sno,page_size_value,input_values,input_ids,all_patients_values,reports_dropdown_list,templates_dropdown_list):
-    if not input_values:
+    if not n_clicks:
         raise PreventUpdate
     if ctx.triggered_id == "submit-report-button":
-        if templates_dropdown_list:
-            all_patients_values[patients_sno]["tests"] += json.loads(templates_dropdown_list)
-        if reports_dropdown_list:
-            all_patients_values[patients_sno]["tests"] += reports_dropdown_list
+        all_options = reports_dropdown_list+json.loads(templates_dropdown_list)
+        temp_list = []
+        for test_name in all_patients_values[patients_sno]["tests"]:
+            if test_name in all_options:
+                temp_list.append(test_name)
+        all_patients_values[patients_sno]["tests"] = temp_list
         temp_dict = {}
         name_pattern = re.compile(r"bill-\d+-name")
         value_pattern = re.compile(r"bill-\d+-value")
@@ -2343,6 +2441,9 @@ def submit_report(n_clicks,patients_sno,page_size_value,input_values,input_ids,a
             if ("Lipid Profile" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['lipid_tc','lipid_hdl','lipid_ldl','lipid_vldl','lipid_tri']):
                 temp_dict["full-lipid"] = temp_dict.get("full-lipid",[])
                 temp_dict["full-lipid"].append(value)
+            if ("Liver Function Test" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['total-bili','direct-bili','sgot','sgpt','alkp']):
+                temp_dict["liver-function-test"] = temp_dict.get("liver-function-test",[])
+                temp_dict["liver-function-test"].append(value)
             if ("DENGUE" in all_patients_values[patients_sno]["tests"]) & (id['name'] in ['dengue_igm','dengue_igg','dengue_ns']):
                 temp_dict["dengue-test"] = temp_dict.get("dengue-test",[])
                 temp_dict["dengue-test"].append(value)
@@ -2374,6 +2475,7 @@ def submit_report(n_clicks,patients_sno,page_size_value,input_values,input_ids,a
                 if value_pattern.match(id['name']):
                     bill_values_list.append(value)
                 temp_dict["total-bill"] = [bill_names_list,bill_values_list]
+
     
             temp_dict[id['name']] = value
         all_patients_values[patients_sno] = {**all_patients_values[patients_sno],**temp_dict}

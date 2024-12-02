@@ -36,11 +36,11 @@ dtype_map = {
     "Patient Age": "Int8",  # Use Int16 for compactness and allow NaNs
     "Age Group": str,     # string with options as ["Y","M","D"]
     "Gender": str,        # string with options as ["Male","Female"]
-    "Amount": "Int32",    # Amount as integer
+    "Amount": "Float64",    # Amount as integer
     "Method": str,        # string with options as ["CASH","PHONE PAY"]
     "Phone No": "Int64",  # Phone number as integer
     "Paid": str,          # string with options ["PAID","NOT PAID","DUE"]
-    "Due": "Int16",       # Due as integer as the due amount if due/not paid and full amount will be reflected as due if not paid
+    "Due": "Float64",       # Due as integer as the due amount if due/not paid and full amount will be reflected as due if not paid
     "Sample": str         # string with options as ["SELF","RAJU","RAJESH","RAM"]
 }
 
@@ -211,8 +211,8 @@ register_layout = html.Div(
 
 def save_df(df,date_value:str):
     date_value = date_value.replace("-","_")
-    df["Amount"] = df["Amount"].astype("Int32")
-    df["Due"] = df["Due"].astype("Int16")
+    df["Amount"] = pd.to_numeric(df["Amount"],errors="coerce")
+    df["Due"] = pd.to_numeric(df["Due"],errors="coerce")
     df.loc[df.shape[0]+1,:] = [np.nan] * df.shape[1]
     df.loc[df.shape[0],"Amount"] = df.loc[:,"Amount"].sum()
     df.loc[df.shape[0],"Due"] = df.loc[:,"Due"].sum()
@@ -250,11 +250,11 @@ def initialize_df(n_clicks,date_value:str):
                     "Patient Age":pd.Series(dtype="int8"),
                     "Age Group":pd.Series(dtype="str"),
                     "Gender":pd.Series(dtype="str"),
-                    "Amount":pd.Series(dtype="int32"),
+                    "Amount":pd.Series(dtype="float64"),
                     "Method":pd.Series(dtype="str"),
                     "Phone No":pd.Series(dtype="int64"),
                     "Paid":pd.Series(dtype="str"),
-                    "Due":pd.Series(dtype="int16"),
+                    "Due":pd.Series(dtype="float64"),
                     "Sample":pd.Series(dtype="str")
                 }
             )
@@ -320,11 +320,11 @@ def append_name_to_dataframe(n_clicks,*vals):
         df["Patient Age"] = df["Patient Age"].astype("int8")
         df["Age Group"] = df["Age Group"].astype("str")
         df["Gender"] = df["Gender"].astype("str")
-        df["Amount"] = df["Amount"].astype("int32")
+        df["Amount"] = df["Amount"].astype("float64")
         df["Method"] = df["Method"].astype("str")
         df["Phone No"] = df["Phone No"].astype("int64")
         df["Paid"] = df["Paid"].astype("str")
-        df["Due"] = df["Due"].astype("int16")
+        df["Due"] = df["Due"].astype("float64")
         df["Sample"] = df["Sample"].astype("str")
         df.loc[index_number,"S.No."] = vals[4]
         df.loc[index_number,"Date"] = vals[3]
@@ -386,7 +386,6 @@ def save_table_changes(n_clicks,data,date_value:dict):
         raise PreventUpdate
     if n_clicks:
         pd.read_csv(f"assets/all_files/{date_value["date"]}.csv",dtype=dtype_map).to_csv(f"assets/pre_change_folder/{date_value["date"]}_{time.asctime().split(" ")[4].replace(":","_")}.csv",index=False)
-        print(f"\nChanges have been made\n")
         df = pd.DataFrame(data=data)
         df = df.iloc[:-1,:]
         save_df(df,date_value["date"])
