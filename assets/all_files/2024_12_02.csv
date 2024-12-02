@@ -1,3 +1,3 @@
 S.No.,Date,Time,Patient Name,Reference By,Patient Age,Age Group,Gender,Amount,Method,Phone No,Paid,Due,Sample
-1,2024-12-02,10:32:06 AM,Patient 1,"M RAMA KRISHNA GARU, MBBS, DCH.,",52,Y,Male,1212,CASH,9666486448.0,DUE,100,SELF
-,,,,,,,,1212,,,,100,
+1,2024-12-02,10:32:06 AM,Patient 1,"M RAMA KRISHNA GARU, MBBS, DCH.,",52.0,Y,Male,1222,CASH,9666486448.0,DUE,50,SELF
+,,,,,,,,1222,,,,50,
