@@ -681,26 +681,31 @@ serum_calcium_list = [
 ]
 
 vdrl_list = [
+    *small_break,
     html.Div("V.D.R.L : ",style=text_style),
-    html.Div([dcc.Dropdown(["reactive".upper(),"non-reactive".upper()],"non-reactive".upper(),id={'type':'dynamic-input','name':'vdrl'})],style=input_style)
+    html.Div([dcc.Dropdown(["reactive".upper(),"non-reactive".upper()],"non-reactive".upper(),id={'type':'dynamic-input','name':'vdrl'})],style={**input_style,"width":"300px"})
 ]
 
 hbsag_list = [
+    *small_break,
     html.Div("HBsAg : ",style=text_style),
-    html.Div([dcc.Dropdown(["reactive".upper(),"non-reactive".upper()],"non-reactive".upper(),id={'type':'dynamic-input','name':'hbsag'})],style=input_style)
+    html.Div([dcc.Dropdown(["reactive".upper(),"non-reactive".upper()],"non-reactive".upper(),id={'type':'dynamic-input','name':'hbsag'})],style={**input_style,"width":"300px"})
 ]
 
 hiv_list = [
+    *small_break,
     html.Div("HIV I & II Antibodies Test : ",text_style),
-    html.Div([dcc.Dropdown(["reactive".upper(),"non-reactive".upper()],"non-reactive".upper(),id={'type':'dynamic-input','name':'hiv_ant'})],style=input_style)
+    html.Div([dcc.Dropdown(["reactive".upper(),"non-reactive".upper()],"non-reactive".upper(),id={'type':'dynamic-input','name':'hiv_ant'})],style={**input_style,"width":"300px"})
 ]
 
 hcv_list = [
+    *small_break,
     html.Div("HCV I & II Antibodies Test : ",text_style),
-    html.Div([dcc.Dropdown(["reactive".upper(),"non-reactive".upper()],"non-reactive".upper(),id={'type':'dynamic-input','name':'hcv_ant'})],style=input_style)
+    html.Div([dcc.Dropdown(["reactive".upper(),"non-reactive".upper()],"non-reactive".upper(),id={'type':'dynamic-input','name':'hcv_ant'})],style={**input_style,"width":"300px"})
 ]
 
 semen_list = [
+    *small_break,
     html.Div("Volume : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'semen-volume'},type="number",placeholder="3.0 ml",value=3.0,style=input_style),
     html.Div("( 1.5 - 5.0 ml )",style=limits_style),
@@ -1325,7 +1330,7 @@ def blood_group_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_heig
 def total_bilirubin_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
     text_string = "Total Bilirubin"
     limits_string = "( 0.2 - 1.0 mg/dl )"
-    value_string = value
+    value_string = f"{value:.2f}"
     limit_a = 0.2
     limit_b = 1.0
     if page_size == "SMALL/A5":
@@ -1902,7 +1907,7 @@ def serum_protein_canvas(c: canvas.Canvas, value: float, page_size: str, h: int,
     limits_string = "( 6.6 – 8.3 g/dl )"
     limit_a = 6.6
     limit_b = 8.3
-    value_string = value
+    value_string = f"{value:.1f}"
     if page_size == "SMALL/A5":
         x = 0
     else:
@@ -1917,7 +1922,7 @@ def serum_albumin_canvas(c: canvas.Canvas, value: float, page_size: str, h: int,
     limits_string = "( 3.5 – 5.0 g/dl )"
     limit_a = 3.5
     limit_b = 5.0
-    value_string = value
+    value_string = f"{value:.1f}"
     if page_size == "SMALL/A5":
         x = 0
     else:
@@ -1932,7 +1937,7 @@ def serum_globulin_canvas(c: canvas.Canvas, value: float, page_size: str, h: int
     limits_string = "( 2.0 – 3.5 g/dl )"
     limit_a = 2.0
     limit_b = 3.5
-    value_string = value
+    value_string = f"{value:.1f}"
     if page_size == "SMALL/A5":
         x = 0
     else:
@@ -1947,7 +1952,7 @@ def serum_ag_ratio_canvas(c: canvas.Canvas, value: float, page_size: str, h: int
     limits_string = "( 0.9 – 2.0 )"
     limit_a = 0.9
     limit_b = 2.0
-    value_string = value
+    value_string = f"{value:.1f}"
     if page_size == "SMALL/A5":
         x = 0
     else:
@@ -1977,7 +1982,7 @@ def serum_potassium_canvas(c: canvas.Canvas, value: float, page_size: str, h: in
     limits_string = "( 3.5 - 5.5 mmol/L )"
     limit_a = 3.5
     limit_b = 5.5
-    value_string = value
+    value_string = f"{value:.1f}"
     if page_size == "SMALL/A5":
         x = 0
     else:
@@ -2007,7 +2012,7 @@ def serum_calcium_canvas(c: canvas.Canvas, value: float, page_size: str, h: int,
     limits_string = "( 8.5 - 10.5 mmol/L )"
     limit_a = 8.5
     limit_b = 10.5
-    value_string = value
+    value_string = f"{value:.1f}"
     if page_size == "SMALL/A5":
         x = 0
     else:
@@ -2057,7 +2062,7 @@ def hbsag_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18)
 # done
 def hiv_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
     text_string = "HIV I & II Antibodies Test".upper()
-    value_string = f"{value} (Tridot Method)"
+    value_string = f"{value}  (Tridot Method)"
     if page_size == "SMALL/A5":
         x = 0
     else:
@@ -2069,7 +2074,7 @@ def hiv_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
 # done
 def hcv_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
     text_string = "HCV I & II Antibodies Test".upper()
-    value_string = f"{value} (Tridot Method)"
+    value_string = f"{value}  (Tridot Method)"
     if page_size == "SMALL/A5":
         x = 0
     else:
@@ -2112,11 +2117,11 @@ def semen_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=1
     c.drawString(size_dict["value_point"][x]-20,h,"semen analysis".upper())
     c.rect(size_dict["value_point"][x] - 25,h-5,cal_string_width(c,"semen analysis".upper(),size_dict["font_name"][x],size_dict["font_size"][x])+10,size_dict["font_size"]+5)
     h -= entity_height
-    c = mundane_things(c,x,"Volume",float(val),float(val),"( 1.5 - 5.0 ml )",1.5,5.0,h)
+    c = mundane_things(c,x,"Volume",float(val),f"{val:.1f}","( 1.5 - 5.0 ml )",1.5,5.0,h)
     h -= entity_height
     c = mundane_things(c,x,"Liquefaction time",lig,lig,"( with in 20 mts )",0,20,h)
     h -= entity_height
-    c = mundane_things(c,x,"PH",float(ph),float(ph),"( > 7.0 )",7,14,h)
+    c = mundane_things(c,x,"PH",float(ph),f"{ph:.1f}","( > 7.0 )",7,14,h)
     h -= entity_height
     c = mundane_things(c,x,"Spermatozoa Count",count,count,"(60-150 millions/ml)",60,150,h)
     h -= entity_height
@@ -2405,7 +2410,11 @@ def submit_report(n_clicks,patients_sno,page_size_value,input_values,input_ids,a
     if not n_clicks:
         raise PreventUpdate
     if ctx.triggered_id == "submit-report-button":
-        all_options = reports_dropdown_list+json.loads(templates_dropdown_list)
+        all_options = []
+        if reports_dropdown_list:
+            all_options += reports_dropdown_list
+        if templates_dropdown_list:
+            all_options += json.loads(templates_dropdown_list)
         temp_list = []
         for test_name in all_patients_values[patients_sno]["tests"]:
             if test_name in all_options:
