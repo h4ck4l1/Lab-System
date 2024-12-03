@@ -41,6 +41,14 @@ dropdown_options = [
     html.Li(
         html.Span(
             [
+                html.Img(src="assets/all_reports.jpeg"),
+                dcc.Link("all reports".upper(),href="/all_reports",className="dropdown-link")
+            ]
+        )
+    ),
+    html.Li(
+        html.Span(
+            [
                 html.Img(src="assets/paper.png"),
                 dcc.Link("papermill".upper(),href="/papermill",className="dropdown-link")
             ]

@@ -92,6 +92,12 @@
 
 
 
+/* Target dropdown options specifically for this dropdown */
+.custom-dropdown .Select-option {
+  height: 50px !important;
+}
+
+
 .Select-value-label {
   color:cyan !important;
 }
@@ -106,11 +112,13 @@
 
 
 .VirtualizedSelectOption {
+  /* height: 50px !important; */
   background-color: #633fff;
   color: cyan;
 }
 
 .VirtualizedSelectFocusedOption {
+  /* height: 50px !important; */
   background-color: #340ce7;
   color: cyan !important;
 }
