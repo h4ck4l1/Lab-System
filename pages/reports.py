@@ -781,7 +781,7 @@ def add_bill_inputs(n_clicks):
         return [
             html.Div(
                 [
-                    f"{i}.  ",
+                    f"{i+1}.  ",
                     dcc.Input(id={"type":"dynamic-input","name":f"bill-{i}-name"},type="text",placeholder="Test Name..",style=dict(fontSize=25,height="50px")),
                     "  -  ",
                     dcc.Input(id={"type":"dynamic-input","name":f"bill-{i}-value"},type="number",placeholder="Price..",style=dict(fontSize=25,height="50px")),
@@ -2191,8 +2191,8 @@ def bill_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18
     c.rect((size_dict["value_point"][x]//1.2)-5,h-5,cal_string_width(c,"blood test bill".upper(),size_dict["font_name"][x],size_dict["font_size"][x])+10,size_dict["font_size"][x]+5)
     h -= (entity_height * 2)
     for i,(test,price) in enumerate(zip(test_names,test_prices)):
-        c.drawString(size_dict["left_extreme"][x],h,f"{i+1}")
-        c.drawString(size_dict["value_point"][x],h,test.upper())
+        c.drawString(size_dict["left_extreme"][x],h,f"{i+1}.")
+        c.drawString(size_dict["value_point"][x]//2,h,test.upper())
         c.drawString(size_dict["right_extreme"][x]-50,h,f":  {price} /-")
         h -= entity_height
     total_sum = 0
