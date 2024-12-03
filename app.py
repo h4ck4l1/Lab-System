@@ -77,8 +77,9 @@ app.layout = dcc.Loading(
     className="loading-cube"
 )
 
+server = app.server
+
+# gunicorn -b 0.0.0.0:8050 --log-level debug app:server
+
 if __name__ == '__main__':
-    app.run_server(
-        host="0.0.0.0",
-        port=8050,
-    )
+    app.run()
