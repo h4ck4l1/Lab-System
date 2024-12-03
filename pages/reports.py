@@ -905,9 +905,12 @@ def preview_report_details(patients_sno,reports_value,template_value,all_patient
         report_details = []
         patients_details = [
                 html.Div(f"Patient Name: {get_df_item(patients_sno,item_name='Patient Name',copy_df=df)}"),
-                html.Div(f"Age: {get_df_item(patients_sno,item_name='Patient Age',copy_df=df)}"),
+                html.Br(),
+                html.Div(f"Age: {get_df_item(patients_sno,item_name='Patient Age',copy_df=df)} {get_df_item(patients_sno,item_name='Age Group',copy_df=df)}"),
+                html.Br(),
                 html.Div(f"Reference By: {get_df_item(patients_sno,item_name='Reference By',copy_df=df)}"),
-                html.Div(f"Date: {get_df_item(patients_sno,item_name="Date",copy_df=df)}")
+                html.Br(),
+                html.Div(f"Date: {get_df_item(patients_sno,item_name="Date",copy_df=df)}   Collection Time: {get_df_item(patients_sno,item_name='Time',copy_df=df)}")
             ]
         if reports_value:
             for x in reports_value:
