@@ -187,31 +187,24 @@ def append_report_options(date:str):
 
 
 hb_list = [
-    *small_break,
     html.Div("Heamoglobin :",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'hb'},type="number",placeholder="Type Hb Value..",style=input_style),
     html.Div("( 11.0 - 16.8 Grams%)",style=limits_style),
-    *small_break
 ]
 
 tc_list = [
-    *small_break,
     html.Div("Total WBC Count :",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'tc_count'},type="number",placeholder="Type Tc value..",style=input_style),
     html.Div("( 5,000 - 10,000 Cells/cumm )",style=limits_style),
-    *small_break
 ]
 
 plt_list = [
-    *small_break,
     html.Div("Platelet Count :",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'plt_count'},type="number",placeholder="Type Plt Value..",style=input_style),
     html.Div("( 1.5 - 4.0 Lakhs/cumm )",style=limits_style),
-    *small_break,
 ]
 
 dc_list = [
-    *small_break,
     html.Div("Differential Count :",style=text_style),
     html.Br(),
     html.Br(),
@@ -227,24 +220,20 @@ dc_list = [
     html.Div("Monocytes :",style=dict(position="relative",left="200px",fontSize=18)),
     html.Div("----------------",style=dict(position="relative",left="400px",bottom="20px")),
     html.Div("( 01 - 04 %)",style=dict(position="relative",left="670px",bottom="40px",fontSize=18)),
-    *small_break,
 ]
 
 crp_list = [
-    *small_break,
     html.Div("CRP :   ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'crp'},type="number",placeholder="Type CRP value..",style=input_style),
     html.Div(" ( < 6 ) ",style=limits_style)
 ]
 
 malaria_list = [
-    *small_break,
     html.Div("Test For Malaria Parasite (M.P): NON-REACTIVE",style=text_style),
     html.Div([dcc.Dropdown(["Long".upper(),"Short".upper()],"Short".upper(),id={'type':'dynamic-input','name':'malaria-test'})],style={**input_style,"left":"700px"})
 ]
 
 widal_list = [
-    *small_break,
     html.Div("Blood for Widal : ",style=text_style),
     html.Div([dcc.Dropdown(["NON-REACTIVE","REACTIVE"],"REACTIVE",id={'type':'dynamic-input','name':'widal'})],style={**input_style,"width":"200px"}),
     html.Div([dcc.Dropdown(["SHORT","LONG"],"LONG",id={'type':'dynamic-input','name':'widal-form'})],style=dict(position="relative",left="600px",bottom="50px",width="100px",height="50px")),
@@ -259,7 +248,6 @@ widal_list = [
 ]
 
 blood_group_list = [
-    *small_break,
     html.Div("Blood Group: ",style=text_style),
     html.Div(
         dcc.Dropdown(
@@ -271,14 +259,12 @@ blood_group_list = [
 ]
 
 total_bilirubin_list = [
-    *small_break,
     html.Div("Total Bilirubin : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'total-bili'},type="number",placeholder="Enter Total Bilirubin",style=input_style),
     html.Div(" ( 0.2 - 1.0 mg/dl)",style=limits_style),
 ]
 
 direct_indirect_bilirubin_list = [
-    *small_break,
     html.Div("Direct Bilirubin: ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'direct-bili'},type="number",placeholder="Enter Direct Bilirubin",style=input_style),
     html.Div(" ( 0.2 - 0.4 mg/dl ) ",style=limits_style),
@@ -288,28 +274,24 @@ direct_indirect_bilirubin_list = [
 ]
 
 sgot_list = [
-    *small_break,
     html.Div("Aspirate Amino Transferase (SGOT): ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'sgot'},type="number",placeholder="29 (normal)",style={**input_style,"left":"500px"}),
     html.Div("( < 40 )",style={**limits_style,"left":"700px"}),
 ]
 
 sgpt_list = [
-    *small_break,
     html.Div("Alinine  Amino Transferase (SGPT): ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'sgpt'},type="number",placeholder="29 (normal)",style={**input_style,"left":"500px"}),
     html.Div("( < 40 )",style={**limits_style,"left":"700px"}),
 ]
 
 alkp_list = [
-    *small_break,
     html.Div("Alkaline Phosphatase (ALKP): ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'alkp'},type="number",placeholder="29 (normal)",style={**input_style,"left":"500px"}),
     html.Div("( 37 - 147 )",style={**limits_style,"left":"700px"}),
 ]
 
 x_ray_list = [
-    *small_break,
     html.P("""Rest of lung fields  are normal .
 
              Both hila normal in density .
@@ -327,21 +309,18 @@ x_ray_list = [
 ]
 
 esr_list = [
-    *small_break,
     html.Div("E.S.R : ",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'esr'},type="number",placeholder="E.S.R..,",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'esr'},type="number",placeholder="E.S.R..,",value=10,style=input_style),
     html.Div(" (02 - 10 mm/1 hour) ",style=limits_style),
 ]
 
 hct_list = [
-    *small_break,
     html.Div("PCV (Haematocrit) : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'hct'},type="number",placeholder="HCT..",style=input_style),
     html.Div(" (40% - 45%) ",style=limits_style),
 ]
 
 dengue_list = [
-    *small_break,
     html.Div("dengue test".upper(),style={**input_style,"text-decoration":"underline"}),
     html.Div("IgM  antibodies to Dengue Virus   : ",style=text_style),
     html.Div([dcc.Dropdown(["negative".upper(),"positive".upper()],"negative".upper(),id={'type':'dynamic-input','name':'dengue_igm'},style=input_style)]),
@@ -894,14 +873,14 @@ small_left_extreme = 42
 small_value_point = 182
 small_right_extreme = 375
 small_font_name = "Times-BoldItalic"
-small_font_size = 12
-small_limits_font_size = 10
+small_font_size = 13
+small_limits_font_size = 11
 big_left_extreme = 43
 big_right_extreme = 540
 big_value_point = 240
 big_font_name = "CenturySchoolBook-BoldItalic"
-big_font_size = 13
-big_limits_font_size = 12
+big_font_size = 12
+big_limits_font_size = 11
 
 size_dict = {
     "font_size":{
@@ -1115,26 +1094,30 @@ def dc_canvas(
         c.setFont(big_font_name,big_font_size)
         c.drawString(big_left_extreme,h,dc_string)
         c.line(big_left_extreme,h-5,big_left_extreme+cal_string_width(c,dc_string,big_font_name,big_font_size),h-5)
-        c.drawString(182,h-(1.2 * entity_height),poly_string)
-        c = if_draw_bold(c,polymo_value,p(polymo_value),40,70,300,h-(1.2 * entity_height))
+        h -= (entity_height * 1.2)
+        c.drawString(182,h,poly_string)
+        c = if_draw_bold(c,polymo_value,p(polymo_value),40,70,300,h)
         c.setFont(big_font_name,big_limits_font_size)
-        c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(1.2 * entity_height),"( 40 - 70 %)")
+        c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h,"( 40 - 70 %)")
         c.setFont(big_font_name,big_font_size)
-        c.drawString(182,h-(2.2 * entity_height),lympho_string)
-        c = if_draw_bold(c,lympho_value,p(lympho_value),20,40,300,h-(2.2 * entity_height))
+        h -= entity_height
+        c.drawString(182,h,lympho_string)
+        c = if_draw_bold(c,lympho_value,p(lympho_value),20,40,300,h)
         c.setFont(big_font_name,big_limits_font_size)
-        c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(2.2 * entity_height),"( 20 - 40 %)")
+        c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h,"( 20 - 40 %)")
         c.setFont(big_font_name,big_font_size)
-        c.drawString(182,h-(3.2 * entity_height),eosino_string)
-        c = if_draw_bold(c,esino_value,p(esino_value),2,6,300,h-(3.2 * entity_height))
+        h -= entity_height
+        c.drawString(182,h,eosino_string)
+        c = if_draw_bold(c,esino_value,p(esino_value),2,6,300,h)
         c.setFont(big_font_name,big_limits_font_size)
-        c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(3.2 * entity_height),"( 02 - 06 %)")
+        c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h,"( 02 - 06 %)")
         c.setFont(big_font_name,big_font_size)
-        c.drawString(182,h-(4.2 * entity_height),mono_string)
-        c = if_draw_bold(c,mono_value,p(mono_value),1,4,300,h-(4.2 * entity_height))
+        h -= entity_height
+        c.drawString(182,h,mono_string)
+        c = if_draw_bold(c,mono_value,p(mono_value),1,4,300,h)
         c.setFont(big_font_name,big_limits_font_size)
-        c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h-(4.2 * entity_height),"( 01 - 04 %)")
-    return c,h-(entity_height * 1.5)
+        c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h,"( 01 - 04 %)")
+    return c,h-entity_height
 
 # done
 def crp_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
@@ -1145,15 +1128,14 @@ def crp_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18)
     limit_b = 6
     if page_size == "SMALL/A5":
         x = 0
-        c.setFont(small_font_name,small_limits_font_size-2)
-        c.drawString(small_left_extreme,h-10,"(Turbidmetric Immunoassay)")
     else:
         x = 1
         entity_height += 5
-        c.setFont(big_font_name,big_limits_font_size-2)
-        c.drawString(big_left_extreme,h-10,"(Turbidmetric Immunoassay)")
     c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
-    return c, h - entity_height - 5
+    c.setFont(size_dict["font_name"][x],size_dict["limits_font"][x])
+    h -= 10
+    c.drawString(size_dict["left_extreme"][x],h,"(Turbidmetric Immunoassay)")
+    return c, h - entity_height
 
 # done
 def widal_canvas(c:canvas.Canvas,widal_values,page_size:str,h:int,entity_height=18):

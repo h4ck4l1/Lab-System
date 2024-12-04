@@ -375,7 +375,7 @@ def save_table_changes(n_clicks,data,date:str):
         raise PreventUpdate
     if n_clicks:
         pd.read_csv(f"assets/all_files/{date.replace("-","_")}.csv",dtype=dtype_map).to_csv(f"assets/pre_change_folder/{date.replace("-","_")}_{time.asctime().split(" ")[4].replace(":","_")}.csv",index=False)
-        df = pd.DataFrame(data=data,dtype=dtype_map)
+        df = pd.DataFrame(data=data)
         df = df.iloc[:-1,:]
         save_df(df,date)
         return data
