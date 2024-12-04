@@ -58,8 +58,6 @@ dropdown_options = [
 
 app.layout = dcc.Loading(
     [
-        dcc.Store(id="data-store",storage_type="local"),
-        dcc.Store(id="patient-data-store",storage_type="local"),
         dcc.Location("url",refresh=False),
         html.Div(
             [

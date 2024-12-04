@@ -1,4 +1,4 @@
-import time
+import time,os
 from datetime import date
 from glob import glob
 import numpy as np
@@ -90,7 +90,6 @@ register_layout = html.Div(
                     date=date.today(),
                     style=dict(position="absolute",left="350px")
                 ),
-                html.Button("REFRESH",id="refresh-button",style=dict(position="absolute",height="100px",width="100px",left="600px",color="red",fontSize=20,borderRadius="20px",backgroundColor="#4b70f5"))
             ],
             style=dict(display="flex",alignItems="center")
         ),
@@ -221,45 +220,35 @@ def save_df(df,date_value:str):
 
 
 @callback(
-    [
-        Output("data-table","data"),
-        Output("data-store","data")
-    ],
-    Input("refresh-button","n_clicks"),
-    State("date-pick-single","date")
+    Output("data-table","data"),
+    Input("date-pick-single","date")
 )
-def initialize_df(n_clicks,date_value:str):
-    if not n_clicks:
-        raise PreventUpdate
-    if ctx.triggered_id == 'refresh-button':
-        file = glob(f"assets/all_files/{date_value.replace("-","_")}.csv")
-        if file != []:
-            df = pd.read_csv(file[0],dtype=dtype_map)
+def initialize_df(date_value:str):
+    file_path = f"assets/all_files/{date_value.replace("-","_")}.csv"
+    if os.path.exists(file_path):
+            df = pd.read_csv(file_path,dtype=dtype_map)
             df = df.iloc[:-1,:]
-            df.loc[df.shape[0]+1,:] = [np.nan] * df.shape[1]
-            df.loc[df.shape[0],"Amount"] = df.loc[:,"Amount"].sum()
-            df.loc[df.shape[0],"Due"] = df.loc[:,"Due"].sum()
-        else:
-            df = pd.DataFrame(
-                {
-                    "S.No.":pd.Series(dtype="str"),
-                    "Date":pd.Series(dtype="str"),
-                    "Time":pd.Series(dtype="str"),
-                    "Patient Name":pd.Series(dtype="str"),
-                    "Reference By":pd.Series(dtype="str"),
-                    "Patient Age":pd.Series(dtype="int8"),
-                    "Age Group":pd.Series(dtype="str"),
-                    "Gender":pd.Series(dtype="str"),
-                    "Amount":pd.Series(dtype="float64"),
-                    "Method":pd.Series(dtype="str"),
-                    "Phone No":pd.Series(dtype="int64"),
-                    "Paid":pd.Series(dtype="str"),
-                    "Due":pd.Series(dtype="float64"),
-                    "Sample":pd.Series(dtype="str")
-                }
-            )
-            save_df(df,date_value)
-        return df.to_dict('records'),{"date":date_value.replace("-","_")}
+    else:
+        df = pd.DataFrame(
+            {
+                "S.No.":pd.Series(dtype="str"),
+                "Date":pd.Series(dtype="str"),
+                "Time":pd.Series(dtype="str"),
+                "Patient Name":pd.Series(dtype="str"),
+                "Reference By":pd.Series(dtype="str"),
+                "Patient Age":pd.Series(dtype="int8"),
+                "Age Group":pd.Series(dtype="str"),
+                "Gender":pd.Series(dtype="str"),
+                "Amount":pd.Series(dtype="float64"),
+                "Method":pd.Series(dtype="str"),
+                "Phone No":pd.Series(dtype="int64"),
+                "Paid":pd.Series(dtype="str"),
+                "Due":pd.Series(dtype="float64"),
+                "Sample":pd.Series(dtype="str")
+            }
+        )
+    save_df(df,date_value)
+    return df.to_dict('records')
 
 
 input_vals_dict = {
@@ -377,18 +366,18 @@ def append_name_to_dataframe(n_clicks,*vals):
     Input("save-changes-button","n_clicks"),
     [
         State("data-table","data"),
-        State("data-store","data")
+        State("date-pick-single","date")
     ],
     prevent_initial_call=True
 )
-def save_table_changes(n_clicks,data,date_value:dict):
+def save_table_changes(n_clicks,data,date:str):
     if not n_clicks:
         raise PreventUpdate
     if n_clicks:
-        pd.read_csv(f"assets/all_files/{date_value["date"]}.csv",dtype=dtype_map).to_csv(f"assets/pre_change_folder/{date_value["date"]}_{time.asctime().split(" ")[4].replace(":","_")}.csv",index=False)
-        df = pd.DataFrame(data=data)
+        pd.read_csv(f"assets/all_files/{date.replace("-","_")}.csv",dtype=dtype_map).to_csv(f"assets/pre_change_folder/{date.replace("-","_")}_{time.asctime().split(" ")[4].replace(":","_")}.csv",index=False)
+        df = pd.DataFrame(data=data,dtype=dtype_map)
         df = df.iloc[:-1,:]
-        save_df(df,date_value["date"])
+        save_df(df,date)
         return data
 
 def convert_to_pdf(date_value):
