@@ -12,7 +12,6 @@ from dash.exceptions import PreventUpdate
 
 registerFont(TTFont("CenturySchoolBook-BoldItalic","assets/schlbkbi.ttf"))
 
-
 big_break = [html.Br()] * 5
 large_break = [html.Br()] * 10
 small_break = [html.Br()] * 2
@@ -153,6 +152,8 @@ layout = html.Div(
             date=date.today(),
             style=dict(positon="relative",left="500px",bottom="120px")
         ),
+        html.Button("clear data".upper(),id="clear-button",style=dict(position="relative",left="800px",width="200px",height="75px",fontSize=30,color="cyan",fontWeight=700,backgroundColor="red")),
+        html.Div(id="clear-div",style=dict(position="relative",left="50px",fontSize=30)),
         *large_break,
         html.Div(reports_dropdown,style=dict(width="650px",fontWeight=700,alignItems="center")),
         html.Div(page_size_dropdown,style=dict(width="200px",fontWeight=700,alignItems="center",position="relative",left="650px",bottom="50px")),
@@ -831,19 +832,32 @@ def get_df_item(p_sn:str,item_name:str,df:pd.DataFrame):
 @callback(
     [
         Output("output-report","children"),
-        Output("output-report-boxes","children")
+        Output("output-report-boxes","children"),
+        Output("clear-div","children")
     ],
     [
         Input("patients-dropdown","value"),
         Input("reports-dropdown","value"),
         Input("template-dropdown","value")
     ],
-    State("date-pick-reports","date")
+    State("date-pick-reports","date"),
+    prevent_initial_call=True
 )
 def preview_report_divs(patients_sno,reports_value,template_value,date):
     if patients_sno:
         df = pd.read_csv(f"assets/all_files/{date.replace("-","_")}.csv",dtype=dtype_map)
         df = df.iloc[:-1,:]
+        year,month,day = date.split("-")
+        os.makedirs(f"assets/{year}/{month}/{day}",exist_ok=True)
+        conn = duckdb.connect(f"assets/{year}/{month}/{day}/{date.replace("-","_")}.duckdb")
+        conn.execute(
+            """
+            create table if not exists patients (
+                id text primary key,
+                tests text
+            )
+            """
+        )
         patients_details = [
                 html.Div(f"Patient Name: {get_df_item(patients_sno,item_name='Patient Name',df=df)}"),
                 html.Br(),
@@ -853,34 +867,67 @@ def preview_report_divs(patients_sno,reports_value,template_value,date):
                 html.Br(),
                 html.Div(f"Date: {get_df_item(patients_sno,item_name="Date",df=df)}   Collection Time: {get_df_item(patients_sno,item_name='Time',df=df)}")
             ]
-        report_details = []
-        all_options = []
+        all_opts = []
+        if (conn.query(f"select * from patients where id = {patients_sno}").df().shape[0] == 0):
+            tests_names = []
+            is_present = False
+        else:
+            tests_names = json.loads(conn.query(f"select * from patients where id = {patients_sno}").df()["tests"].item())
+            if tests_names == []:
+                is_present = False
+            else:
+                is_present = True
         if reports_value:
             for x in reports_value:
-                if x not in report_details:
-                    report_details += reports_original_dict[x]
-                    all_options.append(x)
+                all_opts.append(x)
                 if x not in tests_names:
                     tests_names.append(x)
-        # print(f"\n\n final tests after reports: {tests_names}\n\n")
+        print(f"\n\n final tests after reports: {tests_names}\n\n")
         if template_value:
             template_list = json.loads(template_value)
             for x in template_list:
-                if x not in report_details:
-                    report_details += reports_original_dict[x]
-                    all_options.append(x)
+                all_opts.append(x)
                 if x not in tests_names:
                     tests_names.append(x)
-        # print(f"\n\n final tests after templates: {tests_names}\n\n")
+        print(f"\n\n final tests after templates: {tests_names}\n\n")
         for x in tests_names:
-            if x not in all_options:
+            if x not in all_opts:
                 tests_names.remove(x)
-        # print(f"\n\n final tests: {tests_names}\n\n")
-        if len(report_details) == 0:
-            return patients_details,"Select Test to Display"
+        print(f"\n\n final tests after all opts: {tests_names}\n\n")
+        conn.execute(f"insert or replace into patients (id, tests) values ('{patients_sno}','{json.dumps(tests_names)}')")
+        conn.close()
+        report_details = []
+        for x in tests_names:
+            report_details += reports_original_dict[x]
+        if is_present:
+            present_string = ["Data is present with data:",html.Br(),re.sub(r'[\[\],\"]',' ',json.dumps(tests_names))]
         else:
-            return patients_details,report_details
-    return "Select a Serial Number To Display","Select a Test wit Serial Number to Display"
+            present_string = ""
+        if len(report_details) == 0:
+            return patients_details,"Select Test to Display",present_string
+        else:
+            return patients_details,report_details,present_string
+    return "Select a Serial Number To Display","Select a Test wit Serial Number to Display",""
+
+
+@callback(
+    Output("clear-div","children",allow_duplicate=True),
+    Input("clear-button","n_clicks"),
+    [
+        State("date-pick-reports","date"),
+        State("patients-dropdown","value")
+    ],
+    prevent_initial_call=True
+)
+def clear_data_in_sno(n_clicks,date:str,patients_sno:str):
+    if n_clicks:
+        year,month,day = date.split("-")
+        conn = duckdb.connect(f"assets/{year}/{month}/{day}/{date.replace("-","_")}.duckdb")
+        conn.execute(f"delete from patients where id = '{patients_sno}'")
+        conn.close()
+        return "Data is cleared"
+        
+
 
 small_left_extreme = 42
 small_value_point = 182
@@ -2360,6 +2407,10 @@ def submit_and_preview_report(
     if not n_clicks:
         raise PreventUpdate
     if ctx.triggered_id == "submit-report-button":
+        year,month,day = date.split("-")
+        conn = duckdb.connect(f"assets/{year}/{month}/{day}/{date.replace("-","_")}.duckdb")
+        tests_names = json.loads(conn.query(f"select * from patients where id = {patients_sno}").df()["tests"].item())
+        conn.close()
         name_pattern = re.compile(r"bill-\d+-name")
         value_pattern = re.compile(r"bill-\d+-value")
         bill_names_list = []
@@ -2464,12 +2515,6 @@ def submit_and_preview_report(
                 "transform-origin":"0 0"
             }
         )
-
-        
-
-    
-
-
 
 register_page(
     "ReportsPage",
