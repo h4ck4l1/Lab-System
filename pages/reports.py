@@ -1,4 +1,4 @@
-import json,os,time,re
+import json,os,time,re,duckdb
 from datetime import date
 import pandas as pd
 from glob import glob
@@ -136,7 +136,8 @@ templates_dropdown = dcc.Dropdown(
         {"label":"RFT","value":json.dumps(["Blood Urea","Serum Creatinine","Uric Acid"])},
         {"label":"Lipid Profile","value":json.dumps(["Lipid Profile"])},
         {"label":"Liver Function Test","value":json.dumps(["Total Bilirubin","Direct & Indirect Bilirubin","SGOT","SGPT","ALKP"])},
-        {"label":"Full Electrolytes","value":json.dumps(["Serum Amylase","Serum Lipase","Serum Protein","Serum Albumin","Serum Globulin","Serum A/G Ratio","Electrolytes"])}
+        {"label":"Full Electrolytes","value":json.dumps(["Serum Amylase","Serum Lipase","Serum Protein","Serum Albumin","Serum Globulin","Serum A/G Ratio","Electrolytes"])},
+        {"label":"All options","value":json.dumps(all_options)}
     ],
     id="template-dropdown"
 )
@@ -229,14 +230,22 @@ crp_list = [
 ]
 
 malaria_list = [
-    html.Div("Test For Malaria Parasite (M.P): NON-REACTIVE",style=text_style),
-    html.Div([dcc.Dropdown(["Long".upper(),"Short".upper()],"Short".upper(),id={'type':'dynamic-input','name':'malaria-test'})],style={**input_style,"left":"700px"})
+    *small_break,
+    html.Div("Test For Malaria Parasite (M.P): ",style=text_style),
+    html.Div(dcc.Dropdown(["non-reactive".upper(),"reactive".upper()],"non-reactive".upper(),id={"type":"dynamic-input","name":"malaria-mp"}),style={**input_style,"left":"500px","width":"200px"}),
+    html.Div([dcc.Dropdown(["Long".upper(),"Short".upper()],"Short".upper(),id={'type':'dynamic-input','name':'malaria-test'})],style={**input_style,"left":"750px","bottom":"25px"}),
+    html.Div("PLasmodium Vivex: ",style=text_style),
+    html.Div(dcc.Dropdown(["non-reactive".upper(),"reactive".upper()],"non-reactive".upper(),id={"type":"dynamic-input","name":"malaria-vivex"}),style={**input_style,"left":"500px","width":"200px"}),
+    html.Br(),
+    html.Div("PLasmodium Falciparum: ",style=text_style),
+    html.Div(dcc.Dropdown(["non-reactive".upper(),"reactive".upper()],"non-reactive".upper(),id={"type":"dynamic-input","name":"malaria-falci"}),style={**input_style,"left":"500px","width":"200px"}),
+    *small_break
 ]
 
 widal_list = [
     html.Div("Blood for Widal : ",style=text_style),
     html.Div([dcc.Dropdown(["NON-REACTIVE","REACTIVE"],"REACTIVE",id={'type':'dynamic-input','name':'widal'})],style={**input_style,"width":"200px"}),
-    html.Div([dcc.Dropdown(["SHORT","LONG"],"LONG",id={'type':'dynamic-input','name':'widal-form'})],style=dict(position="relative",left="600px",bottom="50px",width="100px",height="50px")),
+    html.Div([dcc.Dropdown(["SHORT","LONG"],"LONG",id={'type':'dynamic-input','name':'widal-form'})],style=dict(position="relative",left="600px",bottom="50px",width="150px",height="50px")),
     html.Br(),
     html.Div(["OT-1 :",html.Div(dcc.Dropdown([160,80,40],80,id={'type':'dynamic-input','name':'widal-ot-react'}),style=dict(width="100px")),"dilutions"],style=dict(display="flex",gap="40px",position="relative",left="450px")),
     html.Br(),
@@ -245,6 +254,7 @@ widal_list = [
     html.Div("AH-1 : 40 dilutions",style=dict(position="relative",left="450px")),
     html.Br(),
     html.Div("BH-1 : 40 dilutions",style=dict(position="relative",left="450px")),
+    *small_break
 ]
 
 blood_group_list = [
@@ -321,6 +331,7 @@ hct_list = [
 ]
 
 dengue_list = [
+    *small_break,
     html.Div("dengue test".upper(),style={**input_style,"text-decoration":"underline"}),
     html.Div("IgM  antibodies to Dengue Virus   : ",style=text_style),
     html.Div([dcc.Dropdown(["negative".upper(),"positive".upper()],"negative".upper(),id={'type':'dynamic-input','name':'dengue_igm'},style=input_style)]),
@@ -343,6 +354,7 @@ full_cbp_list = [
 ]
 
 heamogram_list = [
+    *small_break,
     *hb_list,
     html.Div("Total RBC Count : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'rbc-count'},type="number",placeholder="Rbc Count..",style=input_style),
@@ -383,7 +395,7 @@ hba1c_list = [
     html.Div("Esitmiated Average Glucose (eAG): ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'hba1c_second'},type="number",placeholder="Type Hba1c mg/dl..",style={**input_style,"left":"500px"}),
     html.Div("mg/dl",style={**limits_style,"left":"700px"}),
-    html.Div([dcc.Dropdown(["SMALL","LONG"],"LONG",id={'type':'dynamic-input','name':'hba1c_dropdown'})],style={**limits_style,"width":"150px","left":"800px","bottom":"25px"}),
+    html.Div([dcc.Dropdown(["SMALL","LONG"],"LONG",id={'type':'dynamic-input','name':'hba1c_dropdown'})],style={**limits_style,"width":"150px","left":"800px","bottom":"75px"}),
 ]
 
 blood_urea_list = [
@@ -512,7 +524,8 @@ pt_aptt_list = [
 mantaoux_list = [
     *small_break,
     html.Div("mantoux test :".upper(),style=text_style),
-    html.Div([dcc.Dropdown(["positive".upper(),"negative".upper()],"negative".upper(),id={'type':'dynamic-input','name':'mantoux_test'})],style=input_style)
+    html.Div([dcc.Dropdown(["positive".upper(),"negative".upper()],"negative".upper(),id={'type':'dynamic-input','name':'mantoux_test'})],style=input_style),
+    *small_break
 ]
 
 sugar_random_list = [
@@ -852,6 +865,7 @@ def preview_report_divs(patients_sno,reports_value,template_value,date):
                     all_options.append(x)
                 if x not in tests_names:
                     tests_names.append(x)
+        # print(f"\n\n final tests after reports: {tests_names}\n\n")
         if template_value:
             template_list = json.loads(template_value)
             for x in template_list:
@@ -860,9 +874,11 @@ def preview_report_divs(patients_sno,reports_value,template_value,date):
                     all_options.append(x)
                 if x not in tests_names:
                     tests_names.append(x)
+        # print(f"\n\n final tests after templates: {tests_names}\n\n")
         for x in tests_names:
             if x not in all_options:
                 tests_names.remove(x)
+        # print(f"\n\n final tests: {tests_names}\n\n")
         if len(report_details) == 0:
             return patients_details,"Select Test to Display"
         else:
@@ -1089,6 +1105,7 @@ def dc_canvas(
         c = if_draw_bold(c,mono_value,p(mono_value),1,4,260,h)
         c.setFont(small_font_name,small_limits_font_size)
         c.drawString(small_right_extreme-cal_string_width(c,"( 40 - 70 %)",small_font_name,small_limits_font_size),h,"( 01 - 04 %)")
+        return c, h - entity_height
     else:
         entity_height += 5
         c.setFont(big_font_name,big_font_size)
@@ -1117,7 +1134,7 @@ def dc_canvas(
         c = if_draw_bold(c,mono_value,p(mono_value),1,4,300,h)
         c.setFont(big_font_name,big_limits_font_size)
         c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h,"( 01 - 04 %)")
-    return c,h-entity_height
+        return c,h-(entity_height * 0.5)
 
 # done
 def crp_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
@@ -1155,10 +1172,16 @@ def widal_canvas(c:canvas.Canvas,widal_values,page_size:str,h:int,entity_height=
         if widal_value == "reactive".upper():
             c = bold_it(small_value_point,h)
             c.setFont(small_font_name,small_limits_font_size)
-            c.drawString(small_right_extreme-cal_string_width(c,ot_string,small_font_name,small_limits_font_size)-100,h-(entity_height * 0.8),ot_string)
-            c.drawString(small_right_extreme-cal_string_width(c,ht_string,small_font_name,small_limits_font_size)-100,h-(entity_height * 1.5),ht_string)
-            c.drawString(small_right_extreme-cal_string_width(c,ah_string,small_font_name,small_limits_font_size),h-(entity_height * 0.8),ah_string)
-            c.drawString(small_right_extreme-cal_string_width(c,bh_string,small_font_name,small_limits_font_size),h-(entity_height * 1.5),bh_string)
+            if widal_form == "SHORT":
+                c.drawString(small_right_extreme-cal_string_width(c,ot_string,small_font_name,small_limits_font_size)-100,h-(entity_height * 0.8),ot_string)
+                c.drawString(small_right_extreme-cal_string_width(c,ht_string,small_font_name,small_limits_font_size)-100,h-(entity_height * 1.5),ht_string)
+                c.drawString(small_right_extreme-cal_string_width(c,ah_string,small_font_name,small_limits_font_size),h-(entity_height * 0.8),ah_string)
+                c.drawString(small_right_extreme-cal_string_width(c,bh_string,small_font_name,small_limits_font_size),h-(entity_height * 1.5),bh_string)
+            else:
+                c.drawString(small_right_extreme-cal_string_width(c,ot_string,small_font_name,small_limits_font_size),h-(entity_height * 0.8),ot_string)
+                c.drawString(small_right_extreme-cal_string_width(c,ht_string,small_font_name,small_limits_font_size),h-(entity_height * 1.5),ht_string)
+                c.drawString(small_right_extreme-cal_string_width(c,ah_string,small_font_name,small_limits_font_size),h-(entity_height * 2.2),ah_string)
+                c.drawString(small_right_extreme-cal_string_width(c,bh_string,small_font_name,small_limits_font_size),h-(entity_height * 2.9),bh_string)
             h -= (entity_height * 2.5)
         else:
             c.drawString(small_value_point,h,":  non-reactive".upper())
@@ -1654,7 +1677,8 @@ def uric_acid_cavnas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_heig
     return c,h-entity_height
 
 # done
-def malaria_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
+def malaria_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
+    mp,value,vivex,falci = values
     if page_size == "SMALL/A5":
         x = 0
     else:
@@ -1662,16 +1686,16 @@ def malaria_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=1
     c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
     c.drawString(size_dict["left_extreme"][x],h,"Blood for M.P. Parasite")
     if value == "SHORT":
-        c.drawString(size_dict["value_point"][x],h,": non - reactive  (kit method)".upper())
+        c.drawString(size_dict["value_point"][x],h,f": {mp}  (kit method)".upper())
     else:
-        c.drawString(size_dict["value_point"][x],h,": non - reactive".upper())
+        c.drawString(size_dict["value_point"][x],h,f":  {mp}")
         h -= (entity_height)
         c.drawString(size_dict["left_extreme"][x],h,"Plasmodium Vivex")
-        c.drawString(size_dict["value_point"][x],h,": non - reactive".upper())
+        c.drawString(size_dict["value_point"][x],h,f":  {vivex}")
         h -= (entity_height)
         c.drawString(size_dict["left_extreme"][x],h,"Plasmodium Falciparum")
-        c.drawString(size_dict["value_point"][x],h,": non - reactive  (kit method)".upper())
-    return c,h-(entity_height + 5)
+        c.drawString(size_dict["value_point"][x],h,f":  {falci}  (kit method)".upper())
+    return c,h-(entity_height)
 
 # done
 def blood_urea_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
@@ -2187,7 +2211,7 @@ report_canvas_values_dict = {
     "Widal":"Widal",
     "CRP":"crp",
     "ESR":"esr",
-    "Malaria":"malaria-test",
+    "Malaria":"malaria-full",
     "DENGUE":"dengue-test",
     "Full CBP":"cbp",
     "Blood Group":"blood-group",
@@ -2348,54 +2372,75 @@ def submit_and_preview_report(
             if id['name'] in ['polymo','lympho','esino']:
                 temp_dict["dc_count"] = temp_dict.get("dc_count",[])
                 temp_dict["dc_count"].append(value)
+                continue
             if ("Widal" in tests_names) & (id['name'] in ['widal','widal-form','widal-ot-react','widal-ht-react']):
                 temp_dict['Widal'] = temp_dict.get('Widal',[])
                 temp_dict['Widal'].append(value)
+                continue
+            if ("Malaria" in tests_names) & (id['name'] in ["malaria-mp","malaria-vivex","malaria-falci","malaria-test"]):
+                temp_dict["malaria-full"] = temp_dict.get("malaria-full",[])
+                temp_dict["malaria-full"].append(value)
+                continue
             if ("Direct & Indirect Bilirubin" in tests_names) & (id["name"] in ["total-bili","direct-bili"]):
                 temp_dict["all_bili"] = temp_dict.get("all_bili",[])
                 temp_dict["all_bili"].append(value)
+                continue
             if("Full CBP" in tests_names) & (id['name'] in ['hb','rbc-count','hct','tc_count','plt_count','esr','polymo','lympho','esino']):
                 temp_dict["cbp"] = temp_dict.get("cbp",[])
                 temp_dict["cbp"].append(value)
+                continue
             if ("Heamogram" in tests_names) & (id["name"] in ['hb','rbc-count','hct','tc_count','plt_count','mcv','mch','mchc','esr','polymo','lympho','esino','heamo-rbc','blast-cells','platelet-opinion','hemoparasites-opinion','total-opinion']):
                 temp_dict["heamo"] = temp_dict.get("heamo",[])
                 temp_dict["heamo"].append(value)
+                continue
             if ("HBA1C" in tests_names) & (id['name'] in ['hba1c_first','hba1c_second','hba1c_dropdown']):
                 temp_dict["hba1c"] = temp_dict.get("hba1c",[])
                 temp_dict["hba1c"].append(value)
+                continue
             if ("Electrolytes" in tests_names) & (id['name'] in ["serum_sodium","serum_potassium","serum_chloride","serum_calcium"]):
                 temp_dict["electrolytes"] = temp_dict.get("electrolytes",[])
                 temp_dict["electrolytes"].append(value)
+                continue
             if ("Lipid Profile" in tests_names) & (id['name'] in ['lipid_tc','lipid_hdl','lipid_ldl','lipid_vldl','lipid_tri']):
                 temp_dict["full-lipid"] = temp_dict.get("full-lipid",[])
                 temp_dict["full-lipid"].append(value)
+                continue
             if ("Liver Function Test" in tests_names) & (id['name'] in ['total-bili','direct-bili','sgot','sgpt','alkp']):
                 temp_dict["liver-function-test"] = temp_dict.get("liver-function-test",[])
                 temp_dict["liver-function-test"].append(value)
+                continue
             if ("DENGUE" in tests_names) & (id['name'] in ['dengue_igm','dengue_igg','dengue_ns']):
                 temp_dict["dengue-test"] = temp_dict.get("dengue-test",[])
                 temp_dict["dengue-test"].append(value)
+                continue
             if ("RA Factor" in tests_names) & (id['name'] in ['ra-factor','ra-dilutions']):
                 temp_dict["full-ra-factor"] = temp_dict.get("full-ra-factor",[])
                 temp_dict["full-ra-factor"].append(value)
+                continue
             if ("ASO Titre" in tests_names) & (id['name'] in ['aso_titre','aso_titre_dilutions']):
                 temp_dict["full-aso-titre"] = temp_dict.get("full-aso-titre",[])
                 temp_dict["full-aso-titre"].append(value)
+                continue
             if ("Urine Analysis" in tests_names) & (id['name'] in ['urine-drop','urine_sugar','urine_albumin','urine_bs','urine_bp','urine_first_pus','urine_second_pus','urine_first_rbc','urine_second_rbc','urine_first_casts','urine_second_casts','urine_first_crystals','urine_second_crystals','urine_first_ep','urine_second_ep']):
                 temp_dict["full-urine"] = temp_dict.get("full-urine",[])
                 temp_dict["full-urine"].append(value)
+                continue
             if ("PT APTT" in tests_names) & (id['name'] in ['pt_control','pt_inr','aptt_control']):
                 temp_dict["full-pt-aptt"] = temp_dict.get("full-pt-aptt",[])
                 temp_dict["full-pt-aptt"].append(value)
+                continue
             if ("BT" in tests_names) & (id['name'] in ['bt_min','bt_sec']):
                 temp_dict["full-bt"] = temp_dict.get("full-bt",[])
                 temp_dict["full-bt"].append(value)
+                continue
             if ("CT" in tests_names) & (id['name'] in ['ct_min','ct_sec']):
                 temp_dict["full-ct"] = temp_dict.get("full-ct",[])
                 temp_dict["full-ct"].append(value)
+                continue
             if ("Semen Analysis" in tests_names) & (id['name'] in ['semen-volume','semen-liq','semen-ph','semen-count','semen-mot','semen-morph','semen-wbc-first','semen-wbc-second','semen-rbc-first','semen-rbc-second','semen-comments']):
                 temp_dict["full-semen"] = temp_dict.get("full-semen",[])
                 temp_dict["full-semen"].append(value)
+                continue
             if ("BILL" in tests_names):
                 temp_dict["total-bill"] = temp_dict.get("total-bill",[])
                 if name_pattern.match(id['name']):
@@ -2403,7 +2448,6 @@ def submit_and_preview_report(
                 if value_pattern.match(id['name']):
                     bill_values_list.append(value)
                 temp_dict["total-bill"] = [bill_names_list,bill_values_list]
-
             temp_dict[id['name']] = value
         temp_dict["page-size"] = page_size
         zoom_levels = {
