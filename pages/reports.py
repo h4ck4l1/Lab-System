@@ -16,7 +16,6 @@ registerFont(TTFont("CenturySchoolBook-BoldItalic","assets/schlbkbi.ttf"))
 big_break = [html.Br()] * 5
 large_break = [html.Br()] * 10
 small_break = [html.Br()] * 2
-tests_names =[]
 limits_style = dict(position="relative",left="550px",bottom="45px",fontSize=18)
 input_style = dict(width="150px",height="25px",position="relative",left="360px",bottom="20px",fontSize=20)
 text_style = dict(position="relative",left="80px",fontSize=20)
@@ -842,8 +841,6 @@ def get_df_item(p_sn:str,item_name:str,df:pd.DataFrame):
     State("date-pick-reports","date")
 )
 def preview_report_divs(patients_sno,reports_value,template_value,date):
-
-    global tests_names
     if patients_sno:
         df = pd.read_csv(f"assets/all_files/{date.replace("-","_")}.csv",dtype=dtype_map)
         df = df.iloc[:-1,:]
