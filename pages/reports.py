@@ -906,41 +906,34 @@ def preview_report_divs(patients_sno,reports_value,template_value,date):
                 html.Div(f"Date: {get_df_item(patients_sno,item_name="Date",df=df)}   Collection Time: {get_df_item(patients_sno,item_name='Time',df=df)}")
             ]
         all_opts = []
-        if (conn.query(f"select * from patients where id = {patients_sno}").df().shape[0] == 0):
+        condition = (conn.query(f"select * from patients where id = {patients_sno}").df().shape[0] == 0)
+        if condition:
             tests_names = []
-            is_present = False
         else:
             tests_names = json.loads(conn.query(f"select * from patients where id = {patients_sno}").df()["tests"].item())
-            if tests_names == []:
-                is_present = False
-            else:
-                is_present = True
         if reports_value:
             for x in reports_value:
                 all_opts.append(x)
                 if x not in tests_names:
                     tests_names.append(x)
-        print(f"\n\n final tests after reports: {tests_names}\n\n")
         if template_value:
             template_list = json.loads(template_value)
             for x in template_list:
                 all_opts.append(x)
                 if x not in tests_names:
                     tests_names.append(x)
-        print(f"\n\n final tests after templates: {tests_names}\n\n")
         for x in tests_names:
             if x not in all_opts:
                 tests_names.remove(x)
-        print(f"\n\n final tests after all opts: {tests_names}\n\n")
         conn.execute(f"insert or replace into patients (id, tests) values ('{patients_sno}','{json.dumps(tests_names)}')")
         conn.close()
         report_details = []
         for x in tests_names:
             report_details += reports_original_dict[x]
-        if is_present:
-            present_string = ["Data is present with data:",html.Br(),re.sub(r'[\[\],\"]',' ',json.dumps(tests_names))]
-        else:
+        if tests_names == []:
             present_string = ""
+        else:
+            present_string = ["Data is present with data:",html.Br(),re.sub(r'[\[\],\"]',' ',json.dumps(tests_names))]
         if len(report_details) == 0:
             return patients_details,"Select Test to Display",present_string
         else:
