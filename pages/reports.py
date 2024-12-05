@@ -944,9 +944,6 @@ def preview_report_divs(patients_sno,reports_value,template_value,date,tab_id):
 
 
 
-        
-
-
 small_left_extreme = 42
 small_value_point = 182
 small_right_extreme = 375
@@ -2104,6 +2101,7 @@ def electrolytes_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_h
     else:
         x = 1
         entity_height += 5
+    c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
     c.drawString(size_dict["value_point"][x],h,"electrolytes".upper())
     h -= entity_height
     c,h = serum_sodium_canvas(c,sod,page_size,h,entity_height)
