@@ -548,7 +548,7 @@ sugar_fasting_list = [
 
 post_pandial_list = [
     *small_break,
-    html.Div("Blood Sugar (Post Pandial):",style=text_style),
+    html.Div("Blood Sugar (PP):",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'pp_sugar'},type="number",placeholder="Type PP Sugar..",style=input_style),
     html.Div(" ( 70 - 180 mg/dl )",style=limits_style)
 ]
@@ -556,13 +556,13 @@ post_pandial_list = [
 urine_sugar_random_list = [
     *small_break,
     html.Div("Urine Sugar (Random):",style=text_style),
-    dcc.Input(id={"type":"dynamic-input","name":"urine_random_sugar"},type="number",placeholder="Type Random Urine",style=input_style),
+    dcc.Input(id={"type":"dynamic-input","name":"urine_random_sugar"},type="text",placeholder="Type Random Urine",value="NIL",style=input_style),
 ]
 
 urine_sugar_fasting_list = [
     *small_break,
     html.Div("Urine Sugar (Fasting):",style=text_style),
-    dcc.Input(id={"type":"dynamic-input","name":"urine_fasting_sugar"},type="number")
+    dcc.Input(id={"type":"dynamic-input","name":"urine_fasting_sugar"},type="text",placeholder="Type Fasting Urine",value="NIL",style=input_style)
 ]
 
 stool_test_list = [
@@ -1847,7 +1847,7 @@ def post_pandial_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_hei
     else:
         x = 1
         entity_height += 5
-    c = mundane_things(c,x,text_string,value,value,limits_stirng,limit_a,limit_b,h)
+    c = mundane_things(c,x,text_string,value,value,limits_stirng,limit_a,limit_b,h,left_offset=30)
     return c,h-entity_height
 
 
@@ -1887,7 +1887,7 @@ def stool_test_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_hei
     h -= (entity_height)
     c = mundane_things(c,x,"cysts".upper(),cysts,cysts,"","","",h,if_limits=False)
     h -= (entity_height)
-    c = mundane_things(c,x,"reducing substances".upper(),red_sub,red_sub,"","","",h,if_limits=False)
+    c = mundane_things(c,x,"reducing substances".upper(),red_sub,red_sub,"","","",h,if_limits=False,left_offset=50)
     return c,h-entity_height
 
 # done
@@ -2310,6 +2310,10 @@ reports_canvas_dict = {
     "HBA1C":hb1ac_canvas,
     "Fasting Sugar":fasting_sugar_canvas,    
     "Random Sugar":random_sugar_canvas,
+    "Post Pandial Sugar":post_pandial_canvas,
+    "Urine Sugar(Fasting)":urine_fasting_canvas,
+    "Urine Sugar(Random)":urine_fasting_canvas,
+    "Stool Test":stool_test_canvas,
     "Blood Urea":blood_urea_canvas,
     "Serum Creatinine":serum_creat_canvas,
     "Uric Acid":uric_acid_cavnas,
@@ -2365,6 +2369,10 @@ report_canvas_values_dict = {
     "HBA1C":"hba1c",
     "Fasting Sugar":"fasting_sugar",    
     "Random Sugar":"random_sugar",
+    "Post Pandial Sugar":"pp_sugar",
+    "Urine Sugar(Fasting)":"urine_fasting_sugar",
+    "Urine Sugar(Random)":"urine_random_sugar",
+    "Stool Test":"stool-full",
     "Blood Urea":"blood-urea",
     "Serum Creatinine":"serum-creat",
     "Uric Acid":"uric-acid",
@@ -2586,6 +2594,10 @@ def submit_and_preview_report(
                 temp_dict["full-semen"] = temp_dict.get("full-semen",[])
                 temp_dict["full-semen"].append(value)
                 continue
+            if ("Stool Test" in tests_names) & (id['name'] in ['stool_ova','stool_cysts','stool_red']):
+                temp_dict["stool-full"] = temp_dict.get("stool-full",[])
+                temp_dict["stool-full"].append(value)
+                continue
             if ("BILL" in tests_names):
                 temp_dict["total-bill"] = temp_dict.get("total-bill",[])
                 if name_pattern.match(id['name']):
@@ -2596,8 +2608,8 @@ def submit_and_preview_report(
             temp_dict[id['name']] = value
         temp_dict["page-size"] = page_size
         zoom_levels = {
-        "BIG/A4": 1.0,
-        "SMALL/A5": 1.0
+            "BIG/A4": 1.0,
+            "SMALL/A5": 1.0
         }
         df = pd.read_csv(f"assets/all_files/{date.replace("-","_")}.csv",dtype=dtype_map)
         zoom_level = zoom_levels.get(page_size,1.0)
