@@ -470,31 +470,31 @@ urine_analysis_list = [
         "-",
         dcc.Input(id={'type':'dynamic-input','name':'urine_second_pus'},type="number",value=3,style=dict(width="100px",marginRight="20px")),
         "Pus Cells"
-    ],style=dict(position="relative",left="300px",margin="10px",wordSpacing="10px")),
+    ],style=dict(position="relative",left="300px",margin="10px",wordSpacing="10px",fontSize=20)),
     html.Div([
         dcc.Input(id={'type':'dynamic-input','name':'urine_first_rbc'},type="number",placeholder="No..",value=0,style=dict(width="100px")),
         "-",
         dcc.Input(id={'type':'dynamic-input','name':'urine_second_rbc'},type="number",placeholder="No..",value=0,style=dict(width="100px",marginRight="20px")),
         "RBC  *(leaving blank means No RBC)"
-    ],style=dict(position="relative",left="300px",margin="10px",wordSpacing="10px")),
+    ],style=dict(position="relative",left="300px",margin="10px",wordSpacing="10px",fontSize=20)),
     html.Div([
         dcc.Input(id={'type':'dynamic-input','name':'urine_first_casts'},type="number",placeholder="No..",value=0,style=dict(width="100px")),
         "-",
         dcc.Input(id={'type':'dynamic-input','name':'urine_second_casts'},type="number",placeholder="No..",value=0,style=dict(width="100px",marginRight="20px")),
         "Casts  *(leaving blank means No Casts)"
-    ],style=dict(position="relative",left="300px",margin="10px",wordSpacing="10px")),
+    ],style=dict(position="relative",left="300px",margin="10px",wordSpacing="10px",fontSize=20)),
     html.Div([
         dcc.Input(id={'type':'dynamic-input','name':'urine_first_crystals'},type="number",placeholder="No..",value=0,style=dict(width="100px")),
         "-",
         dcc.Input(id={'type':'dynamic-input','name':'urine_second_crystals'},type="number",placeholder="No..",value=0,style=dict(width="100px",marginRight="20px")),
         "Crystals  *(leaving blank means No Crystals)"
-    ],style=dict(position="relative",left="300px",margin="10px",wordSpacing="10px")),
+    ],style=dict(position="relative",left="300px",margin="10px",wordSpacing="10px",fontSize=20)),
     html.Div([
         dcc.Input(id={'type':'dynamic-input','name':'urine_first_ep'},type="number",value=2,style=dict(width="100px")),
         "-",
         dcc.Input(id={'type':'dynamic-input','name':'urine_second_ep'},type="number",value=4,style=dict(width="100px",marginRight="20px")),
         "Epithelial Cells Present"
-    ],style=dict(position="relative",left="300px",margin="10px",wordSpacing="10px"))
+    ],style=dict(position="relative",left="300px",margin="10px",wordSpacing="10px",fontSize=20))
 ]
 
 urine_pregnency_list = [
@@ -563,6 +563,17 @@ urine_sugar_fasting_list = [
     *small_break,
     html.Div("Urine Sugar (Fasting):",style=text_style),
     dcc.Input(id={"type":"dynamic-input","name":"urine_fasting_sugar"},type="number")
+]
+
+stool_test_list = [
+    *small_break,
+    html.Div("STOOL TEST",style=text_style),
+    html.Div("OVA : ",style=text_style),
+    dcc.Input(id={"type":"dynamic-input","name":"stool_ova"},type="text",value="NIL",style=input_style),
+    html.Div("CYSTS : ",style=text_style),
+    dcc.Input(id={"type":"dynamic-input","name":"stool_cysts"},type="text",value="NIL",style=input_style),
+    html.Div("Reducing Substances : ",style=text_style),
+    dcc.Input(id={"type":"dynamic-input","name":"stool_red"},type="text",value="Present (++)",style=input_style)
 ]
 
 lipid_profile_list = [
@@ -802,6 +813,10 @@ reports_original_dict = {
     "CT":ct_list,
     "Random Sugar": sugar_random_list,
     "Fasting Sugar": sugar_fasting_list,
+    "Post Pandial Sugar":post_pandial_list,
+    "Urine Sugar(Fasting)":urine_sugar_fasting_list,
+    "Urine Sugar(Random)":urine_sugar_random_list,
+    "Stool Test":stool_test_list,
     "Blood for AEC Count": blood_for_aec_list,
     "RA Factor": ra_factor_list,
     "ASO Titre": aso_titre_list,
@@ -1822,6 +1837,59 @@ def random_sugar_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_hei
     c = mundane_things(c,x,text_string,value,value_string,limits_string,limit_a,limit_b,h)
     return c,h-entity_height
 
+def post_pandial_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_height=18):
+    text_string = "Blood Sugar (Post Pandial)"
+    limits_stirng = "( 70 - 180 mg/dl )"
+    limit_a = 70
+    limit_b = 180
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    c = mundane_things(c,x,text_string,value,value,limits_stirng,limit_a,limit_b,h)
+    return c,h-entity_height
+
+
+def urine_fasting_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
+    text_string = "Urine Sugar (Fasting)"
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    c = mundane_things(c,x,text_string,value,value,"","","",h,if_limits=False)
+    return c,h-entity_height
+
+
+def urine_random_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
+    text_string = "Urine Sugar (Random)"
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    c = mundane_things(c,x,text_string,value,value,"","","",h,if_limits=False)
+    return c,h-entity_height
+
+def stool_test_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
+    ova,cysts,red_sub = values
+    if page_size == "SMALL/A5":
+        x = 0
+    else:
+        x = 1
+        entity_height += 5
+    c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
+    c.drawString(size_dict["value_point"][x]//1.5,h,"stool test results".upper())
+    c.rect((size_dict["value_point"][x]//1.5)-5,h-5,cal_string_width(c,"stool test results".upper(),size_dict["font_name"][x],size_dict["font_size"][x])+10,size_dict["font_size"][x]+5)
+    h -= (entity_height * 2)
+    c = mundane_things(c,x,"ova".upper(),ova,ova,"","","",h,if_limits=False)
+    h -= (entity_height)
+    c = mundane_things(c,x,"cysts".upper(),cysts,cysts,"","","",h,if_limits=False)
+    h -= (entity_height)
+    c = mundane_things(c,x,"reducing substances".upper(),red_sub,red_sub,"","","",h,if_limits=False)
+    return c,h-entity_height
+
 # done
 def lipid_profile_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
     tc,hdl,ldl,vldl,tri = values
@@ -1863,7 +1931,13 @@ def lipid_profile_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_
     h -= entity_height
     text_string = "Triglyceride (F)"
     limits_string = "Normal < 170.0 mg/dl"
-    c = mundane_things(c,x,text_string,tri,tri,limits_string,0,170.0,h,left_offset=20)
+    c = mundane_things(c,x,text_string,tri,tri,limits_string,0,400.0,h,left_offset=20)
+    h -= 16
+    c.drawString(size_dict["right_extreme"][x]-cal_string_width(c,"BorderLine 200 - 400 mg/dl",size_dict["font_name"][x],size_dict["limits_font"][x]),h,"BorderLine 200 - 400 mg/dl")    
+    h -= 16
+    c.drawString(size_dict["right_extreme"][x]-cal_string_width(c,"High Risk 400 - 1000 mg/dl",size_dict["font_name"][x],size_dict["limits_font"][x]),h,"High Risk 400 - 1000 mg/dl")    
+    h -= 16
+    c.drawString(size_dict["right_extreme"][x]-cal_string_width(c,"Very Hight > 1000 mg/dl",size_dict["font_name"][x],size_dict["limits_font"][x]),h,"Very Hight > 1000 mg/dl")    
     return c,h-entity_height
 
 

@@ -423,4 +423,3 @@ register_page(
     layout=register_layout,
     path="/register"
 )
-
