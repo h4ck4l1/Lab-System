@@ -1893,6 +1893,12 @@ def stool_test_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_hei
 # done
 def lipid_profile_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
     tc,hdl,ldl,vldl,tri = values
+    if (hdl == 0) | (hdl == None):
+        hdl = tc/5
+    if (vldl == 0) | (vldl == None):
+        vldl = tri/5
+    if (ldl == 0) | (ldl == None):
+        ldl = tc - (hdl + vldl)
     if page_size == "SMALL/A5":
         x = 0
     else:
@@ -1912,14 +1918,14 @@ def lipid_profile_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_
     h -= (entity_height * 1.2)
     text_string = "High Density Lipoprotein"
     limits_string = "29 - 80 mg/dl"
-    c = mundane_things(c,x,text_string,hdl,hdl,limits_string,limit_a=29,limit_b=80,h=h,left_offset=20)
+    c = mundane_things(c,x,text_string,hdl,f"{hdl:.1f}",limits_string,limit_a=29,limit_b=80,h=h,left_offset=20)
     h -= 16
     c.setFont(size_dict["font_name"][x],size_dict["font_size"][x])
     c.drawString(size_dict["left_extreme"][x]+50,h,"(hdl)".upper())
     h -= (entity_height)
     text_string = "Low Density Lipoprotein"
     limits_string = "Desirable < 100"
-    c = mundane_things(c,x,text_string,ldl,ldl,limits_string,limit_a=0,limit_b=130,h=h,left_offset=20)
+    c = mundane_things(c,x,text_string,ldl,f"{ldl:.1f}",limits_string,limit_a=0,limit_b=130,h=h,left_offset=20)
     h -= 16
     c.drawString(size_dict["right_extreme"][x]-cal_string_width(c,"BorderLine - 110 - 129 mg/dl",size_dict["font_name"][x],size_dict["limits_font"][x]),h,"BorderLine - 220 - 239 mg/dl")
     h -= 16
@@ -1927,7 +1933,7 @@ def lipid_profile_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_
     h -= (entity_height * 1.2)
     text_string = "Very Low Density Lipoprotein"
     limits_string = "7.0 - 35.0 mg/dl"
-    c = mundane_things(c,x,text_string,vldl,vldl,limits_string,7.0,35.0,h,left_offset=20)
+    c = mundane_things(c,x,text_string,vldl,f"{vldl:.1f}",limits_string,7.0,35.0,h,left_offset=20)
     h -= entity_height
     text_string = "Triglyceride (F)"
     limits_string = "Normal < 170.0 mg/dl"
