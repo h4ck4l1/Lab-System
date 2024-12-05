@@ -59,6 +59,7 @@ dropdown_options = [
 app.layout = dcc.Loading(
     [
         dcc.Location("url",refresh=False),
+        dcc.Store(id="tab-id-store",storage_type="session"), 
         html.Div(
             [
                 html.Ul(

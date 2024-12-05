@@ -1,4 +1,4 @@
-import json,os,time,re,duckdb
+import json,os,time,re,duckdb,uuid
 from datetime import date
 import pandas as pd
 from glob import glob
@@ -156,8 +156,6 @@ layout = html.Div(
             date=date.today(),
             style=dict(positon="relative",left="500px",bottom="120px")
         ),
-        html.Button("clear data".upper(),id="clear-button",style=dict(position="relative",left="800px",width="200px",height="75px",fontSize=30,color="cyan",fontWeight=700,backgroundColor="red")),
-        html.Div(id="clear-div",style=dict(position="relative",left="50px",fontSize=30)),
         *large_break,
         html.Div(reports_dropdown,style=dict(width="650px",fontWeight=700,alignItems="center")),
         html.Div(page_size_dropdown,style=dict(width="200px",fontWeight=700,alignItems="center",position="relative",left="650px",bottom="50px")),
@@ -178,7 +176,10 @@ layout = html.Div(
 )
 
 @callback(
-    Output("patients-dropdown","options"),
+    [
+        Output("patients-dropdown","options"),
+        Output("tab-id-store","data")
+    ],
     Input("date-pick-reports","date")
 )
 def append_report_options(date:str):
@@ -186,8 +187,8 @@ def append_report_options(date:str):
     if os.path.exists(path):
         df = pd.read_csv(path,dtype=dtype_map)
         df = df.iloc[:-1,:]
-        return df["S.No."].to_list()
-    return []
+        return df["S.No."].to_list(),str(uuid.uuid4())
+    return [],str(uuid.uuid4())
 
 
 
@@ -870,18 +871,20 @@ def get_df_item(p_sn:str,item_name:str,df:pd.DataFrame):
 @callback(
     [
         Output("output-report","children"),
-        Output("output-report-boxes","children"),
-        Output("clear-div","children")
+        Output("output-report-boxes","children")
     ],
     [
         Input("patients-dropdown","value"),
         Input("reports-dropdown","value"),
         Input("template-dropdown","value")
     ],
-    State("date-pick-reports","date"),
+    [
+        State("date-pick-reports","date"),
+        State("tab-id-store","data")
+    ],
     prevent_initial_call=True
 )
-def preview_report_divs(patients_sno,reports_value,template_value,date):
+def preview_report_divs(patients_sno,reports_value,template_value,date,tab_id):
     if patients_sno:
         df = pd.read_csv(f"assets/all_files/{date.replace("-","_")}.csv",dtype=dtype_map)
         df = df.iloc[:-1,:]
@@ -891,8 +894,10 @@ def preview_report_divs(patients_sno,reports_value,template_value,date):
         conn.execute(
             """
             create table if not exists patients (
-                id text primary key,
-                tests text
+                id text,
+                tab_id text,
+                tests text,
+                primary key (id,tab_id)
             )
             """
         )
@@ -906,11 +911,12 @@ def preview_report_divs(patients_sno,reports_value,template_value,date):
                 html.Div(f"Date: {get_df_item(patients_sno,item_name="Date",df=df)}   Collection Time: {get_df_item(patients_sno,item_name='Time',df=df)}")
             ]
         all_opts = []
-        condition = (conn.query(f"select * from patients where id = {patients_sno}").df().shape[0] == 0)
+        result_df = conn.query(f"select * from patients where id = '{patients_sno}' and tab_id = '{tab_id}'").df()
+        condition = (result_df.shape[0] == 0)
         if condition:
             tests_names = []
         else:
-            tests_names = json.loads(conn.query(f"select * from patients where id = {patients_sno}").df()["tests"].item())
+            tests_names = json.loads(result_df["tests"].item())
         if reports_value:
             for x in reports_value:
                 all_opts.append(x)
@@ -925,38 +931,19 @@ def preview_report_divs(patients_sno,reports_value,template_value,date):
         for x in tests_names:
             if x not in all_opts:
                 tests_names.remove(x)
-        conn.execute(f"insert or replace into patients (id, tests) values ('{patients_sno}','{json.dumps(tests_names)}')")
+        conn.execute(f"insert or replace into patients (id, tab_id, tests) values ('{patients_sno}','{tab_id}','{json.dumps(tests_names)}')")
         conn.close()
         report_details = []
         for x in tests_names:
             report_details += reports_original_dict[x]
-        if tests_names == []:
-            present_string = ""
-        else:
-            present_string = ["Data is present with data:",html.Br(),re.sub(r'[\[\],\"]',' ',json.dumps(tests_names))]
         if len(report_details) == 0:
-            return patients_details,"Select Test to Display",present_string
+            return patients_details,"Select Test to Display"
         else:
-            return patients_details,report_details,present_string
-    return "Select a Serial Number To Display","Select a Test wit Serial Number to Display",""
+            return patients_details,report_details
+    return "Select a Serial Number To Display","Select a Test wit Serial Number to Display"
 
 
-@callback(
-    Output("clear-div","children",allow_duplicate=True),
-    Input("clear-button","n_clicks"),
-    [
-        State("date-pick-reports","date"),
-        State("patients-dropdown","value")
-    ],
-    prevent_initial_call=True
-)
-def clear_data_in_sno(n_clicks,date:str,patients_sno:str):
-    if n_clicks:
-        year,month,day = date.split("-")
-        conn = duckdb.connect(f"assets/{year}/{month}/{day}/{date.replace("-","_")}.duckdb")
-        conn.execute(f"delete from patients where id = '{patients_sno}'")
-        conn.close()
-        return "Data is cleared"
+
         
 
 
@@ -2494,7 +2481,8 @@ def create_pdf(serial_no,top_space,report_details_space,page_size,temp_dict,test
         State("page-size-dropdown","value"),
         State("top-slider","value"),
         State("slider","value"),
-        State("date-pick-reports","date")
+        State("date-pick-reports","date"),
+        State("tab-id-store","data")
     ]
 )
 def submit_and_preview_report(
@@ -2505,15 +2493,15 @@ def submit_and_preview_report(
     page_size:str,
     top_slider_value:int,
     slider_value:int,
-    date:str
+    date:str,
+    tab_id:str,
 ):
-    global tests_names
     if not n_clicks:
         raise PreventUpdate
     if ctx.triggered_id == "submit-report-button":
         year,month,day = date.split("-")
         conn = duckdb.connect(f"assets/{year}/{month}/{day}/{date.replace("-","_")}.duckdb")
-        tests_names = json.loads(conn.query(f"select * from patients where id = {patients_sno}").df()["tests"].item())
+        tests_names = json.loads(conn.query(f"select * from patients where id = {patients_sno} and tab_id = '{tab_id}'").df()["tests"].item())
         conn.close()
         name_pattern = re.compile(r"bill-\d+-name")
         value_pattern = re.compile(r"bill-\d+-value")
