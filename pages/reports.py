@@ -64,6 +64,10 @@ all_options = [
     "HBA1C",
     "Fasting Sugar",      
     "Random Sugar",
+    "Post Pandial Sugar",
+    "Urine Sugar(Fasting)",
+    "Urine Sugar(Random)",
+    "Stool Test",
     "Blood Urea",
     "Serum Creatinine",
     "Uric Acid",
@@ -505,19 +509,19 @@ pt_aptt_list = [
     html.Div("Prothrombin Time Test",style={**text_style,"left":"400px","text-decoration":"underline"}),
     *big_break,
     html.Div("P.T Test:",style=text_style),
-    html.Div(" 14.9 seconds",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'pt_test'},type="number",placeholder="14.6 seconds",value=14.6,style=input_style),
     html.Div("P.T. Control : ",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'pt_control'},type="number",placeholder="13.4 seconds",style=input_style),
+    html.Div("13.4 seconds",style=input_style),
     html.Div("INR : ",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'pt_inr'},type="number",placeholder="1.2",style=input_style),
     *small_break,
     html.Div("Activate Partial Thromboplastin Time",style={**text_style,"left":"400px","text-decoration":"underline"}),
-    *big_break,
+    *small_break,
     html.Div("APTT Test :",style=text_style),
-    html.Div(" 36",style=input_style),
+    dcc.Input(id={'type':'dynamic-input','name':'aptt_test'},type="number",placeholder="33.6 seconds...",value=32.7,style=input_style),
     html.Div(" ( Nor: 26 - 38 sec )",style=limits_style),
     html.Div("APTT Control : ",style=text_style),
-    dcc.Input(id={'type':'dynamic-input','name':'aptt_control'},type="number",placeholder="33.6 seconds...",style=input_style),
+    html.Div(" 33.6",style=input_style),
     html.Div("( Nor 26 - 38 sec )",style=limits_style)
 ]
 
@@ -540,6 +544,25 @@ sugar_fasting_list = [
     html.Div("Blood Sugar (Fasting):",style=text_style),
     dcc.Input(id={'type':'dynamic-input','name':'fasting_sugar'},type="number",placeholder="Type FBS..",style=input_style),
     html.Div(" ( 70 - 110 mg/dl ) ",style=limits_style)
+]
+
+post_pandial_list = [
+    *small_break,
+    html.Div("Blood Sugar (Post Pandial):",style=text_style),
+    dcc.Input(id={'type':'dynamic-input','name':'pp_sugar'},type="number",placeholder="Type PP Sugar..",style=input_style),
+    html.Div(" ( 70 - 180 mg/dl )",style=limits_style)
+]
+
+urine_sugar_random_list = [
+    *small_break,
+    html.Div("Urine Sugar (Random):",style=text_style),
+    dcc.Input(id={"type":"dynamic-input","name":"urine_random_sugar"},type="number",placeholder="Type Random Urine",style=input_style),
+]
+
+urine_sugar_fasting_list = [
+    *small_break,
+    html.Div("Urine Sugar (Fasting):",style=text_style),
+    dcc.Input(id={"type":"dynamic-input","name":"urine_fasting_sugar"},type="number")
 ]
 
 lipid_profile_list = [
@@ -1635,7 +1658,7 @@ def aso_titre_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_heig
 
 # done
 def pt_aptt_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=18):
-    pt_control,pt_inr,aptt_control = values
+    pt_test,pt_inr,aptt_test = values
     if page_size == "SMALL/A5":
         x = 0
     else:
@@ -1646,9 +1669,9 @@ def pt_aptt_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height
     c.drawString(size_dict["value_point"][x]//1.2,h,"Prothrombin Time Test")
     c.rect((size_dict["value_point"][x]//1.2)-5,h-5,cal_string_width(c,"Prothrombin Time Test",size_dict["font_name"][x],size_dict["font_size"][x])+10,size_dict["font_size"][x]+5)
     h -= (entity_height * 1.5)
-    c = mundane_things(c,x,"P.T. Test",14.9,"14.9 seconds","","","",h,if_limits=False)
+    c = mundane_things(c,x,"P.T. Test",pt_test,f"{pt_test:.1f} seconds","","","",h,if_limits=False)
     h -= (entity_height * 1.5)
-    c = mundane_things(c,x,"P.T. Control",pt_control,f"{pt_control} seconds","","","",h,if_limits=False)
+    c = mundane_things(c,x,"P.T. Control",13.4,"13.4 seconds","","","",h,if_limits=False)
     h -= (entity_height * 1.5)
     c = mundane_things(c,x,"I N R",pt_inr,f"{pt_inr}","","","",h,if_limits=False)
     h -= (entity_height * 2.5)
@@ -1656,9 +1679,9 @@ def pt_aptt_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height
     c.drawString(size_dict["value_point"][x]//1.5,h,"Activate Partial Thromboplastin Time")
     c.rect((size_dict["value_point"][x]//1.5)-5,h-5,cal_string_width(c,"Activate Partial Thromboplastin Time",size_dict["font_name"][x],size_dict["font_size"][x])+10,size_dict["font_size"][x]+5)
     h -= (entity_height * 2.5)
-    c = mundane_things(c,x,"APTT Test",36.9,"36.9 seconds","( Normal: 26 - 38 seconds )",26,38,h)
+    c = mundane_things(c,x,"APTT Test",{aptt_test},f"{aptt_test:.1f} seconds","( Normal: 26 - 38 seconds )",26,38,h)
     h -= (entity_height * 2)
-    c = mundane_things(c,x,"APTT Control",aptt_control,f"{aptt_control} seconds","( Normal 26 - 38 seconds )",26,38,h)
+    c = mundane_things(c,x,"APTT Control",33.6,"33.6 seconds","( Normal 26 - 38 seconds )",26,38,h)
     return c,h-entity_height
 
 # done
@@ -1703,7 +1726,7 @@ def alkp_canvas(c:canvas.Canvas,value:int,page_size:str,h:int,entity_height=18):
         x = 1
         entity_height += 5
     c = mundane_things(c,x,text_string,value,value,limits_string,limit_a,limit_b,h,left_offset=20)
-    c.drawString(size_dict["left_extreme"][x]+150,h-16,"(alkp)".upper())
+    c.drawString(size_dict["left_extreme"][x]+150,h-16,"( alkp )".upper())
     return c,h-(entity_height + 10)
 
 # done
@@ -1766,7 +1789,7 @@ def serum_creat_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_he
     else:
         x = 1
         entity_height += 5
-    c = mundane_things(c,x,text_string,value,value,limits_string,limit_a,limit_b,h)
+    c = mundane_things(c,x,text_string,value,f"{value:.1f}",limits_string,limit_a,limit_b,h)
     return c,h-entity_height
 
 # done
@@ -2473,7 +2496,7 @@ def submit_and_preview_report(
                 temp_dict["full-urine"] = temp_dict.get("full-urine",[])
                 temp_dict["full-urine"].append(value)
                 continue
-            if ("PT APTT" in tests_names) & (id['name'] in ['pt_control','pt_inr','aptt_control']):
+            if ("PT APTT" in tests_names) & (id['name'] in ['pt_test','pt_inr','aptt_test']):
                 temp_dict["full-pt-aptt"] = temp_dict.get("full-pt-aptt",[])
                 temp_dict["full-pt-aptt"].append(value)
                 continue

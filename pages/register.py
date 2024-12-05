@@ -298,6 +298,8 @@ def append_name_to_dataframe(n_clicks,*vals):
         vals_list = [vals[0],vals[1],(vals[2] or vals[6]),vals[4],vals[5],vals[7],vals[8],vals[9]]
         if any([val is None for val in vals_list]):
             return df.to_dict("records"),f"Input for {input_vals_dict[vals_list.index(None)]} is not entered".upper()
+        if vals[7] > 120:
+            return df.to_dict("records"),f"Input for age is {vals[7]} > 120, Please check the Age entered".upper()
         df = df.iloc[:-1,:]
         index_number = df.shape[0]
         index_number += 1
