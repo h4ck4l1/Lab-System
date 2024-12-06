@@ -25,7 +25,7 @@ dtype_map = {
     "Time": str,          # string in format "HH:MM:SS AM/PM"
     "Patient Name": str,  # Patient Name as string
     "Reference By": str,  # string with options as given below
-    "Patient Age": "Int8",  # Use Int16 for compactness and allow NaNs
+    "Patient Age": "Float32",  # Use Int16 for compactness and allow NaNs
     "Age Group": str,     # string with options as ["Y","M","D"]
     "Gender": str,        # string with options as ["Male","Female"]
     "Amount": "Float64",    # Amount as integer
