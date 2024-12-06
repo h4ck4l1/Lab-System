@@ -94,7 +94,7 @@ all_options = [
     "Serum Chloride",
     "Serum Calcium",
     "Electrolytes",
-    "V.D.R.L",
+    "VDRL",
     "HBsAg",
     "HIV I & II Antibodies Test",
     "HCV I & II Antibodies Test",
@@ -122,24 +122,28 @@ page_size_dropdown = dcc.Dropdown(
 
 templates_dropdown = dcc.Dropdown(
     options = [
-        {"label":"HB, TC, PLATELET, DC","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)"])},
-        {"label":"HB, TC, PLATELET, DC, CRP","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","CRP"])},
-        {"label":"HB, TC, DC","value":json.dumps(["Hb","Total Count (TC)","Differential Count (DC)"])},
-        {"label":"TOTAL BILIRUBIN, INDIRECT AND DIRECT BILIRUBIN","value":json.dumps(["Total Bilirubin","Direct & Indirect Bilirubin"])},
-        {"label":"BLOOD GROUP, CRP, TOTAL BILIRUBIN, DIRECT & INDIRECT BILIRUBIN","value":json.dumps(["Blood Group","CRP","Total Bilirubin","Direct & Indirect Bilirubin"])},
-        {"label":"SRI DEVI GARU CBP","value":json.dumps(["Full CBP","Blood Group","V.D.R.L","HBsAg","HIV I & II Antibodies Test","HCV I & II Antibodies Test","Random Sugar","Serum Creatinine","Total Bilirubin","Urine Analysis"])},
-        {"label":"SRI DEVI GARU HIV HB URINE","value":json.dumps(["Blood Group","Hb","BT","CT","V.D.R.L","HBsAg","HIV I & II Antibodies Test","HCV I & II Antibodies Test","Random Sugar","Serum Creatinine","Total Bilirubin","Urine Analysis"])},
+        {"label":"SMALL RAMA KRISHNA HB, TC, PLATELET, DC","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)"])},
+        {"label":"SMALL RAMA KRISHNA HB, TC, PLATELET, DC, CRP","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","CRP"])},
+        {"label":"SMALL RAMA KRISHNA HB, TC, DC","value":json.dumps(["Hb","Total Count (TC)","Differential Count (DC)"])},
+        {"label":"SMALL RAMA KRISHNA TOTAL BILIRUBIN, INDIRECT AND DIRECT BILIRUBIN","value":json.dumps(["Total Bilirubin","Direct & Indirect Bilirubin"])},
+        {"label":"SMALL RAMA KRISHNA BLOOD GROUP, CRP, TOTAL BILIRUBIN, DIRECT & INDIRECT BILIRUBIN","value":json.dumps(["Blood Group","CRP","Total Bilirubin","Direct & Indirect Bilirubin"])},
+        {"label":"SRI DEVI GARU CBP","value":json.dumps(["Full CBP","Blood Group","VDRL","HBsAg","HIV I & II Antibodies Test","HCV I & II Antibodies Test","Random Sugar","Serum Creatinine","Total Bilirubin","Urine Analysis"])},
+        {"label":"SRI DEVI GARU HIV HB URINE","value":json.dumps(["Blood Group","Hb","BT","CT","VDRL","HBsAg","HIV I & II Antibodies Test","HCV I & II Antibodies Test","Random Sugar","Serum Creatinine","Total Bilirubin","Urine Analysis"])},
         {"label":"HB, TC, PLATELET, DC, URINE","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","Urine Analysis"])},
         {"label":"HB, TC, PLATELET, DC, RBS","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","Random Sugar"])},
         {"label":"HB, TC, PLATELET, DC, WIDAL","value":json.dumps(["Hb","Total Count (TC)","Platelet Count","Differential Count (DC)","Widal"])},
-        {"label":"Full CBP, MALARIA, WIDAL CRP","value":json.dumps(["Full CBP","Malaria","Widal","CRP"])},
+        {"label":"RATNA Full CBP","value":json.dumps(["Full CBP"])},
+        {"label":"SMALL SUGAR","value":json.dumps(["Random Sugar","Fasting Sugar"])},
+        {"label":"SMALL SUGAR","value":json.dumps(["Random Sugar","Fasting Sugar","Urine Sugar(Fasting)"])},
+        {"label":"S PRASAD Full CBP, MALARIA, WIDAL CRP","value":json.dumps(["Full CBP","Malaria","Widal","CRP"])},
+        {"label":"S PRASAD Full CBP, WIDAL CRP","value":json.dumps(["Full CBP","Widal","CRP"])},
         {"label":"PACK 1","value":json.dumps(["HBA1C","Random Sugar","Fasting Sugar"])},
-        {"label":"PACK 2","value":json.dumps(["Blood Urea","Serum Creatinine","Lipid Profile"])},
+        {"label":"PACK 2","value":json.dumps(["Blood Urea","Serum Creatinine","Uric Acid","Lipid Profile"])},
+        {"label":"PACK 2 without Uric Acid","value":json.dumps(["Blood Urea","Serum Creatinine","Lipid Profile"])},
+        {"label":"Liver Function Test","value":json.dumps(["Total Bilirubin","Direct & Indirect Bilirubin","SGOT","SGPT","ALKP"])},
         {"label":"RFT","value":json.dumps(["Blood Urea","Serum Creatinine","Uric Acid"])},
         {"label":"Lipid Profile","value":json.dumps(["Lipid Profile"])},
-        {"label":"Liver Function Test","value":json.dumps(["Total Bilirubin","Direct & Indirect Bilirubin","SGOT","SGPT","ALKP"])},
         {"label":"Full Electrolytes","value":json.dumps(["Serum Amylase","Serum Lipase","Serum Protein","Serum Albumin","Serum Globulin","Serum A/G Ratio","Electrolytes"])},
-        {"label":"All options","value":json.dumps(all_options)}
     ],
     id="template-dropdown"
 )
@@ -834,7 +838,7 @@ reports_original_dict = {
     "Serum Chloride": serum_chloride_list,
     "Serum Calcium": serum_calcium_list,
     "Electrolytes":electrolytes_list,
-    "V.D.R.L":vdrl_list,
+    "VDRL":vdrl_list,
     "HBsAg":hbsag_list,
     "HIV I & II Antibodies Test":hiv_list,
     "HCV I & II Antibodies Test":hcv_list,
@@ -1022,6 +1026,8 @@ def patient_details_canvas(
             patient_title = "Ms."
         if (patient_age >= 22) & (patient_gender == "Female"):
             patient_title = "Mrs."
+    if patient_age.is_integer():
+        patient_age = int(patient_age)
     c.drawString(left_extreme,page_height-drop_height,f"Pt. Name : {patient_title} {patient_name.upper()}")
     c.drawString(left_extreme,page_height-(drop_height + patient_details_space),f"Age : {patient_age} {patient_age_group}")
     gender_string = f"Gender : {patient_gender}"
@@ -1976,7 +1982,7 @@ def serum_lipase_canvas(c: canvas.Canvas, value: float, page_size: str, h: int, 
 # done
 def serum_protein_canvas(c: canvas.Canvas, value: float, page_size: str, h: int, entity_height=18):
     text_string = "Serum Protein"
-    limits_string = "( 6.6 – 8.3 g/dl )"
+    limits_string = "( 6.6 - 8.3 g/dl )"
     limit_a = 6.6
     limit_b = 8.3
     value_string = f"{value:.1f}"
@@ -1991,7 +1997,7 @@ def serum_protein_canvas(c: canvas.Canvas, value: float, page_size: str, h: int,
 # done
 def serum_albumin_canvas(c: canvas.Canvas, value: float, page_size: str, h: int, entity_height=18):
     text_string = "Serum Albumin"
-    limits_string = "( 3.5 – 5.0 g/dl )"
+    limits_string = "( 3.5 - 5.0 g/dl )"
     limit_a = 3.5
     limit_b = 5.0
     value_string = f"{value:.1f}"
@@ -2006,7 +2012,7 @@ def serum_albumin_canvas(c: canvas.Canvas, value: float, page_size: str, h: int,
 # done
 def serum_globulin_canvas(c: canvas.Canvas, value: float, page_size: str, h: int, entity_height=18):
     text_string = "Serum Globulin"
-    limits_string = "( 2.0 – 3.5 g/dl )"
+    limits_string = "( 2.0 - 3.5 g/dl )"
     limit_a = 2.0
     limit_b = 3.5
     value_string = f"{value:.1f}"
@@ -2021,7 +2027,7 @@ def serum_globulin_canvas(c: canvas.Canvas, value: float, page_size: str, h: int
 # done
 def serum_ag_ratio_canvas(c: canvas.Canvas, value: float, page_size: str, h: int, entity_height=18):
     text_string = "Serum A/G Ratio"
-    limits_string = "( 0.9 – 2.0 )"
+    limits_string = "( 0.9 - 2.0 )"
     limit_a = 0.9
     limit_b = 2.0
     value_string = f"{value:.1f}"
@@ -2323,7 +2329,7 @@ reports_canvas_dict = {
     "Serum Chloride":serum_chloride_canvas,
     "Serum Calcium":serum_calcium_canvas,
     "Electrolytes":electrolytes_canvas,
-    "V.D.R.L":vdrl_canvas,
+    "VDRL":vdrl_canvas,
     "HBsAg":hbsag_canvas,
     "HIV I & II Antibodies Test":hiv_canvas,
     "HCV I & II Antibodies Test":hcv_canvas,
@@ -2382,7 +2388,7 @@ report_canvas_values_dict = {
     "Serum Chloride":"serum_chloride",
     "Serum Calcium":"serum_calcium",
     "Electrolytes":"electrolytes",
-    "V.D.R.L":"vdrl",
+    "VDRL":"vdrl",
     "HBsAg":"hbsag",
     "HIV I & II Antibodies Test":"hiv_ant",
     "HCV I & II Antibodies Test":"hcv_ant",
