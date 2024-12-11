@@ -942,6 +942,8 @@ def preview_report_divs(patients_sno,reports_value,template_value,date,tab_id):
         report_details = []
         for x in tests_names:
             report_details += reports_original_dict[x]
+
+        print(f"\n\n {tests_names} \n\n")
         if len(report_details) == 0:
             return patients_details,"Select Test to Display"
         else:
@@ -2519,79 +2521,60 @@ def submit_and_preview_report(
             if id['name'] in ['polymo','lympho','esino']:
                 temp_dict["dc_count"] = temp_dict.get("dc_count",[])
                 temp_dict["dc_count"].append(value)
-                continue
             if ("Widal" in tests_names) & (id['name'] in ['widal','widal-form','widal-ot-react','widal-ht-react']):
                 temp_dict['Widal'] = temp_dict.get('Widal',[])
                 temp_dict['Widal'].append(value)
-                continue
             if ("Malaria" in tests_names) & (id['name'] in ["malaria-mp","malaria-vivex","malaria-falci","malaria-test"]):
                 temp_dict["malaria-full"] = temp_dict.get("malaria-full",[])
                 temp_dict["malaria-full"].append(value)
-                continue
             if ("Direct & Indirect Bilirubin" in tests_names) & (id["name"] in ["total-bili","direct-bili"]):
                 temp_dict["all_bili"] = temp_dict.get("all_bili",[])
                 temp_dict["all_bili"].append(value)
-                continue
             if("Full CBP" in tests_names) & (id['name'] in ['hb','rbc-count','hct','tc_count','plt_count','esr','polymo','lympho','esino']):
                 temp_dict["cbp"] = temp_dict.get("cbp",[])
                 temp_dict["cbp"].append(value)
-                continue
             if ("Heamogram" in tests_names) & (id["name"] in ['hb','rbc-count','hct','tc_count','plt_count','mcv','mch','mchc','esr','polymo','lympho','esino','heamo-rbc','blast-cells','platelet-opinion','hemoparasites-opinion','total-opinion']):
                 temp_dict["heamo"] = temp_dict.get("heamo",[])
                 temp_dict["heamo"].append(value)
-                continue
             if ("HBA1C" in tests_names) & (id['name'] in ['hba1c_first','hba1c_second','hba1c_dropdown']):
                 temp_dict["hba1c"] = temp_dict.get("hba1c",[])
                 temp_dict["hba1c"].append(value)
-                continue
             if ("Electrolytes" in tests_names) & (id['name'] in ["serum_sodium","serum_potassium","serum_chloride","serum_calcium"]):
                 temp_dict["electrolytes"] = temp_dict.get("electrolytes",[])
                 temp_dict["electrolytes"].append(value)
-                continue
             if ("Lipid Profile" in tests_names) & (id['name'] in ['lipid_tc','lipid_hdl','lipid_ldl','lipid_vldl','lipid_tri']):
                 temp_dict["full-lipid"] = temp_dict.get("full-lipid",[])
                 temp_dict["full-lipid"].append(value)
-                continue
             if ("Liver Function Test" in tests_names) & (id['name'] in ['total-bili','direct-bili','sgot','sgpt','alkp']):
                 temp_dict["liver-function-test"] = temp_dict.get("liver-function-test",[])
                 temp_dict["liver-function-test"].append(value)
-                continue
             if ("DENGUE" in tests_names) & (id['name'] in ['dengue_igm','dengue_igg','dengue_ns']):
                 temp_dict["dengue-test"] = temp_dict.get("dengue-test",[])
                 temp_dict["dengue-test"].append(value)
-                continue
             if ("RA Factor" in tests_names) & (id['name'] in ['ra-factor','ra-dilutions']):
                 temp_dict["full-ra-factor"] = temp_dict.get("full-ra-factor",[])
                 temp_dict["full-ra-factor"].append(value)
-                continue
             if ("ASO Titre" in tests_names) & (id['name'] in ['aso_titre','aso_titre_dilutions']):
                 temp_dict["full-aso-titre"] = temp_dict.get("full-aso-titre",[])
                 temp_dict["full-aso-titre"].append(value)
-                continue
             if ("Urine Analysis" in tests_names) & (id['name'] in ['urine-drop','urine_sugar','urine_albumin','urine_bs','urine_bp','urine_first_pus','urine_second_pus','urine_first_rbc','urine_second_rbc','urine_first_casts','urine_second_casts','urine_first_crystals','urine_second_crystals','urine_first_ep','urine_second_ep']):
                 temp_dict["full-urine"] = temp_dict.get("full-urine",[])
                 temp_dict["full-urine"].append(value)
-                continue
             if ("PT APTT" in tests_names) & (id['name'] in ['pt_test','pt_inr','aptt_test']):
                 temp_dict["full-pt-aptt"] = temp_dict.get("full-pt-aptt",[])
                 temp_dict["full-pt-aptt"].append(value)
-                continue
             if ("BT" in tests_names) & (id['name'] in ['bt_min','bt_sec']):
                 temp_dict["full-bt"] = temp_dict.get("full-bt",[])
                 temp_dict["full-bt"].append(value)
-                continue
             if ("CT" in tests_names) & (id['name'] in ['ct_min','ct_sec']):
                 temp_dict["full-ct"] = temp_dict.get("full-ct",[])
                 temp_dict["full-ct"].append(value)
-                continue
             if ("Semen Analysis" in tests_names) & (id['name'] in ['semen-volume','semen-liq','semen-ph','semen-count','semen-mot','semen-morph','semen-wbc-first','semen-wbc-second','semen-rbc-first','semen-rbc-second','semen-comments']):
                 temp_dict["full-semen"] = temp_dict.get("full-semen",[])
                 temp_dict["full-semen"].append(value)
-                continue
             if ("Stool Test" in tests_names) & (id['name'] in ['stool_ova','stool_cysts','stool_red']):
                 temp_dict["stool-full"] = temp_dict.get("stool-full",[])
                 temp_dict["stool-full"].append(value)
-                continue
             if ("BILL" in tests_names):
                 temp_dict["total-bill"] = temp_dict.get("total-bill",[])
                 if name_pattern.match(id['name']):
@@ -2600,6 +2583,7 @@ def submit_and_preview_report(
                     bill_values_list.append(value)
                 temp_dict["total-bill"] = [bill_names_list,bill_values_list]
             temp_dict[id['name']] = value
+        print(f"\n\n temp_dict: {temp_dict} \n\n")
         temp_dict["page-size"] = page_size
         zoom_levels = {
             "BIG/A4": 1.0,
