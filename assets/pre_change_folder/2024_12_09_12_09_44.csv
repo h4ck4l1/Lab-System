@@ -1,0 +1,4 @@
+S.No.,Date,Time,Patient Name,Reference By,Patient Age,Age Group,Gender,Amount,Method,Phone No,Paid,Due,Sample
+1,2024-12-09,12:09:05 PM,First patient,SELF,25,Y,Male,2000.0,CASH,9666486648,NOT PAID,2000.0,SELF
+1,2024-12-09,12:09:17 PM,First patient,"""""",25,Y,Male,2000.0,CASH,9666486648,NOT PAID,2000.0,SELF
+,,,,,,,,4000.0,,,,4000.0,
