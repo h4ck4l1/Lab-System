@@ -1310,6 +1310,7 @@ def esr_canvas(c:canvas.Canvas,value,page_size:str,h:int,entity_height=18):
 # done
 def full_cbp_canvas(c:canvas.Canvas,cbp_values:list,page_size:str,h:int,entity_height=18):
     entity_height += 5
+    print(cbp_values)
     hb,rbc_count,hct,tc_count,plt_count,esr,polymo,lympho,esino = cbp_values
     if page_size == "BIG/A4":
         c,h = hb_canvas(c,hb,page_size,h,entity_height-5)
