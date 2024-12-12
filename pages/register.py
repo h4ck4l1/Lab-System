@@ -1,10 +1,13 @@
 import time,os
-from datetime import date
+from datetime import date,datetime
+from dateutil.relativedelta import relativedelta
 from glob import glob
 import numpy as np
 import pandas as pd
-from reportlab.platypus import SimpleDocTemplate,Table,TableStyle
+from reportlab.platypus import SimpleDocTemplate,Table,TableStyle,Spacer,Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
+from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import portrait,A4
 from dash import dcc,html,register_page,dash_table,callback,Input,Output,ctx,State
 from dash.exceptions import PreventUpdate
@@ -201,7 +204,18 @@ register_layout = html.Div(
         *big_break,
         html.Button("Save Changes",id="save-changes-button",style=dict(position="relative",left="90vw",fontSize=30,borderRadius="20px",height="100px",width="250px",backgroundColor="#4b70f5",color="cyan")),
         *big_break,
-        html.Button("show file".upper(),id="show-file-button",style=dict(position="relative",left="500px",width="200px",height="100px",fontSize=30,borderRadius="20px",color="cyan",backgroundColor="#4b70f5")),
+        dcc.DatePickerRange(
+            start_date=date.today() - relativedelta(months=1),
+            end_date=date.today(),
+            min_date_allowed=date(2000,1,1),
+            max_date_allowed=date.today(),
+            id="date-pick-range",
+            style=dict(position="relative",left="300px")
+        ),
+        *[html.Br()]*3,
+        html.Div(["Show monthly data: ",dcc.Dropdown(["Yes","No"],"No",id="monthly-data")],style=dict(position="relative",left="700px",width="100px",fontSize=20,height="50px",bottom="50px")),
+        *[html.Br()]*3,
+        html.Button("show file".upper(),id="show-file-button",style=dict(position="relative",left="800px",width="200px",height="100px",fontSize=30,borderRadius="20px",color="cyan",backgroundColor="#4b70f5")),
         *big_break,
         html.Div(id="show-file",style=dict(position="relative",left="500px",width="1200px",height="1200px"))
     ],
@@ -382,36 +396,73 @@ def save_table_changes(n_clicks,data,date:str):
         save_df(df,date)
         return data
 
-def convert_to_pdf(date_value):
+def convert_to_pdf(date_value,start_date,end_date,monthly):
     df = pd.read_csv(f"assets/all_files/{date_value}.csv",dtype=dtype_map)
     df = df.loc[:,["S.No.","Time","Amount","Method","Phone No","Paid","Due","Sample"]]
-    indexes_at_cash = df[df["Method"] == "cash".upper()].index
-    df.iloc[-1,3] = df.loc[indexes_at_cash,"Amount"].sum()
+    df = df.iloc[:-1,:]
     filename=f"assets/all_files/{date_value}.pdf"
+    def add_date(c:canvas.Canvas,doc:SimpleDocTemplate):
+        c.saveState()
+        c.drawString(A4[0] - 150,A4[1] - 50,f"Date: {date_value.replace("_","-")}")
+        c.drawString(30,30,f"Total Amount: {df["Amount"].sum()}")
+        c.drawString(165,30,f"Total Due: {df["Due"].sum()}")
+        c.drawString(275,30,f"Total PhonePay: {df.loc[df["Method"] == "phone pay".upper(),"Amount"].sum()}")
+        c.restoreState()
     doc = SimpleDocTemplate(filename)
     doc.pagesize = portrait(A4)
     data = [df.columns.to_list()] + df.values.tolist()
     table = Table(data)
-    indexes_at_cash = df[df["Method"] == "phone pay".upper()].index
+    indexes_at_phone_pay = df[df["Method"] == "phone pay".upper()].index
     all_elements = [("grid".upper(),(0,0),(-1,-1),1,colors.black)]
-    for ind in indexes_at_cash:
+    for ind in indexes_at_phone_pay:
         all_elements.append(("background".upper(),(0,ind+1),(-1,ind+1),colors.darkgrey))
         all_elements.append(("textcolor".upper(),(0,ind+1),(-1,ind+1),colors.white))
     table.setStyle(TableStyle(all_elements))
-    doc.build([table])
+    if monthly == "Yes":
+        styles = getSampleStyleSheet()
+        all_files = [os.path.basename(f).split(".")[0] for f in glob("assets/all_files/*.csv")]
+        all_files
+        all_f = []
+        while start_date != end_date:
+            if start_date.replace("-","_") in all_files:
+                all_f.append("assets/all_files/" + start_date.replace("-","_")+".csv")
+            start_date = date.fromisoformat(start_date)
+            start_date += relativedelta(days=1)
+            start_date = start_date.strftime("%Y-%m-%d")
+        total_amount = 0
+        for f in all_f:
+            temp_df = pd.read_csv(f)
+            total_amount += temp_df.iloc[-1,8]
+        monthly_string = Paragraph(
+            f"monthly data  for Date range from {start_date} to {end_date}: ".upper(),
+            style=styles["Normal"]
+        )
+        total_amount_string = Paragraph(
+            f"total amount : {total_amount}".upper(),
+            style=styles["Normal"]
+        )
+        story = [table,Spacer(1,20),monthly_string,Spacer(1,20),total_amount_string]
+        doc.build(story,onFirstPage=add_date,onLaterPages=add_date)
+    else:
+        doc.build([table],onFirstPage=add_date,onLaterPages=add_date)
     return filename
 
 
 @callback(
     Output("show-file","children"),
     Input("show-file-button","n_clicks"),
-    State("date-pick-single","date")
+    [
+        State("date-pick-single","date"),
+        State("date-pick-range","start_date"),
+        State("date-pick-range","end_date"),
+        State("monthly-data","value")
+    ]
 )
-def show_pdf_out(n_clicks,date_value:str):
+def show_pdf_out(n_clicks,date_value:str,start_date_value:str,end_date_value:str,monthly:str):
     if not n_clicks:
         raise PreventUpdate
     if ctx.triggered_id == "show-file-button":
-        filename = convert_to_pdf(date_value.replace("-","_"))
+        filename = convert_to_pdf(date_value.replace("-","_"),start_date_value,end_date_value,monthly)
         cache_buster = f"?v={int(time.time())}"
         return html.Iframe(
             src=f"{filename}{cache_buster}",
