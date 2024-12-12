@@ -2,17 +2,21 @@ import time,os
 from datetime import date,datetime
 from dateutil.relativedelta import relativedelta
 from glob import glob
+from babel.numbers import format_decimal
 import numpy as np
 import pandas as pd
 from reportlab.platypus import SimpleDocTemplate,Table,TableStyle,Spacer,Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
+from reportlab.pdfbase.pdfmetrics import registerFont
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import portrait,A4
 from dash import dcc,html,register_page,dash_table,callback,Input,Output,ctx,State
 from dash.exceptions import PreventUpdate
 
 
+registerFont(TTFont("Arial","assets/Arial/arial.ttf"))
 
 columns = [
     "S.No.",
@@ -403,10 +407,12 @@ def convert_to_pdf(date_value,start_date,end_date,monthly):
     filename=f"assets/all_files/{date_value}.pdf"
     def add_date(c:canvas.Canvas,doc:SimpleDocTemplate):
         c.saveState()
-        c.drawString(A4[0] - 150,A4[1] - 50,f"Date: {date_value.replace("_","-")}")
-        c.drawString(30,30,f"Total Amount: {df["Amount"].sum()}")
-        c.drawString(165,30,f"Total Due: {df["Due"].sum()}")
-        c.drawString(275,30,f"Total PhonePay: {df.loc[df["Method"] == "phone pay".upper(),"Amount"].sum()}")
+        c.setFont("Arial",12)
+        c.drawString(A4[0] - 150,A4[1] - 50,f"Date: {"/".join(date_value.split("_")[::-1])}")
+        c.drawString(30,30,f"Total Amount: {format_decimal(df["Amount"].sum(),locale="en_IN")}₹")
+        c.drawString(165,30,f"Total Due: {format_decimal(df["Due"].sum(),locale="en_IN")}₹")
+        c.drawString(275,30,f"Total cash : {format_decimal(df.loc[df["Method"] != "phone pay".upper(),"Amount"].sum(),locale="en_IN")}₹")
+        c.drawString(390,30,f"Total PhonePay: {format_decimal(df.loc[df["Method"] == "phone pay".upper(),"Amount"].sum(),locale="en_IN")}₹")
         c.restoreState()
     doc = SimpleDocTemplate(filename)
     doc.pagesize = portrait(A4)
@@ -423,6 +429,7 @@ def convert_to_pdf(date_value,start_date,end_date,monthly):
         all_files = [os.path.basename(f).split(".")[0] for f in glob("assets/all_files/*.csv")]
         all_files
         all_f = []
+        abs_start_date = start_date
         while start_date != end_date:
             if start_date.replace("-","_") in all_files:
                 all_f.append("assets/all_files/" + start_date.replace("-","_")+".csv")
@@ -433,12 +440,13 @@ def convert_to_pdf(date_value,start_date,end_date,monthly):
         for f in all_f:
             temp_df = pd.read_csv(f)
             total_amount += temp_df.iloc[-1,8]
+        styles["Normal"].fontName = "Arial"
         monthly_string = Paragraph(
-            f"monthly data  for Date range from {start_date} to {end_date}: ".upper(),
+            f"monthly data  for Date range from {"/".join(abs_start_date.split("-")[::-1])} to {"/".join(end_date.split("-")[::-1])}: ".upper(),
             style=styles["Normal"]
         )
         total_amount_string = Paragraph(
-            f"total amount : {total_amount}".upper(),
+            f"total amount : {format_decimal(total_amount,locale="en_IN")}₹".upper(),
             style=styles["Normal"]
         )
         story = [table,Spacer(1,20),monthly_string,Spacer(1,20),total_amount_string]
