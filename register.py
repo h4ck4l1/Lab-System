@@ -53,7 +53,7 @@ dtype_map = {
 
 doctor_options = [
     "self".upper(),
-    "NEELIMA AGARWAL GARU, MD(Homeo).,",
+    "smt.NEELIMA AGARWAL GARU, MD(Homeo).,",
     "m rama krishna garu, mbbs, dch.,".upper(),
     "Smt. M.N. SRI DEVI GARU, MBBS, DGO.,",
     "akula satyanarayana garu, mbbs, dch.,".upper(),
@@ -161,7 +161,7 @@ register_layout = html.Div(
         html.Div(
             [
                 html.Div("Amount : ",style=dict(color="cyan",fontSize=30)),
-                dcc.Input(id="amount",type="number",placeholder="Amount...",style=dict(display="inline-block",position="absolute",left="350px",fontSize=30,width="150px")),
+                dcc.Input(id="amount",type="number",value=0,placeholder="Amount...",style=dict(display="inline-block",position="absolute",left="350px",fontSize=30,width="150px")),
                 html.Div("Method of Payment : ",style=dict(color="cyan",fontSize=30,position="absolute",left="600px")),
                 html.Div(dcc.Dropdown(["cash".upper(),"phone pay".upper()],"cash".upper(),id="pay-method"),style=dict(display="inline-block",position="absolute",left="950px",fontSize=20,width="300px"))
             ],
@@ -171,7 +171,7 @@ register_layout = html.Div(
         html.Div(
             [
                 html.Div("Phone No: ",style=dict(color="cyan",fontSize=30)),
-                dcc.Input(id="phone_number",type="number",placeholder="Enter Phone Number...",style=dict(display="inline-block",position="absolute",left="350px",fontSize=30))
+                dcc.Input(id="phone_number",type="number",value=0,placeholder="Enter Phone Number...",style=dict(display="inline-block",position="absolute",left="350px",fontSize=30))
             ],
             style=dict(display="flex",alignItems="center")
         ),
@@ -408,10 +408,6 @@ def convert_to_pdf(date_value,start_date,end_date,monthly):
         c.saveState()
         c.setFont("Arial",12)
         c.drawString(A4[0] - 150,A4[1] - 50,f"Date: {"/".join(date_value.split("_")[::-1])}")
-        c.drawString(30,30,f"Total Amount: {format_decimal(df["Amount"].sum(),locale="en_IN")}₹")
-        c.drawString(165,30,f"Total Due: {format_decimal(df["Due"].sum(),locale="en_IN")}₹")
-        c.drawString(275,30,f"Total cash : {format_decimal(df.loc[df["Method"] != "phone pay".upper(),"Amount"].sum(),locale="en_IN")}₹")
-        c.drawString(390,30,f"Total PhonePay: {format_decimal(df.loc[df["Method"] == "phone pay".upper(),"Amount"].sum(),locale="en_IN")}₹")
         c.restoreState()
     doc = SimpleDocTemplate(filename)
     doc.pagesize = portrait(A4)
@@ -423,8 +419,26 @@ def convert_to_pdf(date_value,start_date,end_date,monthly):
         all_elements.append(("background".upper(),(0,ind+1),(-1,ind+1),colors.darkgrey))
         all_elements.append(("textcolor".upper(),(0,ind+1),(-1,ind+1),colors.white))
     table.setStyle(TableStyle(all_elements))
+    styles = getSampleStyleSheet()
+    styles["Normal"].fontName = "Arial"
+    t_amount_string = Paragraph(
+        f"Total Amount Today: {format_decimal(df["Amount"].sum(),locale="en_IN")}₹",
+        style=styles["Normal"]
+    )
+    t_due_string = Paragraph(
+        f"Total Due: {format_decimal(df["Due"].sum(),locale="en_IN")}₹",
+        style=styles["Normal"]
+    )
+    t_cash_string = Paragraph(
+        f"Total cash : {format_decimal(df.loc[df["Method"] != "phone pay".upper(),"Amount"].sum(),locale="en_IN")}₹",
+        style=styles["Normal"]
+    )
+    t_ppay_string = Paragraph(
+        f"Total PhonePay: {format_decimal(df.loc[df["Method"] == "phone pay".upper(),"Amount"].sum(),locale="en_IN")}₹",
+        style=styles["Normal"]
+    )
+    story = [table,Spacer(1,20),t_amount_string,Spacer(1,20),t_due_string,Spacer(1,20),t_cash_string,Spacer(1,20),t_ppay_string]
     if monthly == "Yes":
-        styles = getSampleStyleSheet()
         all_files = [os.path.basename(f).split(".")[0] for f in glob("assets/all_files/*.csv")]
         all_files
         all_f = []
@@ -439,7 +453,6 @@ def convert_to_pdf(date_value,start_date,end_date,monthly):
         for f in all_f:
             temp_df = pd.read_csv(f)
             total_amount += temp_df.iloc[-1,8]
-        styles["Normal"].fontName = "Arial"
         monthly_string = Paragraph(
             f"monthly data  for Date range from {"/".join(abs_start_date.split("-")[::-1])} to {"/".join(end_date.split("-")[::-1])}: ".upper(),
             style=styles["Normal"]
@@ -448,10 +461,8 @@ def convert_to_pdf(date_value,start_date,end_date,monthly):
             f"total amount : {format_decimal(total_amount,locale="en_IN")}₹".upper(),
             style=styles["Normal"]
         )
-        story = [table,Spacer(1,20),monthly_string,Spacer(1,20),total_amount_string]
-        doc.build(story,onFirstPage=add_date,onLaterPages=add_date)
-    else:
-        doc.build([table],onFirstPage=add_date,onLaterPages=add_date)
+        story = [*story,Spacer(1,20),monthly_string,Spacer(1,20),total_amount_string]
+    doc.build(story,onFirstPage=add_date,onLaterPages=add_date)
     return filename
 
 
