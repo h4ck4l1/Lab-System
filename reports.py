@@ -1202,7 +1202,7 @@ def dc_canvas(
         c = if_draw_bold(c,mono_value,p(mono_value),1,4,300,h)
         c.setFont(big_font_name,big_limits_font_size)
         c.drawString(big_right_extreme-cal_string_width(c,"( 40 - 70 %)",big_font_name,big_limits_font_size),h,"( 01 - 04 %)")
-        return c,h-(entity_height * 0.5)
+        return c,h-(entity_height * 1.2)
 
 # done
 def crp_canvas(c:canvas.Canvas,value:float,page_size:str,h:int,entity_height=18):
@@ -1327,7 +1327,7 @@ def full_cbp_canvas(c:canvas.Canvas,cbp_values:list,page_size:str,h:int,entity_h
         c,h = plt_canvas(c,plt_count,page_size,h,entity_height - 5)
         c,h = esr_canvas(c,esr,page_size,h,entity_height-5)
         c,h = dc_canvas(c,[polymo,lympho,esino],page_size,h,entity_height-5)
-    return c,h-entity_height
+    return c,h
 
 # done
 def blood_group_canvas(c:canvas.Canvas,value:str,page_size:str,h:int,entity_height=18):
@@ -1487,20 +1487,27 @@ def hb1ac_canvas(c:canvas.Canvas,values:list,page_size:str,h:int,entity_height=1
         size_dict["font_name"][x],size_dict["limits_font"][x]),
             h,
             "( Excellent Control     - 6.0 % - 7.0% )"
-        )    
-        h -= (entity_height - 10)
-        c.drawString(size_dict["right_extreme"][x] - cal_string_width(c,
-            "( Excellent Control     - 6.0 % - 7.0% )",
-        size_dict["font_name"][x],size_dict["limits_font"][x]),
-            h,
-            "( Excellent Control     - 6.0 % - 7.0% )"
         )
         h -= (entity_height - 10)
         c.drawString(size_dict["right_extreme"][x] - cal_string_width(c,
-            "( Excellent Control     - 6.0 % - 7.0% )",
+            "( Fairly Good Control     - 7.0 % - 8.0% )",
         size_dict["font_name"][x],size_dict["limits_font"][x]),
             h,
-            "( Excellent Control     - 6.0 % - 7.0% )"
+            "( Fairly Good Control     - 7.0 % - 8.0% )"
+        )    
+        h -= (entity_height - 10)
+        c.drawString(size_dict["right_extreme"][x] - cal_string_width(c,
+            "( Unsatisfactory Control     - 8.0 % - 10.0% )",
+        size_dict["font_name"][x],size_dict["limits_font"][x]),
+            h,
+            "( Unsatisfactory Control     - 8.0 % - 10.0% )"
+        )
+        h -= (entity_height - 10)
+        c.drawString(size_dict["right_extreme"][x] - cal_string_width(c,
+            "( Poor Control     - > 10.0% )",
+        size_dict["font_name"][x],size_dict["limits_font"][x]),
+            h,
+            "( Poor Control     - > 10.0% )"
         )
     return c,h-entity_height
 

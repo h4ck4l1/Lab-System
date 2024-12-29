@@ -404,11 +404,6 @@ def convert_to_pdf(date_value,start_date,end_date,monthly):
     df = df.loc[:,["S.No.","Time","Amount","Method","Phone No","Paid","Due","Sample"]]
     df = df.iloc[:-1,:]
     filename=f"assets/all_files/{date_value}.pdf"
-    def add_date(c:canvas.Canvas,doc:SimpleDocTemplate):
-        c.saveState()
-        c.setFont("Arial",12)
-        c.drawString(A4[0] - 150,A4[1] - 50,f"Date: {"/".join(date_value.split("_")[::-1])}")
-        c.restoreState()
     doc = SimpleDocTemplate(filename)
     doc.pagesize = portrait(A4)
     data = [df.columns.to_list()] + df.values.tolist()
@@ -422,22 +417,14 @@ def convert_to_pdf(date_value,start_date,end_date,monthly):
     styles = getSampleStyleSheet()
     styles["Normal"].fontName = "Arial"
     t_amount_string = Paragraph(
-        f"Total Amount Today: {format_decimal(df["Amount"].sum(),locale="en_IN")}₹",
-        style=styles["Normal"]
-    )
-    t_due_string = Paragraph(
-        f"Total Due: {format_decimal(df["Due"].sum(),locale="en_IN")}₹",
+        f"Total Amount Today: {format_decimal(df["Amount"].sum(),locale="en_IN")}₹                     Total Due: {format_decimal(df["Due"].sum(),locale="en_IN")}₹                   Date: {"/".join(date_value.split("_")[::-1])}",
         style=styles["Normal"]
     )
     t_cash_string = Paragraph(
-        f"Total cash : {format_decimal(df.loc[df["Method"] != "phone pay".upper(),"Amount"].sum(),locale="en_IN")}₹",
+        f"Total cash : {format_decimal(df.loc[df["Method"] != "phone pay".upper(),"Amount"].sum(),locale="en_IN")}₹  Total PhonePay: {format_decimal(df.loc[df["Method"] == "phone pay".upper(),"Amount"].sum(),locale="en_IN")}₹",
         style=styles["Normal"]
     )
-    t_ppay_string = Paragraph(
-        f"Total PhonePay: {format_decimal(df.loc[df["Method"] == "phone pay".upper(),"Amount"].sum(),locale="en_IN")}₹",
-        style=styles["Normal"]
-    )
-    story = [table,Spacer(1,20),t_amount_string,Spacer(1,20),t_due_string,Spacer(1,20),t_cash_string,Spacer(1,20),t_ppay_string]
+    story = [table,Spacer(1,20),t_amount_string,Spacer(1,10),t_cash_string,Spacer(1,10)]
     if monthly == "Yes":
         all_files = [os.path.basename(f).split(".")[0] for f in glob("assets/all_files/*.csv")]
         all_files
@@ -462,7 +449,7 @@ def convert_to_pdf(date_value,start_date,end_date,monthly):
             style=styles["Normal"]
         )
         story = [*story,Spacer(1,20),monthly_string,Spacer(1,20),total_amount_string]
-    doc.build(story,onFirstPage=add_date,onLaterPages=add_date)
+    doc.build(story)
     return filename
 
 
